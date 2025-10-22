@@ -1,0 +1,579 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Redirect to main coming soon page during launch phase
+return Astro.redirect('/', 302);
+
+const lastUpdated = "September 15, 2025";
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Terms of Service - WhyKnot",
+  "description": "Read WhyKnot's Terms of Service to understand the rules and guidelines for using our platform and services.",
+  "url": "https://whyknot.live/terms-of-service"
+};
+---
+
+<Layout 
+  title="Terms of Service - WhyKnot"
+  description="Read WhyKnot's Terms of Service to understand the rules and guidelines for using our platform and services."
+  keywords="terms of service, terms of use, user agreement, legal terms, service conditions"
+  schema={schema}
+>
+  <article class="terms-page">
+    <!-- Header Section -->
+    <section class="terms-header">
+      <div class="section-container">
+        <div class="header-content">
+          <h1 class="page-title">Terms of Service</h1>
+          <p class="last-updated">Last updated: {lastUpdated}</p>
+          <p class="intro-text">
+            Welcome to WhyKnot. These Terms of Service ("Terms") govern your use 
+            of our website and services. By accessing or using WhyKnot, you agree 
+            to be bound by these Terms.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="terms-content">
+      <div class="section-container">
+        <div class="content-wrapper">
+          <!-- Table of Contents -->
+          <nav class="toc" aria-label="Table of contents">
+            <h2 class="toc-title">Table of Contents</h2>
+            <ul class="toc-list">
+              <li><a href="#acceptance">Acceptance of Terms</a></li>
+              <li><a href="#description">Description of Service</a></li>
+              <li><a href="#user-accounts">User Accounts</a></li>
+              <li><a href="#acceptable-use">Acceptable Use</a></li>
+              <li><a href="#prohibited-conduct">Prohibited Conduct</a></li>
+              <li><a href="#content">Content and Intellectual Property</a></li>
+              <li><a href="#submissions">User Submissions</a></li>
+              <li><a href="#privacy">Privacy</a></li>
+              <li><a href="#disclaimers">Disclaimers</a></li>
+              <li><a href="#limitation-liability">Limitation of Liability</a></li>
+              <li><a href="#indemnification">Indemnification</a></li>
+              <li><a href="#termination">Termination</a></li>
+              <li><a href="#governing-law">Governing Law</a></li>
+              <li><a href="#changes">Changes to Terms</a></li>
+              <li><a href="#contact">Contact Information</a></li>
+            </ul>
+          </nav>
+
+          <!-- Terms Content -->
+          <div class="terms-content-body">
+            
+            <section id="acceptance" class="terms-section">
+              <h2>1. Acceptance of Terms</h2>
+              <p>
+                By accessing, browsing, or using the WhyKnot website (whyknot.live) or any of our 
+                services, you acknowledge that you have read, understood, and agree to be bound by 
+                these Terms of Service and our Privacy Policy.
+              </p>
+              
+              <p>
+                If you do not agree to these Terms, you must not access or use our services. 
+                These Terms constitute a legal agreement between you and WhyKnot.
+              </p>
+
+              <p>
+                You must be at least 13 years old (or the age of majority in your jurisdiction) 
+                to use our services. If you are under 18, you represent that you have your 
+                parent's or guardian's permission to use our services.
+              </p>
+            </section>
+
+            <section id="description" class="terms-section">
+              <h2>2. Description of Service</h2>
+              <p>
+                WhyKnot is a platform that curates and showcases innovative tools, services, 
+                and resources to help users discover solutions they might not have known they needed. 
+                Our services include:
+              </p>
+              
+              <ul>
+                <li>A curated directory of tools and services</li>
+                <li>Reviews and recommendations</li>
+                <li>User-generated content and submissions</li>
+                <li>Newsletter and communication services</li>
+                <li>Educational content and resources</li>
+              </ul>
+
+              <p>
+                We reserve the right to modify, suspend, or discontinue any aspect of our services 
+                at any time, with or without notice. We may also impose limits on certain features 
+                or restrict access to parts of our services.
+              </p>
+            </section>
+
+            <section id="user-accounts" class="terms-section">
+              <h2>3. User Accounts</h2>
+              
+              <h3>Account Creation</h3>
+              <p>
+                To access certain features of our services, you may need to create an account. 
+                When creating an account, you must provide accurate, current, and complete information.
+              </p>
+
+              <h3>Account Responsibility</h3>
+              <p>You are responsible for:</p>
+              <ul>
+                <li>Maintaining the confidentiality of your account credentials</li>
+                <li>All activities that occur under your account</li>
+                <li>Notifying us immediately of any unauthorized use</li>
+                <li>Keeping your account information up to date</li>
+              </ul>
+
+              <h3>Account Termination</h3>
+              <p>
+                We reserve the right to suspend or terminate your account at any time if you 
+                violate these Terms or engage in conduct that we deem inappropriate or harmful 
+                to our services or other users.
+              </p>
+            </section>
+
+            <section id="acceptable-use" class="terms-section">
+              <h2>4. Acceptable Use</h2>
+              <p>
+                You agree to use our services only for lawful purposes and in accordance with 
+                these Terms. You are responsible for ensuring that your use of our services 
+                complies with all applicable local, state, national, and international laws.
+              </p>
+
+              <h3>Permitted Uses</h3>
+              <p>You may use our services to:</p>
+              <ul>
+                <li>Browse and discover tools and services</li>
+                <li>Submit suggestions for new tools or services</li>
+                <li>Participate in our community features</li>
+                <li>Access educational content and resources</li>
+                <li>Subscribe to our newsletter and communications</li>
+              </ul>
+
+              <h3>Commercial Use</h3>
+              <p>
+                Limited commercial use is permitted, such as discovering tools for your business. 
+                However, you may not use our services to directly compete with us or scrape our 
+                content for commercial redistribution without our written permission.
+              </p>
+            </section>
+
+            <section id="prohibited-conduct" class="terms-section">
+              <h2>5. Prohibited Conduct</h2>
+              <p>You agree not to engage in any of the following prohibited activities:</p>
+
+              <h3>Content Violations</h3>
+              <ul>
+                <li>Post, upload, or share content that is illegal, harmful, or offensive</li>
+                <li>Submit false, misleading, or deceptive information</li>
+                <li>Violate intellectual property rights of others</li>
+                <li>Share spam, malware, or malicious content</li>
+              </ul>
+
+              <h3>Technical Violations</h3>
+              <ul>
+                <li>Attempt to gain unauthorized access to our systems</li>
+                <li>Use automated scripts, bots, or scrapers without permission</li>
+                <li>Interfere with or disrupt our services or servers</li>
+                <li>Reverse engineer or attempt to extract our source code</li>
+              </ul>
+
+              <h3>Community Violations</h3>
+              <ul>
+                <li>Harass, abuse, or harm other users</li>
+                <li>Impersonate others or create fake accounts</li>
+                <li>Engage in fraudulent or deceptive practices</li>
+                <li>Violate others' privacy or personal information</li>
+              </ul>
+
+              <h3>Business Violations</h3>
+              <ul>
+                <li>Use our services for illegal business activities</li>
+                <li>Attempt to manipulate our recommendation algorithms</li>
+                <li>Submit false reviews or misleading information about tools</li>
+                <li>Use our platform to promote competing services without disclosure</li>
+              </ul>
+            </section>
+
+            <section id="content" class="terms-section">
+              <h2>6. Content and Intellectual Property</h2>
+              
+              <h3>Our Content</h3>
+              <p>
+                The content, features, and functionality of our services, including but not limited 
+                to text, graphics, logos, icons, images, audio clips, video clips, data compilations, 
+                and software, are owned by WhyKnot or our licensors and are protected by copyright, 
+                trademark, and other intellectual property laws.
+              </p>
+
+              <h3>Limited License</h3>
+              <p>
+                We grant you a limited, non-exclusive, non-transferable, revocable license to 
+                access and use our services for personal, non-commercial purposes, subject to 
+                these Terms.
+              </p>
+
+              <h3>Restrictions</h3>
+              <p>You may not:</p>
+              <ul>
+                <li>Copy, modify, or distribute our content without permission</li>
+                <li>Use our trademarks or branding without authorization</li>
+                <li>Create derivative works based on our services</li>
+                <li>Remove or alter any copyright or proprietary notices</li>
+              </ul>
+
+              <h3>Third-Party Content</h3>
+              <p>
+                Our services may contain links to or content from third-party websites, tools, 
+                or services. We do not own or control this content and are not responsible for 
+                its accuracy, completeness, or availability.
+              </p>
+            </section>
+
+            <section id="submissions" class="terms-section">
+              <h2>7. User Submissions</h2>
+              
+              <h3>Your Content</h3>
+              <p>
+                You retain ownership of any content you submit to our services ("User Content"). 
+                However, by submitting User Content, you grant us certain rights as described below.
+              </p>
+
+              <h3>License Grant</h3>
+              <p>
+                By submitting User Content, you grant WhyKnot a worldwide, non-exclusive, 
+                royalty-free, sublicensable, and transferable license to use, reproduce, 
+                distribute, prepare derivative works of, display, and perform your User Content 
+                in connection with our services.
+              </p>
+
+              <h3>Content Standards</h3>
+              <p>All User Content must:</p>
+              <ul>
+                <li>Be accurate and not misleading</li>
+                <li>Not violate any third-party rights</li>
+                <li>Not contain illegal or harmful material</li>
+                <li>Comply with applicable laws and regulations</li>
+                <li>Be relevant to our platform's purpose</li>
+              </ul>
+
+              <h3>Content Moderation</h3>
+              <p>
+                We reserve the right to review, edit, or remove any User Content that violates 
+                these Terms or that we deem inappropriate. However, we are not obligated to 
+                monitor all User Content.
+              </p>
+            </section>
+
+            <section id="privacy" class="terms-section">
+              <h2>8. Privacy</h2>
+              <p>
+                Your privacy is important to us. Our Privacy Policy explains how we collect, 
+                use, and protect your information when you use our services. By using our services, 
+                you consent to the collection and use of information as described in our Privacy Policy.
+              </p>
+
+              <p>
+                Please review our Privacy Policy, which also governs your use of our services, 
+                to understand our practices regarding your personal information.
+              </p>
+            </section>
+
+            <section id="disclaimers" class="terms-section">
+              <h2>9. Disclaimers</h2>
+              
+              <h3>Service Availability</h3>
+              <p>
+                Our services are provided "AS IS" and "AS AVAILABLE" without warranties of any kind. 
+                We do not guarantee that our services will be uninterrupted, secure, or error-free.
+              </p>
+
+              <h3>Content Accuracy</h3>
+              <p>
+                While we strive to provide accurate and up-to-date information, we make no 
+                representations or warranties about the accuracy, completeness, or reliability 
+                of any content on our platform, including information about third-party tools 
+                and services.
+              </p>
+
+              <h3>Third-Party Services</h3>
+              <p>
+                We are not responsible for the performance, availability, or content of third-party 
+                tools and services featured on our platform. Your use of any third-party services 
+                is at your own risk and subject to their terms and conditions.
+              </p>
+
+              <h3>Investment and Business Decisions</h3>
+              <p>
+                Our content is for informational purposes only and should not be considered as 
+                professional advice. We are not responsible for any business or investment 
+                decisions you make based on information from our platform.
+              </p>
+            </section>
+
+            <section id="limitation-liability" class="terms-section">
+              <h2>10. Limitation of Liability</h2>
+              <p>
+                To the fullest extent permitted by applicable law, WhyKnot and its officers, 
+                directors, employees, agents, and affiliates shall not be liable for any indirect, 
+                incidental, special, consequential, or punitive damages, including but not limited to:
+              </p>
+
+              <ul>
+                <li>Loss of profits, data, or business opportunities</li>
+                <li>Interruption of business or services</li>
+                <li>Cost of substitute goods or services</li>
+                <li>Any damages arising from your use of our services</li>
+              </ul>
+
+              <p>
+                Our total liability to you for any claims arising from or related to these Terms 
+                or your use of our services shall not exceed the amount you have paid us in the 
+                twelve (12) months preceding the claim, or $100, whichever is greater.
+              </p>
+
+              <p>
+                Some jurisdictions do not allow the exclusion or limitation of certain damages, 
+                so some of the above limitations may not apply to you.
+              </p>
+            </section>
+
+            <section id="indemnification" class="terms-section">
+              <h2>11. Indemnification</h2>
+              <p>
+                You agree to indemnify, defend, and hold harmless WhyKnot and its officers, 
+                directors, employees, agents, and affiliates from and against any claims, 
+                liabilities, damages, losses, costs, expenses, or fees (including reasonable 
+                attorneys' fees) arising from or relating to:
+              </p>
+
+              <ul>
+                <li>Your use of our services</li>
+                <li>Your violation of these Terms</li>
+                <li>Your violation of any rights of another party</li>
+                <li>Your User Content or submissions</li>
+                <li>Your breach of any representation or warranty in these Terms</li>
+              </ul>
+
+              <p>
+                We reserve the right to assume the exclusive defense and control of any matter 
+                subject to indemnification by you, and you agree to cooperate with our defense 
+                of such claims.
+              </p>
+            </section>
+
+            <section id="termination" class="terms-section">
+              <h2>12. Termination</h2>
+              
+              <h3>Termination by You</h3>
+              <p>
+                You may stop using our services at any time. If you have an account, you may 
+                request account deletion by contacting us at hello@whyknot.live.
+              </p>
+
+              <h3>Termination by Us</h3>
+              <p>
+                We may suspend or terminate your access to our services at any time, with or 
+                without cause, and with or without notice. Reasons for termination may include:
+              </p>
+              <ul>
+                <li>Violation of these Terms</li>
+                <li>Fraudulent or illegal activity</li>
+                <li>Extended inactivity</li>
+                <li>Technical or security issues</li>
+              </ul>
+
+              <h3>Effect of Termination</h3>
+              <p>
+                Upon termination, your right to use our services will cease immediately. 
+                We may delete your account and any associated data, though some information 
+                may be retained as required by law or for legitimate business purposes.
+              </p>
+
+              <p>
+                Provisions of these Terms that by their nature should survive termination 
+                will remain in effect, including ownership provisions, warranty disclaimers, 
+                and limitations of liability.
+              </p>
+            </section>
+
+            <section id="governing-law" class="terms-section">
+              <h2>13. Governing Law and Dispute Resolution</h2>
+              
+              <h3>Governing Law</h3>
+              <p>
+                These Terms are governed by and construed in accordance with the laws of the 
+                United States and the state where WhyKnot is incorporated, without regard to 
+                conflict of law principles.
+              </p>
+
+              <h3>Dispute Resolution</h3>
+              <p>
+                Any disputes arising from or relating to these Terms or your use of our services 
+                will be resolved through binding arbitration rather than in court, except that 
+                you may assert claims in small claims court if your claims qualify.
+              </p>
+
+              <h3>Class Action Waiver</h3>
+              <p>
+                You agree that any arbitration or proceeding will be conducted on an individual 
+                basis and not as part of a class, representative, or collective action.
+              </p>
+
+              <h3>Exceptions</h3>
+              <p>
+                Notwithstanding the above, we may seek injunctive or other equitable relief 
+                in any court of competent jurisdiction to protect our intellectual property rights.
+              </p>
+            </section>
+
+            <section id="changes" class="terms-section">
+              <h2>14. Changes to Terms</h2>
+              <p>
+                We reserve the right to modify these Terms at any time. When we make material 
+                changes, we will notify you by:
+              </p>
+
+              <ul>
+                <li>Updating the "Last updated" date at the top of these Terms</li>
+                <li>Sending an email notification to registered users</li>
+                <li>Displaying a prominent notice on our website</li>
+                <li>Requiring acceptance of new Terms upon login (for significant changes)</li>
+              </ul>
+
+              <p>
+                Your continued use of our services after any changes indicates your acceptance 
+                of the new Terms. If you do not agree to the modified Terms, you must stop 
+                using our services.
+              </p>
+
+              <h3>Material Changes</h3>
+              <p>
+                For material changes that significantly affect your rights or obligations, 
+                we will provide at least 30 days' notice before the changes take effect.
+              </p>
+            </section>
+
+            <section id="contact" class="terms-section">
+              <h2>15. Contact Information</h2>
+              <p>
+                If you have any questions, concerns, or disputes regarding these Terms of Service, 
+                please contact us:
+              </p>
+
+              <div class="contact-info">
+                <div class="contact-method">
+                  <strong>Email:</strong> legal@whyknot.live
+                </div>
+                <div class="contact-method">
+                  <strong>General Contact:</strong> hello@whyknot.live
+                </div>
+                <div class="contact-method">
+                  <strong>Address:</strong><br>
+                  WhyKnot<br>
+                  [Address will be updated when available]<br>
+                  United States
+                </div>
+              </div>
+
+              <p>
+                We will make reasonable efforts to resolve any issues or concerns promptly 
+                and in good faith.
+              </p>
+
+              <h3>Effective Date</h3>
+              <p>
+                These Terms of Service are effective as of the "Last updated" date shown at 
+                the top of this document and remain in effect until modified or terminated 
+                in accordance with these Terms.
+              </p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+  </article>
+</Layout>
+
+<script>
+  // Smooth scrolling for table of contents
+  function initTOCScrolling() {
+    const tocLinks = document.querySelectorAll('.toc-list a');
+    
+    tocLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href')?.substring(1);
+        const targetElement = document.getElementById(targetId || '');
+        
+        if (targetElement) {
+          const offset = 100; // Account for fixed header
+          const elementPosition = targetElement.offsetTop - offset;
+          
+          window.scrollTo({
+            top: elementPosition,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  }
+
+  // Highlight current section in TOC
+  function initTOCHighlight() {
+    const tocLinks = document.querySelectorAll('.toc-list a');
+    const sections = document.querySelectorAll('.terms-section[id]');
+    
+    function updateActiveTOC() {
+      const scrollPosition = window.scrollY + 120;
+      
+      let currentSection = '';
+      sections.forEach(section => {
+        const sectionTop = (section as HTMLElement).offsetTop;
+        const sectionHeight = (section as HTMLElement).offsetHeight;
+        
+        if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+          currentSection = section.id;
+        }
+      });
+      
+      tocLinks.forEach(link => {
+        (link as HTMLElement).style.color = '';
+        (link as HTMLElement).style.fontWeight = '';
+        
+        if (link.getAttribute('href') === `#${currentSection}`) {
+          (link as HTMLElement).style.color = 'var(--color-accent-300)';
+          (link as HTMLElement).style.fontWeight = '600';
+        }
+      });
+    }
+    
+    let ticking = false;
+    function requestTOCUpdate() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateActiveTOC();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+    
+    window.addEventListener('scroll', requestTOCUpdate, { passive: true });
+    updateActiveTOC(); // Initial call
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    initTOCScrolling();
+    initTOCHighlight();
+  });
+
+  // Re-initialize on Astro page transitions
+  document.addEventListener('astro:page-load', () => {
+    initTOCScrolling();
+    initTOCHighlight();
+  });
+</script>

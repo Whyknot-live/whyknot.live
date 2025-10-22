@@ -1,0 +1,335 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Redirect to main coming soon page during launch phase
+return Astro.redirect('/', 302);
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "name": "About WhyKnot",
+  "description": "Learn about WhyKnot's mission to curate the web's most innovative websites and tools for creators, developers, and entrepreneurs.",
+  "url": "https://whyknot.live/about"
+};
+---
+
+<Layout 
+  title="About Us - WhyKnot"
+  description="Learn about WhyKnot's mission to curate the web's most innovative websites and tools for creators, developers, and entrepreneurs."
+  keywords="about whyknot, company mission, web curation, innovative tools, creator community"
+  schema={schema}
+>
+  <article class="section pt-8rem">
+    <!-- Hero Section -->
+    <section class="section">
+      <div class="section-container">
+        <div class="hero-content">
+          <div class="hero-badge">
+            Curating the web's best tools since 2025
+          </div>
+          <h1 class="page-title">Empowering Creators with <span class="gradient-text">Innovative Tools</span></h1>
+          <p class="hero-description">
+            We're on a mission to help creators discover the web's most innovative 
+            websites and tools. Join thousands of creators who trust WhyKnot to fuel their creativity.
+          </p>
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-number">500+</div>
+              <div class="stat-label">Curated Tools</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">10K+</div>
+              <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">50+</div>
+              <div class="stat-label">Categories</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="section">
+      <div class="section-container">
+        <div class="content-grid">
+          <div class="text-content">
+            <h2>Our Mission</h2>
+            <p>
+              In a world overflowing with digital tools and websites, finding the 
+              truly innovative ones shouldn't be like searching for a needle in a haystack. 
+              That's where WhyKnot comes in.
+            </p>
+            <p>
+              We believe that great creators deserve access to great tools. Our curated 
+              collection saves you time by showcasing only the most innovative, useful, 
+              and inspiring websites and tools on the web.
+            </p>
+            <div class="mission-stats">
+              <div class="stat">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">Curated Websites</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Categories</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">1000+</div>
+                <div class="stat-label">Community Members</div>
+              </div>
+            </div>
+          </div>
+          <div class="visual-content">
+            <div class="mission-visual">
+              <div class="visual-card">
+                <div class="card-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                </div>
+                <h3>Discover</h3>
+                <p>Find innovative tools and websites</p>
+              </div>
+              <div class="visual-card">
+                <div class="card-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <path d="M12 17h.01"></path>
+                  </svg>
+                </div>
+                <h3>Curate</h3>
+                <p>Expert selection and quality control</p>
+              </div>
+              <div class="visual-card">
+                <div class="card-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5.5-2c.71-.51 1.5-1.5 1.5-1.5"></path>
+                    <path d="M12 12c-1.5 1.26-2 5-2 5s3.74-.5 5.5-2c.71-.51 1.5-1.5 1.5-1.5"></path>
+                    <path d="M19.5 7.5c-1.5 1.26-2 5-2 5s3.74-.5 5.5-2c.71-.51 1.5-1.5 1.5-1.5"></path>
+                  </svg>
+                </div>
+                <h3>Create</h3>
+                <p>Empower your creative journey</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="section">
+      <div class="section-container">
+  <div class="center-800">
+          <h2 class="section-title">Our Story</h2>
+          <div class="story-timeline">
+            <div class="timeline-item">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h3>2025: The Beginning</h3>
+                <p>
+                  Frustrated by endless searches for the right tools, we founded WhyKnot 
+                  with a simple question: "Why not create a place where the best tools are always at your fingertips?"
+                </p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h3>Building the Collection</h3>
+                <p>
+                  We started curating websites and tools, focusing on quality over quantity. 
+                  Every item in our collection is hand-picked by our team of experts.
+                </p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h3>Growing Community</h3>
+                <p>
+                  Today, WhyKnot serves thousands of creators worldwide, from designers to developers, 
+                  all united in their pursuit of better tools.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="section">
+      <div class="section-container">
+        <h2 class="section-title">Our Values</h2>
+        <div class="values-grid">
+          <div class="value-card">
+            <div class="value-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 8L2 22M17.5 15H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Quality Over Quantity</h3>
+            <p>
+              We believe in curating fewer, better tools rather than overwhelming 
+              you with endless options. Every item in our collection earns its place.
+            </p>
+          </div>
+
+          <div class="value-card">
+            <div class="value-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/>
+                <path d="m22 21-3-3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Community-Driven</h3>
+            <p>
+              Our platform grows through community contributions. The best discoveries 
+              come from creators sharing what works for them.
+            </p>
+          </div>
+
+          <div class="value-card">
+            <div class="value-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="m2 17 10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Transparency</h3>
+            <p>
+              We're open about our selection process, partnerships, and how we 
+              operate. No hidden agendas, just honest recommendations.
+            </p>
+          </div>
+
+          <div class="value-card">
+            <div class="value-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Innovation Focus</h3>
+            <p>
+              We prioritize tools that push boundaries, solve real problems, 
+              and help creators do things they couldn't do before.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="section">
+      <div class="section-container">
+        <h2 class="section-title">Meet the Team</h2>
+        <p class="section-description">
+          We're a small but passionate team of creators, developers, and design enthusiasts 
+          who believe in the power of great tools to unlock human potential.
+        </p>
+        
+        <div class="team-grid">
+          <div class="team-member">
+            <div class="member-avatar">
+              <div class="avatar-placeholder">JP</div>
+            </div>
+            <div class="member-info">
+              <h3>Jay Patel</h3>
+              <p class="member-role">Founder & Chief Curator</p>
+              <p class="member-bio">
+                Passionate about discovering tools that empower creators. 
+                Former product designer with 8+ years of experience in the startup ecosystem.
+              </p>
+              <div class="member-social">
+                <a href="https://twitter.com/jayptl" aria-label="Jay's Twitter" target="_blank" rel="noopener noreferrer">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+                <a href="https://linkedin.com/in/jayptl" aria-label="Jay's LinkedIn" target="_blank" rel="noopener noreferrer">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="2" y="9" width="4" height="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Placeholder for future team members -->
+          <div class="team-member team-member--hiring">
+            <div class="member-avatar">
+              <div class="avatar-placeholder hiring-avatar">?</div>
+            </div>
+            <div class="member-info">
+              <h3>You?</h3>
+              <p class="member-role">Join Our Team</p>
+              <p class="member-bio">
+                We're always looking for passionate individuals who share our vision. 
+                Check out our careers page to see current openings.
+              </p>
+              <a href="/careers" class="btn btn-outline btn-sm">View Openings</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact CTA -->
+    <section class="contact-cta">
+      <div class="section-container">
+        <div class="cta-content">
+          <h2>Get in Touch</h2>
+          <p>
+            Have questions, suggestions, or just want to say hello? 
+            We'd love to hear from you.
+          </p>
+          <div class="cta-actions">
+            <a href="/contact" class="btn btn-primary">Contact Us</a>
+            <a href="mailto:hello@whyknot.live" class="btn btn-ghost">Send Email</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </article>
+</Layout>
+
+<script>
+  // Add scroll animations
+  document.addEventListener('DOMContentLoaded', () => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-in');
+        }
+      });
+    }, observerOptions);
+
+    // Observe elements for animation
+    document.querySelectorAll('.section').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Add hover effects for cards
+    document.querySelectorAll('.visual-card, .value-card, .team-member').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        (card as HTMLElement).style.transform = 'translateY(-8px) scale(1.02)';
+      });
+      card.addEventListener('mouseleave', () => {
+        (card as HTMLElement).style.transform = 'translateY(0) scale(1)';
+      });
+    });
+  });
+</script>

@@ -1,0 +1,6 @@
+/* Global Stylesheet
+   Centralized entrypoint for all CSS in the app.
+   Order matters: design tokens first, then component/layout styles. */
+
+@import './tokens.css';
+@import './components/index.css';

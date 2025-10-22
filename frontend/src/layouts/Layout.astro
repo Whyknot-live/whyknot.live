@@ -1,0 +1,356 @@
+---
+import Head from '../components/Head.astro';
+import Navigation from '../components/Navigation.astro';
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  image?: string;
+  type?: 'website' | 'article' | 'product';
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  canonical?: string;
+  noindex?: boolean;
+  schema?: Record<string, any>;
+  transparentNav?: boolean;
+  hideFooter?: boolean;
+  bodyClass?: string;
+  /**
+   * When true, wraps the page content in a centered container with a max-width.
+   * Default is false to allow modern full-width sections by default.
+   */
+  constrainContent?: boolean;
+}
+
+const {
+  title,
+  description,
+  keywords,
+  image,
+  type,
+  publishedTime,
+  modifiedTime,
+  author,
+  canonical,
+  noindex,
+  schema,
+  transparentNav = false,
+  hideFooter = false,
+  bodyClass = '',
+  constrainContent = false,
+} = Astro.props;
+
+const currentYear = new Date().getFullYear();
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Head
+      title={title}
+      description={description}
+      keywords={keywords}
+      image={image}
+      type={type}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+      author={author}
+      canonical={canonical}
+      noindex={noindex}
+      schema={schema}
+    />
+  </head>
+  <body class={`theme-transition ${bodyClass}`}>
+    <!-- Theme initialization script to prevent FOUC -->
+    <script is:inline>
+      // Run immediately to prevent flash of unstyled content
+      (function() {
+  const savedTheme = localStorage.getItem('theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        let theme;
+        if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+          theme = savedTheme;
+        } else {
+          theme = systemPrefersDark ? 'dark' : 'light';
+        }
+        
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+    
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Navigation -->
+    <Navigation transparent={transparentNav} />
+    
+    <!-- Main Content -->
+    <main id="main-content" class="site-main" role="main">
+      {constrainContent ? (
+        <div class="content-container">
+          <slot />
+        </div>
+      ) : (
+        <slot />
+      )}
+    </main>
+    
+    <!-- Footer -->
+    {!hideFooter && (
+      <footer class="site-footer" role="contentinfo">
+        <div class="footer-container">
+          <div class="footer-content">
+            <!-- Brand Section -->
+            <div class="footer-brand">
+              <a href="/" class="footer-logo" aria-label="WhyKnot homepage">
+                <span class="logo-text">WhyKnot<span class="brand-accent">?</span></span>
+              </a>
+              <p class="footer-tagline">
+                Discover the web's most innovative websites and tools. 
+                Curated for creators, by creators.
+              </p>
+              <div class="footer-social">
+                <a href="https://twitter.com/whyknot_live" aria-label="Follow us on Twitter" target="_blank" rel="noopener noreferrer">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+                <a href="https://linkedin.com/company/whyknot-live" aria-label="Follow us on LinkedIn" target="_blank" rel="noopener noreferrer">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="2" y="9" width="4" height="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                </a>
+                <a href="https://github.com/whyknot-live" aria-label="Follow us on GitHub" target="_blank" rel="noopener noreferrer">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="footer-links">
+              <div class="link-group">
+                <h4 class="link-group-title">Product</h4>
+                <nav aria-label="Product links">
+                  <a href="/" class="footer-link" data-astro-prefetch>Home</a>
+                  <a href="/about" class="footer-link" data-astro-prefetch>About</a>
+                  <a href="/blog" class="footer-link" data-astro-prefetch>Blog</a>
+                  <a href="#waitlist" class="footer-link">Join Waitlist</a>
+                </nav>
+              </div>
+              
+              <div class="link-group">
+                <h4 class="link-group-title">Company</h4>
+                <nav aria-label="Company links">
+                  <a href="/about" class="footer-link" data-astro-prefetch>About Us</a>
+                  <a href="/contact" class="footer-link" data-astro-prefetch>Contact</a>
+                  <a href="/blog" class="footer-link" data-astro-prefetch>Blog</a>
+                  <a href="/careers" class="footer-link" data-astro-prefetch>Careers</a>
+                </nav>
+              </div>
+              
+              <div class="link-group">
+                <h4 class="link-group-title">Legal</h4>
+                <nav aria-label="Legal links">
+                  <a href="/privacy-policy" class="footer-link" data-astro-prefetch>Privacy Policy</a>
+                  <a href="/terms-of-service" class="footer-link" data-astro-prefetch>Terms of Service</a>
+                  <a href="/privacy-policy#cookies" class="footer-link">Cookie Policy</a>
+                  <a href="/sitemap.xml" class="footer-link">Sitemap</a>
+                </nav>
+              </div>
+              
+              <div class="link-group">
+                <h4 class="link-group-title">Support</h4>
+                <nav aria-label="Support links">
+                  <a href="/contact" class="footer-link">Help Center</a>
+                  <a href="mailto:hello@whyknot.live" class="footer-link">Contact Support</a>
+                  <a href="/status" class="footer-link">Status</a>
+                  <a href="/feedback" class="footer-link">Feedback</a>
+                </nav>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Footer Bottom -->
+          <div class="footer-bottom">
+            <div class="footer-copyright">
+              <p>© {currentYear} WhyKnot Live. All rights reserved.</p>
+              <p class="footer-tagline-small">
+                Made with ❤️ for the creator community
+              </p>
+            </div>
+            
+            <div class="footer-meta">
+              <a href="/sitemap.xml" class="footer-meta-link">XML Sitemap</a>
+              <a href="/rss.xml" class="footer-meta-link">RSS Feed</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    )}
+
+    <!-- Scripts -->
+      <script is:inline>
+      // Theme system (system preference with logo toggle)
+      function initThemeSystem() {
+        // Get saved theme or default to system preference
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Determine initial theme with proper fallback logic
+        let initialTheme;
+        if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+          initialTheme = savedTheme;
+        } else {
+          // If no saved theme or invalid saved theme, use system preference
+          initialTheme = systemPrefersDark ? 'dark' : 'light';
+        }
+        
+        // Apply theme
+        function applyTheme(theme) {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+        
+        // Set initial theme
+        applyTheme(initialTheme);
+        
+        // Listen for system preference changes only if no manual theme is set
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          const currentSavedTheme = localStorage.getItem('theme');
+          if (!currentSavedTheme || (currentSavedTheme !== 'light' && currentSavedTheme !== 'dark')) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      }
+
+      // Smooth scroll for anchor links
+      function initSmoothScroll() {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+          anchor.addEventListener('click', function (e) {
+            const href = (e.currentTarget && e.currentTarget.getAttribute && e.currentTarget.getAttribute('href')) || '';
+            const target = document.querySelector(href);
+            if (target) {
+              e.preventDefault();
+              target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          });
+        });
+      }
+
+      // External link handling
+      function initExternalLinks() {
+        document.querySelectorAll('a[href^="http"]').forEach(link => {
+          if (!link.getAttribute('target')) {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+          }
+        });
+      }
+
+      // Performance monitoring for Core Web Vitals (production-ready)
+      function initPerformanceMonitoring() {
+        // Only monitor performance in development or when explicitly enabled
+        if ('performance' in window && (import.meta.env.DEV || window.location.search.includes('perf=1'))) {
+          // Web Vitals monitoring
+          function getCLS() {
+            return new Promise((resolve) => {
+              new PerformanceObserver((list) => {
+                const entries = list.getEntries();
+                entries.forEach(entry => {
+                  if (!entry.hadRecentInput) {
+                    resolve(entry.value);
+                  }
+                });
+              }).observe({ entryTypes: ['layout-shift'] });
+            });
+          }
+          
+          function getFID() {
+            return new Promise((resolve) => {
+              new PerformanceObserver((list) => {
+                const entries = list.getEntries();
+                const firstEntry = entries[0];
+                if (firstEntry) {
+                  resolve(firstEntry.processingStart - firstEntry.startTime);
+                }
+              }).observe({ entryTypes: ['first-input'] });
+            });
+          }
+          
+          function getLCP() {
+            return new Promise((resolve) => {
+              new PerformanceObserver((list) => {
+                const entries = list.getEntries();
+                const lastEntry = entries[entries.length - 1];
+                if (lastEntry) {
+                  resolve(lastEntry.startTime);
+                }
+              }).observe({ entryTypes: ['largest-contentful-paint'] });
+            });
+          }
+
+          window.addEventListener('load', async () => {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            
+            // Core Web Vitals
+            const [cls, fid, lcp] = await Promise.allSettled([
+              getCLS(),
+              getFID(), 
+              getLCP()
+            ]);
+            
+            const performanceData = {
+              // Traditional metrics
+              domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
+              loadComplete: perfData.loadEventEnd - perfData.loadEventStart,
+              firstByte: perfData.responseStart - perfData.requestStart,
+              domInteractive: perfData.domInteractive - perfData.startTime,
+              // Core Web Vitals
+              cls: cls.status === 'fulfilled' ? cls.value : null,
+              fid: fid.status === 'fulfilled' ? fid.value : null,
+              lcp: lcp.status === 'fulfilled' ? lcp.value : null
+            };
+            
+            if (import.meta.env.DEV) {
+              console.log('Performance Metrics:', performanceData);
+            }
+            // Production: Send performanceData to your analytics service
+          });
+        }
+      }
+
+      // Initialize all systems
+      function init() {
+        initThemeSystem();
+        initSmoothScroll();
+        initExternalLinks();
+        initPerformanceMonitoring();
+      }
+
+      // Run immediately if DOM is ready, otherwise wait for DOM load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+      
+      // Re-initialize theme system on Astro page transitions
+      document.addEventListener('astro:page-load', () => {
+        initThemeSystem();
+        initSmoothScroll();
+        initExternalLinks();
+      });
+    </script>
+  </body>
+</html>
+

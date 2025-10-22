@@ -1,0 +1,5 @@
+---
+// Redirect handy /sitemap route to canonical XML sitemap
+export const prerender = true;
+return Astro.redirect('/sitemap.xml', 308);
+---

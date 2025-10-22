@@ -1,0 +1,144 @@
+---
+export interface Props {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  image?: string;
+  type?: 'website' | 'article' | 'product';
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  canonical?: string;
+  noindex?: boolean;
+  schema?: Record<string, any>;
+}
+
+const {
+  title = "WhyKnot? - Discover Amazing Websites & Tools",
+  description = "Discover the web's most innovative websites and tools. Join thousands discovering what's next in digital innovation.",
+  keywords = "innovative websites, web tools, design inspiration, productivity tools, digital innovation, web discovery",
+  image = "/images/og-image.jpg",
+  type = "website",
+  publishedTime,
+  modifiedTime,
+  author = "WhyKnot Team",
+  canonical,
+  noindex = false,
+  schema
+} = Astro.props;
+
+// Derive site from Astro.site when available to avoid hardcoding
+const site = Astro.site?.origin ?? 'https://whyknot.live';
+const currentUrl = canonical || new URL(Astro.url.pathname, site).href;
+const imageUrl = new URL(image, site).href;
+
+// Default structured data for Organization
+const defaultSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "WhyKnot",
+  "description": "Discover innovative websites and tools",
+  "url": site,
+  "logo": {
+    "@type": "ImageObject",
+    "url": `${site}/images/logo-y-knot.svg`,
+    "width": 100,
+    "height": 100
+  },
+  "sameAs": [
+    "https://twitter.com/whyknot_live",
+    "https://linkedin.com/company/whyknot-live"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "email": "hello@whyknot.live"
+  }
+};
+
+const finalSchema = schema || defaultSchema;
+---
+
+<!-- Essential Meta Tags -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+
+<!-- SEO Meta Tags -->
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="keywords" content={keywords} />
+<meta name="author" content={author} />
+<link rel="canonical" href={currentUrl} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={currentUrl} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:site_name" content="WhyKnot" />
+<meta property="og:locale" content="en_US" />
+{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+{author && type === 'article' && <meta property="article:author" content={author} />}
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content={currentUrl} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:creator" content="@whyknot_live" />
+<meta name="twitter:site" content="@whyknot_live" />
+
+<!-- Favicon and Icons -->
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#20c5b5" />
+<meta name="msapplication-TileColor" content="#20c5b5" />
+
+<!-- Styles are imported in Layout.astro; avoid preloading source files directly -->
+
+<!-- Preconnect for External Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json" is:inline set:html={JSON.stringify(finalSchema)} />
+
+<!-- Additional Meta for Search Engines -->
+<meta name="revisit-after" content="7 days" />
+<meta name="rating" content="general" />
+<meta name="distribution" content="web" />
+<meta name="language" content="EN" />
+<meta name="geo.region" content="US" />
+<meta name="geo.placename" content="United States" />
+
+<!-- Privacy and Security -->
+<meta http-equiv="X-Content-Type-Options" content="nosniff" />
+<meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+
+<!-- Performance Hints -->
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" /></noscript>
+
+<!-- Feed Discovery -->
+<!-- If/when RSS is available, expose it here -->
+<!-- <link rel="alternate" type="application/rss+xml" title="WhyKnot Blog RSS Feed" href="/rss.xml" /> -->
+
+<!-- Mobile App Meta -->
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="WhyKnot" />
+
+<!-- Microsoft Tiles (optional) -->
+<meta name="msapplication-config" content="/browserconfig.xml" />

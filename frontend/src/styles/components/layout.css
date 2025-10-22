@@ -1,0 +1,328 @@
+/* Layout Components Styles */
+/* Base layout utilities and page-level styles */
+
+/* Base Layout */
+.site-main {
+  min-height: 100vh;
+  padding-top: 6rem; /* Account for fixed navigation */
+  flex: 1;
+  width: 100%;
+  max-width: none;
+}
+
+.content-container {
+  max-width: var(--page-max-width);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+}
+
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  z-index: 9999;
+  transition: all 0.3s ease;
+}
+
+.skip-link:focus {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Page Headers */
+.page-header {
+  text-align: center;
+  padding: 4rem 0 3rem;
+  background: var(--gradient-radial-hero);
+  color: var(--color-on-accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(49, 67, 72, .2), transparent 40%, transparent 60%, rgba(49, 67, 72, .3));
+  pointer-events: none;
+}
+
+.page-title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 1rem;
+}
+
+.page-subtitle {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin: 0;
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+/* Section Layouts */
+.section {
+  padding-block: clamp(2rem, 6vw, 4rem);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 700;
+  margin: 0 0 1rem;
+  color: var(--color-on-surface);
+}
+
+.section-description {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+/* Grid Layouts */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.two-column-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .two-column-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.three-column-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .three-column-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+  .three-column-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Content Cards */
+.feature-card {
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-accent-300);
+}
+
+.feature-icon {
+  width: 3rem;
+  height: 3rem;
+  background: var(--color-accent-100);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.5rem;
+  color: var(--color-accent-700);
+}
+
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  color: var(--color-on-surface);
+}
+
+.feature-description {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Value Props / Benefits */
+.value-card {
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.value-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.value-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent-500);
+  margin-bottom: 0.5rem;
+}
+
+.value-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--color-on-surface);
+}
+
+.value-description {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Team/About Cards */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.team-member {
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.team-member:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.team-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  margin: 0 auto 1rem;
+  object-fit: cover;
+}
+
+.team-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  color: var(--color-on-surface);
+}
+
+.team-role {
+  color: var(--color-accent-500);
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+
+.team-bio {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Stats/Metrics */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.stat-number {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  color: var(--color-accent-500);
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.stat-label {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+  .site-main {
+    padding-top: 5rem;
+  }
+  
+  .page-header {
+    padding: 3rem 0 2rem;
+  }
+  
+  .section {
+    padding-block: clamp(1.5rem, 4vw, 2.5rem);
+  }
+  
+  .feature-card,
+  .value-card,
+  .team-member {
+    padding: 1.25rem;
+  }
+  
+  .feature-grid,
+  .team-grid,
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
