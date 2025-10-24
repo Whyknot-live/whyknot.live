@@ -4,8 +4,9 @@ jspm_packages/
 bower_components/
 
 # === PACKAGE MANAGER FILES ===
-# Lock files (keep these committed for consistent builds)
-# package-lock.json
+# Lock files (keep these ignored to rely on fresh installs)
+package-lock.json
+**/package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
 # bun.lockb
@@ -149,4 +150,3 @@ build/Release
 # === PROJECT SPECIFIC ===
 agent.md
 frontend/bun.lock
-frontend/package-lock.json

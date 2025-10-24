@@ -2,34 +2,43 @@
 # Automatically label PRs based on changed files
 
 "backend":
-  - backend/**/*
+  - changed-files:
+      - any-glob-to-any-file: backend/**/*
 
 "frontend":
-  - frontend/**/*
+  - changed-files:
+      - any-glob-to-any-file: frontend/**/*
 
 "dependencies":
-  - "**/package.json"
-  - "**/package-lock.json"
+  - changed-files:
+      - any-glob-to-any-file: "**/package.json"
+      - any-glob-to-any-file: "**/package-lock.json"
 
 "documentation":
-  - "**/*.md"
-  - docs/**/*
+  - changed-files:
+      - any-glob-to-any-file: "**/*.md"
+      - any-glob-to-any-file: docs/**/*
 
 "ci/cd":
-  - .github/**/*
-  - .circleci/**/*
+  - changed-files:
+      - any-glob-to-any-file: .github/**/*
+      - any-glob-to-any-file: .circleci/**/*
 
 "security":
-  - SECURITY.md
-  - backend/src/middleware/security.ts
+  - changed-files:
+      - any-glob-to-any-file: SECURITY.md
+      - any-glob-to-any-file: backend/src/middleware/security.ts
 
 "tests":
-  - "**/*.test.ts"
-  - "**/tests/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "**/*.test.ts"
+      - any-glob-to-any-file: "**/tests/**/*"
 
 "styles":
-  - "**/*.css"
-  - frontend/src/styles/**/*
+  - changed-files:
+      - any-glob-to-any-file: "**/*.css"
+      - any-glob-to-any-file: frontend/src/styles/**/*
 
 "scripts":
-  - scripts/**/*
+  - changed-files:
+      - any-glob-to-any-file: scripts/**/*
