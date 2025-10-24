@@ -170,8 +170,8 @@ jobs:
           name: Run security audit
           command: |
             echo "Running security audit..."
-            cd backend && npm audit --audit-level=moderate || true
-            cd ../frontend && npm audit --audit-level=moderate || true
+            npm --prefix backend audit --audit-level=moderate || true
+            npm --prefix frontend audit --audit-level=moderate || true
             echo "✓ Security audit complete"
 
   # Deploy to staging environment
