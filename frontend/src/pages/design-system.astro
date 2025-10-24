@@ -7,853 +7,853 @@ return Astro.redirect('/', 302);
 const title = "Design System - WhyKnot";
 const description = "WhyKnot's comprehensive component library and design tokens";
 const schema = {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "WhyKnot Design System",
-  "description": description,
-  "url": "https://whyknot.live/design-system"
+ "@context": "https://schema.org",
+ "@type": "WebPage",
+ "name": "WhyKnot Design System",
+ "description": description,
+ "url": "https://whyknot.live/design-system"
 };
 --- 
 
 <Layout
-  title={title}
-  description={description}
-  keywords="design system, UI components, turquoise theme, web design, component library, tokens"
-  schema={schema}
+ title={title}
+ description={description}
+ keywords="design system, UI components, turquoise theme, web design, component library, tokens"
+ schema={schema}
 >
-  <article class="design-system-page">
-    <!-- Header Section -->
-  <section class="design-system-header has-gradient-bg">
-      <div class="section-container">
-        <div class="header-content hero-card gradient-surface">
-          <h1 class="page-title gradient-text">Design System</h1>
-          <p class="page-subtitle">
-            WhyKnot's comprehensive component library and design tokens
-          </p>
-          <p class="page-description">
-            Explore our turquoise + blue hybrid design system built for innovation 
-            and accessibility. Every component is crafted with modern glassmorphic 
-            aesthetics and semantic color roles.
-          </p>
-        </div>
-      </div>
-    </section>
+ <article class="design-system-page">
+ <!-- Header Section -->
+ <section class="design-system-header has-gradient-bg">
+ <div class="section-container">
+ <div class="header-content hero-card gradient-surface">
+ <h1 class="page-title gradient-text">Design System</h1>
+ <p class="page-subtitle">
+ WhyKnot's comprehensive component library and design tokens
+ </p>
+ <p class="page-description">
+ Explore our turquoise + blue hybrid design system built for innovation 
+ and accessibility. Every component is crafted with modern glassmorphic 
+ aesthetics and semantic color roles.
+ </p>
+ </div>
+ </div>
+ </section>
 
-    <!-- Table of Contents -->
-  <section class="toc-section">
-      <div class="section-container">
-        <nav class="design-toc elevated" aria-labelledby="toc-heading">
-          <h2 id="toc-heading" class="toc-title">Components</h2>
-          <div class="toc-grid">
-            <a href="#colors" class="toc-item">Colors & Tokens</a>
-            <a href="#typography" class="toc-item">Typography</a>
-            <a href="#buttons" class="toc-item">Buttons</a>
-            <a href="#forms" class="toc-item">Form Elements</a>
-            <a href="#cards" class="toc-item">Cards</a>
-            <a href="#chips" class="toc-item">Chips & Badges</a>
-            <a href="#callouts" class="toc-item">Callouts</a>
-            <a href="#tooltips" class="toc-item">Tooltips</a>
-            <a href="#avatars" class="toc-item">Avatars</a>
-            <a href="#skeletons" class="toc-item">Skeleton Loaders</a>
-            <a href="#layout" class="toc-item">Layout Utilities</a>
-            <a href="#motion" class="toc-item">Animations</a>
-            <a href="#tabs" class="toc-item">Tabs</a>
-            <a href="#overlays" class="toc-item">Modal</a>
-          </div>
-        </nav>
-      </div>
-    </section>
+ <!-- Table of Contents -->
+ <section class="toc-section">
+ <div class="section-container">
+ <nav class="design-toc elevated" aria-labelledby="toc-heading">
+ <h2 id="toc-heading" class="toc-title">Components</h2>
+ <div class="toc-grid">
+ <a href="#colors" class="toc-item">Colors & Tokens</a>
+ <a href="#typography" class="toc-item">Typography</a>
+ <a href="#buttons" class="toc-item">Buttons</a>
+ <a href="#forms" class="toc-item">Form Elements</a>
+ <a href="#cards" class="toc-item">Cards</a>
+ <a href="#chips" class="toc-item">Chips & Badges</a>
+ <a href="#callouts" class="toc-item">Callouts</a>
+ <a href="#tooltips" class="toc-item">Tooltips</a>
+ <a href="#avatars" class="toc-item">Avatars</a>
+ <a href="#skeletons" class="toc-item">Skeleton Loaders</a>
+ <a href="#layout" class="toc-item">Layout Utilities</a>
+ <a href="#motion" class="toc-item">Animations</a>
+ <a href="#tabs" class="toc-item">Tabs</a>
+ <a href="#overlays" class="toc-item">Modal</a>
+ </div>
+ </nav>
+ </div>
+ </section>
 
-    <!-- Colors & Tokens -->
-  <section id="colors" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Color System & Semantic Roles</h2>
-        <p class="section-description">
-          Our hybrid turquoise + blue color system with Material 3 inspired semantic roles 
-          for consistent theming across light and dark modes.
-        </p>
-        
-        <!-- Primary Colors -->
-        <div class="subsection">
-          <h3 class="subsection-title">Primary Palette</h3>
-          <div class="color-palette">
-            <div class="color-palette-header">
-              <div>Color</div>
-              <div>Token</div>
-              <div>Demo</div>
-              <div>CSS Classes</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-primary"></div>
-                Primary
-              </div>
-              <div class="color-token">--color-primary</div>
-              <div class="color-demo">
-                <span class="chip bg-primary text-on-primary" data-selected="true">Chip</span>
-                <button class="btn btn-sm bg-primary text-on-primary">Button</button>
-              </div>
-              <div class="color-classes">.bg-primary .text-on-primary</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-secondary"></div>
-                Secondary
-              </div>
-              <div class="color-token">--color-secondary</div>
-              <div class="color-demo">
-                <span class="chip bg-secondary text-on-secondary" data-selected="true">Chip</span>
-                <button class="btn btn-sm bg-secondary text-on-secondary">Button</button>
-              </div>
-              <div class="color-classes">.bg-secondary .text-on-secondary</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-tertiary"></div>
-                Tertiary
-              </div>
-              <div class="color-token">--color-tertiary</div>
-              <div class="color-demo">
-                <span class="chip bg-tertiary text-on-tertiary" data-selected="true">Chip</span>
-                <button class="btn btn-sm bg-tertiary text-on-tertiary">Button</button>
-              </div>
-              <div class="color-classes">.bg-tertiary .text-on-tertiary</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-accent-300"></div>
-                Accent 300
-              </div>
-              <div class="color-token">--color-accent-300</div>
-              <div class="color-demo">
-                <span class="chip bg-accent-300 text-white" data-selected="true">Chip</span>
-                <button class="btn btn-sm bg-accent-300 text-white">Button</button>
-              </div>
-              <div class="color-classes">.bg-accent-300 .text-white</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-blue-400"></div>
-                Blue 400
-              </div>
-              <div class="color-token">--color-blue-400</div>
-              <div class="color-demo">
-                <span class="chip bg-blue-400 text-white" data-selected="true">Chip</span>
-                <button class="btn btn-sm bg-blue-400 text-white">Button</button>
-              </div>
-              <div class="color-classes">.bg-blue-400 .text-white</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-surface"></div>
-                Surface
-              </div>
-              <div class="color-token">--color-surface</div>
-              <div class="color-demo">
-                <span class="chip bg-surface text-on-surface" data-selected="true">Chip</span>
-                <button class="btn btn-sm bg-surface text-on-surface">Button</button>
-              </div>
-              <div class="color-classes">.bg-surface .text-on-surface</div>
-            </div>
-          </div>
-        </div>
+ <!-- Colors & Tokens -->
+ <section id="colors" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Color System & Semantic Roles</h2>
+ <p class="section-description">
+ Our hybrid turquoise + blue color system with Material 3 inspired semantic roles 
+ for consistent theming across light and dark modes.
+ </p>
+ 
+ <!-- Primary Colors -->
+ <div class="subsection">
+ <h3 class="subsection-title">Primary Palette</h3>
+ <div class="color-palette">
+ <div class="color-palette-header">
+ <div>Color</div>
+ <div>Token</div>
+ <div>Demo</div>
+ <div>CSS Classes</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-primary"></div>
+ Primary
+ </div>
+ <div class="color-token">--color-primary</div>
+ <div class="color-demo">
+ <span class="chip bg-primary text-on-primary" data-selected="true">Chip</span>
+ <button class="btn btn-sm bg-primary text-on-primary">Button</button>
+ </div>
+ <div class="color-classes">.bg-primary.text-on-primary</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-secondary"></div>
+ Secondary
+ </div>
+ <div class="color-token">--color-secondary</div>
+ <div class="color-demo">
+ <span class="chip bg-secondary text-on-secondary" data-selected="true">Chip</span>
+ <button class="btn btn-sm bg-secondary text-on-secondary">Button</button>
+ </div>
+ <div class="color-classes">.bg-secondary.text-on-secondary</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-tertiary"></div>
+ Tertiary
+ </div>
+ <div class="color-token">--color-tertiary</div>
+ <div class="color-demo">
+ <span class="chip bg-tertiary text-on-tertiary" data-selected="true">Chip</span>
+ <button class="btn btn-sm bg-tertiary text-on-tertiary">Button</button>
+ </div>
+ <div class="color-classes">.bg-tertiary.text-on-tertiary</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-accent-300"></div>
+ Accent 300
+ </div>
+ <div class="color-token">--color-accent-300</div>
+ <div class="color-demo">
+ <span class="chip bg-accent-300 text-white" data-selected="true">Chip</span>
+ <button class="btn btn-sm bg-accent-300 text-white">Button</button>
+ </div>
+ <div class="color-classes">.bg-accent-300.text-white</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-blue-400"></div>
+ Blue 400
+ </div>
+ <div class="color-token">--color-blue-400</div>
+ <div class="color-demo">
+ <span class="chip bg-blue-400 text-white" data-selected="true">Chip</span>
+ <button class="btn btn-sm bg-blue-400 text-white">Button</button>
+ </div>
+ <div class="color-classes">.bg-blue-400.text-white</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-surface"></div>
+ Surface
+ </div>
+ <div class="color-token">--color-surface</div>
+ <div class="color-demo">
+ <span class="chip bg-surface text-on-surface" data-selected="true">Chip</span>
+ <button class="btn btn-sm bg-surface text-on-surface">Button</button>
+ </div>
+ <div class="color-classes">.bg-surface.text-on-surface</div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Surface Colors -->
-        <div class="subsection">
-          <h3 class="subsection-title">Surface Hierarchy</h3>
-          <div class="color-palette">
-            <div class="color-palette-header">
-              <div>Color</div>
-              <div>Token</div>
-              <div>Demo</div>
-              <div>CSS Classes</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-surface-container-low"></div>
-                Surface Container Low
-              </div>
-              <div class="color-token">--color-surface-container-low</div>
-              <div class="color-demo">
-                <div class="demo-box bg-surface-container-low text-on-surface">Surface</div>
-              </div>
-              <div class="color-classes">.bg-surface-container-low .text-on-surface</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-surface-container"></div>
-                Surface Container
-              </div>
-              <div class="color-token">--color-surface-container</div>
-              <div class="color-demo">
-                <div class="demo-box bg-surface-container text-on-surface">Surface</div>
-              </div>
-              <div class="color-classes">.bg-surface-container .text-on-surface</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-surface-container-high"></div>
-                Surface Container High
-              </div>
-              <div class="color-token">--color-surface-container-high</div>
-              <div class="color-demo">
-                <div class="demo-box bg-surface-container-high text-on-surface">Surface</div>
-              </div>
-              <div class="color-classes">.bg-surface-container-high .text-on-surface</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-surface-alt"></div>
-                Surface Alt
-              </div>
-              <div class="color-token">--color-surface-alt</div>
-              <div class="color-demo">
-                <div class="demo-box bg-surface-alt text-on-surface">Surface</div>
-              </div>
-              <div class="color-classes">.bg-surface-alt .text-on-surface</div>
-            </div>
-          </div>
-        </div>
+ <!-- Surface Colors -->
+ <div class="subsection">
+ <h3 class="subsection-title">Surface Hierarchy</h3>
+ <div class="color-palette">
+ <div class="color-palette-header">
+ <div>Color</div>
+ <div>Token</div>
+ <div>Demo</div>
+ <div>CSS Classes</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-surface-container-low"></div>
+ Surface Container Low
+ </div>
+ <div class="color-token">--color-surface-container-low</div>
+ <div class="color-demo">
+ <div class="demo-box bg-surface-container-low text-on-surface">Surface</div>
+ </div>
+ <div class="color-classes">.bg-surface-container-low.text-on-surface</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-surface-container"></div>
+ Surface Container
+ </div>
+ <div class="color-token">--color-surface-container</div>
+ <div class="color-demo">
+ <div class="demo-box bg-surface-container text-on-surface">Surface</div>
+ </div>
+ <div class="color-classes">.bg-surface-container.text-on-surface</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-surface-container-high"></div>
+ Surface Container High
+ </div>
+ <div class="color-token">--color-surface-container-high</div>
+ <div class="color-demo">
+ <div class="demo-box bg-surface-container-high text-on-surface">Surface</div>
+ </div>
+ <div class="color-classes">.bg-surface-container-high.text-on-surface</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-surface-alt"></div>
+ Surface Alt
+ </div>
+ <div class="color-token">--color-surface-alt</div>
+ <div class="color-demo">
+ <div class="demo-box bg-surface-alt text-on-surface">Surface</div>
+ </div>
+ <div class="color-classes">.bg-surface-alt.text-on-surface</div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Status Colors -->
-        <div class="subsection">
-          <h3 class="subsection-title">Status Colors</h3>
-          <div class="color-palette">
-            <div class="color-palette-header">
-              <div>Color</div>
-              <div>Token</div>
-              <div>Demo</div>
-              <div>CSS Classes</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-success"></div>
-                Success
-              </div>
-              <div class="color-token">--color-success</div>
-              <div class="color-demo">
-                <span class="badge bg-success text-white" data-variant="success">Badge</span>
-              </div>
-              <div class="color-classes">.bg-success .text-white</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-warning"></div>
-                Warning
-              </div>
-              <div class="color-token">--color-warning</div>
-              <div class="color-demo">
-                <span class="badge bg-warning text-white" data-variant="warning">Badge</span>
-              </div>
-              <div class="color-classes">.bg-warning .text-white</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-danger"></div>
-                Danger
-              </div>
-              <div class="color-token">--color-danger</div>
-              <div class="color-demo">
-                <span class="badge bg-danger text-white" data-variant="danger">Badge</span>
-              </div>
-              <div class="color-classes">.bg-danger .text-white</div>
-            </div>
-            <div class="color-item">
-              <div class="color-name">
-                <div class="color-preview bg-info"></div>
-                Info
-              </div>
-              <div class="color-token">--color-info</div>
-              <div class="color-demo">
-                <span class="badge bg-info text-white" data-variant="info">Badge</span>
-              </div>
-              <div class="color-classes">.bg-info .text-white</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+ <!-- Status Colors -->
+ <div class="subsection">
+ <h3 class="subsection-title">Status Colors</h3>
+ <div class="color-palette">
+ <div class="color-palette-header">
+ <div>Color</div>
+ <div>Token</div>
+ <div>Demo</div>
+ <div>CSS Classes</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-success"></div>
+ Success
+ </div>
+ <div class="color-token">--color-success</div>
+ <div class="color-demo">
+ <span class="badge bg-success text-white" data-variant="success">Badge</span>
+ </div>
+ <div class="color-classes">.bg-success.text-white</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-warning"></div>
+ Warning
+ </div>
+ <div class="color-token">--color-warning</div>
+ <div class="color-demo">
+ <span class="badge bg-warning text-white" data-variant="warning">Badge</span>
+ </div>
+ <div class="color-classes">.bg-warning.text-white</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-danger"></div>
+ Danger
+ </div>
+ <div class="color-token">--color-danger</div>
+ <div class="color-demo">
+ <span class="badge bg-danger text-white" data-variant="danger">Badge</span>
+ </div>
+ <div class="color-classes">.bg-danger.text-white</div>
+ </div>
+ <div class="color-item">
+ <div class="color-name">
+ <div class="color-preview bg-info"></div>
+ Info
+ </div>
+ <div class="color-token">--color-info</div>
+ <div class="color-demo">
+ <span class="badge bg-info text-white" data-variant="info">Badge</span>
+ </div>
+ <div class="color-classes">.bg-info.text-white</div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Typography -->
-  <section id="typography" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Typography</h2>
-        <p class="section-description">
-          Clean, readable typography using system fonts with proper hierarchy and spacing.
-        </p>
+ <!-- Typography -->
+ <section id="typography" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Typography</h2>
+ <p class="section-description">
+ Clean, readable typography using system fonts with proper hierarchy and spacing.
+ </p>
 
-        <div class="typography-showcase">
-          <div class="type-sample">
-            <h1 class="sample-text">Heading 1 - Hero Title</h1>
-            <code class="type-info">font-size: clamp(2.5rem, 6vw, 4rem), font-weight: 700</code>
-          </div>
-          <div class="type-sample">
-            <h2 class="sample-text">Heading 2 - Section Title</h2>
-            <code class="type-info">font-size: 2.5rem, font-weight: 700</code>
-          </div>
-          <div class="type-sample">
-            <h3 class="sample-text">Heading 3 - Subsection Title</h3>
-            <code class="type-info">font-size: 1.75rem, font-weight: 600</code>
-          </div>
-          <div class="type-sample">
-            <p class="sample-text">Body text - Regular paragraph content with proper line height for optimal readability across devices.</p>
-            <code class="type-info">font-size: 1rem, line-height: 1.6</code>
-          </div>
-          <div class="type-sample">
-            <p class="sample-text text-muted">Muted text - Secondary information and descriptions</p>
-            <code class="type-info">color: var(--color-text-muted)</code>
-          </div>
-          <div class="type-sample">
-            <code class="sample-text">Code snippet - Monospace font for technical content</code>
-            <code class="type-info">font-family: var(--font-mono)</code>
-          </div>
-        </div>
-      </div>
-    </section>
+ <div class="typography-showcase">
+ <div class="type-sample">
+ <h1 class="sample-text">Heading 1 - Hero Title</h1>
+ <code class="type-info">font-size: clamp(2.5rem, 6vw, 4rem), font-weight: 700</code>
+ </div>
+ <div class="type-sample">
+ <h2 class="sample-text">Heading 2 - Section Title</h2>
+ <code class="type-info">font-size: 2.5rem, font-weight: 700</code>
+ </div>
+ <div class="type-sample">
+ <h3 class="sample-text">Heading 3 - Subsection Title</h3>
+ <code class="type-info">font-size: 1.75rem, font-weight: 600</code>
+ </div>
+ <div class="type-sample">
+ <p class="sample-text">Body text - Regular paragraph content with proper line height for optimal readability across devices.</p>
+ <code class="type-info">font-size: 1rem, line-height: 1.6</code>
+ </div>
+ <div class="type-sample">
+ <p class="sample-text text-muted">Muted text - Secondary information and descriptions</p>
+ <code class="type-info">color: var(--color-text-muted)</code>
+ </div>
+ <div class="type-sample">
+ <code class="sample-text">Code snippet - Monospace font for technical content</code>
+ <code class="type-info">font-family: var(--font-mono)</code>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Buttons -->
-  <section id="buttons" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Buttons</h2>
-        <p class="section-description">
-          Modern glassmorphic buttons with hover effects, multiple variants, and proper accessibility.
-        </p>
+ <!-- Buttons -->
+ <section id="buttons" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Buttons</h2>
+ <p class="section-description">
+ Modern glassmorphic buttons with hover effects, multiple variants, and proper accessibility.
+ </p>
 
-        <!-- Button Variants -->
-        <div class="subsection">
-          <h3 class="subsection-title">Button Variants</h3>
-          <div class="component-demo">
-            <div class="demo-group">
-              <button class="btn">Primary</button>
-              <button class="btn btn-secondary">Secondary</button>
-              <button class="btn btn-outline">Outline</button>
-              <button class="btn btn-ghost">Ghost</button>
-            </div>
-          </div>
-        </div>
+ <!-- Button Variants -->
+ <div class="subsection">
+ <h3 class="subsection-title">Button Variants</h3>
+ <div class="component-demo">
+ <div class="demo-group">
+ <button class="btn">Primary</button>
+ <button class="btn btn-secondary">Secondary</button>
+ <button class="btn btn-outline">Outline</button>
+ <button class="btn btn-ghost">Ghost</button>
+ </div>
+ </div>
+ </div>
 
-        <!-- Button Sizes -->
-        <div class="subsection">
-          <h3 class="subsection-title">Button Sizes</h3>
-          <div class="component-demo">
-            <div class="demo-group">
-              <button class="btn btn-sm">Small</button>
-              <button class="btn">Default</button>
-              <button class="btn btn-lg">Large</button>
-              <button class="btn btn-xl">Extra Large</button>
-            </div>
-          </div>
-        </div>
+ <!-- Button Sizes -->
+ <div class="subsection">
+ <h3 class="subsection-title">Button Sizes</h3>
+ <div class="component-demo">
+ <div class="demo-group">
+ <button class="btn btn-sm">Small</button>
+ <button class="btn">Default</button>
+ <button class="btn btn-lg">Large</button>
+ <button class="btn btn-xl">Extra Large</button>
+ </div>
+ </div>
+ </div>
 
-        <!-- Status Buttons -->
-        <div class="subsection">
-          <h3 class="subsection-title">Status Buttons</h3>
-          <div class="component-demo">
-            <div class="demo-group">
-              <button class="btn btn-success">Success</button>
-              <button class="btn btn-warning">Warning</button>
-              <button class="btn btn-danger">Danger</button>
-              <button class="btn btn-info">Info</button>
-            </div>
-          </div>
-        </div>
+ <!-- Status Buttons -->
+ <div class="subsection">
+ <h3 class="subsection-title">Status Buttons</h3>
+ <div class="component-demo">
+ <div class="demo-group">
+ <button class="btn btn-success">Success</button>
+ <button class="btn btn-warning">Warning</button>
+ <button class="btn btn-danger">Danger</button>
+ <button class="btn btn-info">Info</button>
+ </div>
+ </div>
+ </div>
 
-        <!-- Button States -->
-        <div class="subsection">
-          <h3 class="subsection-title">Button States</h3>
-          <div class="component-demo">
-            <div class="demo-group">
-              <button class="btn">Normal</button>
-              <button class="btn" disabled>Disabled</button>
-              <button class="btn btn-loading">Loading</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+ <!-- Button States -->
+ <div class="subsection">
+ <h3 class="subsection-title">Button States</h3>
+ <div class="component-demo">
+ <div class="demo-group">
+ <button class="btn">Normal</button>
+ <button class="btn" disabled>Disabled</button>
+ <button class="btn btn-loading">Loading</button>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Form Elements -->
-  <section id="forms" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Form Elements</h2>
-        <p class="section-description">
-          Glassmorphic form inputs with smooth focus transitions and proper validation states.
-        </p>
+ <!-- Form Elements -->
+ <section id="forms" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Form Elements</h2>
+ <p class="section-description">
+ Glassmorphic form inputs with smooth focus transitions and proper validation states.
+ </p>
 
-        <div class="form-showcase">
-          <div class="form-group">
-            <label for="demo-text">Text Input</label>
-            <input type="text" id="demo-text" placeholder="Enter some text" />
-          </div>
-          
-          <div class="form-group">
-            <label for="demo-email">Email Input</label>
-            <input type="email" id="demo-email" placeholder="your@email.com" />
-          </div>
-          
-          <div class="form-group">
-            <label for="demo-password">Password Input</label>
-            <input type="password" id="demo-password" placeholder="Your password" />
-          </div>
-          
-          <div class="form-group">
-            <label for="demo-select">Select Dropdown</label>
-            <select id="demo-select">
-              <option>Choose an option</option>
-              <option>Option 1</option>
-              <option>Option 2</option>
-              <option>Option 3</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="demo-textarea">Textarea</label>
-            <textarea id="demo-textarea" placeholder="Enter your message"></textarea>
-          </div>
-          
-          <div class="form-group">
-            <label for="demo-search">Search Input</label>
-            <input type="search" id="demo-search" placeholder="Search..." />
-          </div>
-        </div>
-      </div>
-    </section>
+ <div class="form-showcase">
+ <div class="form-group">
+ <label for="demo-text">Text Input</label>
+ <input type="text" id="demo-text" placeholder="Enter some text" />
+ </div>
+ 
+ <div class="form-group">
+ <label for="demo-email">Email Input</label>
+ <input type="email" id="demo-email" placeholder="your@email.com" />
+ </div>
+ 
+ <div class="form-group">
+ <label for="demo-password">Password Input</label>
+ <input type="password" id="demo-password" placeholder="Your password" />
+ </div>
+ 
+ <div class="form-group">
+ <label for="demo-select">Select Dropdown</label>
+ <select id="demo-select">
+ <option>Choose an option</option>
+ <option>Option 1</option>
+ <option>Option 2</option>
+ <option>Option 3</option>
+ </select>
+ </div>
+ 
+ <div class="form-group">
+ <label for="demo-textarea">Textarea</label>
+ <textarea id="demo-textarea" placeholder="Enter your message"></textarea>
+ </div>
+ 
+ <div class="form-group">
+ <label for="demo-search">Search Input</label>
+ <input type="search" id="demo-search" placeholder="Search..." />
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Cards -->
-  <section id="cards" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Cards</h2>
-        <p class="section-description">
-          Glassmorphic cards with various tones and interactive hover effects.
-        </p>
+ <!-- Cards -->
+ <section id="cards" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Cards</h2>
+ <p class="section-description">
+ Glassmorphic cards with various tones and interactive hover effects.
+ </p>
 
-        <div class="cards-showcase">
-          <div class="card">
-            <h3>Default Card</h3>
-            <p>This is a default card with glassmorphic styling and subtle hover effects.</p>
-            <a href="#" class="btn btn-outline btn-sm">Learn More</a>
-          </div>
-          
-          <div class="card" data-tone="subtle">
-            <h3>Subtle Card</h3>
-            <p>A more subdued card variant perfect for secondary content.</p>
-            <a href="#" class="btn btn-ghost btn-sm">Explore</a>
-          </div>
-          
-          <div class="card" data-tone="accent">
-            <h3>Accent Card</h3>
-            <p>Eye-catching accent card for highlighting important content.</p>
-            <a href="#" class="btn btn-outline btn-sm">Get Started</a>
-          </div>
-        </div>
-      </div>
-    </section>
+ <div class="cards-showcase">
+ <div class="card">
+ <h3>Default Card</h3>
+ <p>This is a default card with glassmorphic styling and subtle hover effects.</p>
+ <a href="#" class="btn btn-outline btn-sm">Learn More</a>
+ </div>
+ 
+ <div class="card" data-tone="subtle">
+ <h3>Subtle Card</h3>
+ <p>A more subdued card variant perfect for secondary content.</p>
+ <a href="#" class="btn btn-ghost btn-sm">Explore</a>
+ </div>
+ 
+ <div class="card" data-tone="accent">
+ <h3>Accent Card</h3>
+ <p>Eye-catching accent card for highlighting important content.</p>
+ <a href="#" class="btn btn-outline btn-sm">Get Started</a>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Chips & Badges -->
-  <section id="chips" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Chips & Badges</h2>
-        <p class="section-description">
-          Interactive chips for filtering and selection, plus informational badges.
-        </p>
+ <!-- Chips & Badges -->
+ <section id="chips" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Chips & Badges</h2>
+ <p class="section-description">
+ Interactive chips for filtering and selection, plus informational badges.
+ </p>
 
-        <!-- Chips -->
-        <div class="subsection">
-          <h3 class="subsection-title">Chips</h3>
-          <div class="component-demo">
-            <div class="demo-group" data-gap="sm">
-              <button class="chip" aria-pressed="false">Assist</button>
-              <button class="chip" data-selected="true">Selected</button>
-              <button class="chip" data-variant="tertiary" data-selected="true">Tertiary</button>
-              <button class="chip" data-variant="assist">Neutral</button>
-            </div>
-          </div>
-        </div>
+ <!-- Chips -->
+ <div class="subsection">
+ <h3 class="subsection-title">Chips</h3>
+ <div class="component-demo">
+ <div class="demo-group" data-gap="sm">
+ <button class="chip" aria-pressed="false">Assist</button>
+ <button class="chip" data-selected="true">Selected</button>
+ <button class="chip" data-variant="tertiary" data-selected="true">Tertiary</button>
+ <button class="chip" data-variant="assist">Neutral</button>
+ </div>
+ </div>
+ </div>
 
-        <!-- Badges -->
-        <div class="subsection">
-          <h3 class="subsection-title">Badges</h3>
-          <div class="component-demo">
-            <div class="demo-group">
-              <span class="badge">Default</span>
-              <span class="badge" data-variant="info">Info</span>
-              <span class="badge" data-variant="success">Success</span>
-              <span class="badge" data-variant="warning">Warning</span>
-              <span class="badge" data-variant="danger">Danger</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+ <!-- Badges -->
+ <div class="subsection">
+ <h3 class="subsection-title">Badges</h3>
+ <div class="component-demo">
+ <div class="demo-group">
+ <span class="badge">Default</span>
+ <span class="badge" data-variant="info">Info</span>
+ <span class="badge" data-variant="success">Success</span>
+ <span class="badge" data-variant="warning">Warning</span>
+ <span class="badge" data-variant="danger">Danger</span>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Callouts -->
-  <section id="callouts" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Callouts</h2>
-        <p class="section-description">
-          Attention-grabbing callouts for important information with different severity levels.
-        </p>
+ <!-- Callouts -->
+ <section id="callouts" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Callouts</h2>
+ <p class="section-description">
+ Attention-grabbing callouts for important information with different severity levels.
+ </p>
 
-        <div class="callouts-showcase">
-          <div class="callout" data-variant="info">
-            <div class="callout-content">
-              <h4 class="callout-title">Information</h4>
-              <p class="callout-description">This is an informational callout providing helpful context.</p>
-            </div>
-          </div>
-          
-          <div class="callout" data-variant="success">
-            <div class="callout-content">
-              <h4 class="callout-title">Success</h4>
-              <p class="callout-description">Operation completed successfully without any issues.</p>
-            </div>
-          </div>
-          
-          <div class="callout" data-variant="warning">
-            <div class="callout-content">
-              <h4 class="callout-title">Warning</h4>
-              <p class="callout-description">Please review this information before proceeding.</p>
-            </div>
-          </div>
-          
-          <div class="callout" data-variant="danger">
-            <div class="callout-content">
-              <h4 class="callout-title">Danger</h4>
-              <p class="callout-description">Critical action required to prevent data loss.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+ <div class="callouts-showcase">
+ <div class="callout" data-variant="info">
+ <div class="callout-content">
+ <h4 class="callout-title">Information</h4>
+ <p class="callout-description">This is an informational callout providing helpful context.</p>
+ </div>
+ </div>
+ 
+ <div class="callout" data-variant="success">
+ <div class="callout-content">
+ <h4 class="callout-title">Success</h4>
+ <p class="callout-description">Operation completed successfully without any issues.</p>
+ </div>
+ </div>
+ 
+ <div class="callout" data-variant="warning">
+ <div class="callout-content">
+ <h4 class="callout-title">Warning</h4>
+ <p class="callout-description">Please review this information before proceeding.</p>
+ </div>
+ </div>
+ 
+ <div class="callout" data-variant="danger">
+ <div class="callout-content">
+ <h4 class="callout-title">Danger</h4>
+ <p class="callout-description">Critical action required to prevent data loss.</p>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Tooltips -->
-  <section id="tooltips" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Tooltips</h2>
-        <p class="section-description">
-          Contextual tooltips with different placements and glassmorphic styling.
-        </p>
+ <!-- Tooltips -->
+ <section id="tooltips" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Tooltips</h2>
+ <p class="section-description">
+ Contextual tooltips with different placements and glassmorphic styling.
+ </p>
 
-        <div class="tooltips-showcase">
-          <div class="tooltip" data-placement="top">
-            <span class="tooltip-trigger">Hover me (top)</span>
-            <div class="tooltip-content">This tooltip appears at the top</div>
-          </div>
-          
-          <div class="tooltip" data-placement="bottom">
-            <span class="tooltip-trigger">Hover me (bottom)</span>
-            <div class="tooltip-content">This tooltip appears at the bottom</div>
-          </div>
-          
-          <div class="tooltip" data-placement="left">
-            <span class="tooltip-trigger">Hover me (left)</span>
-            <div class="tooltip-content">This tooltip appears to the left</div>
-          </div>
-          
-          <div class="tooltip" data-placement="right">
-            <span class="tooltip-trigger">Hover me (right)</span>
-            <div class="tooltip-content">This tooltip appears to the right</div>
-          </div>
-        </div>
-      </div>
-    </section>
+ <div class="tooltips-showcase">
+ <div class="tooltip" data-placement="top">
+ <span class="tooltip-trigger">Hover me (top)</span>
+ <div class="tooltip-content">This tooltip appears at the top</div>
+ </div>
+ 
+ <div class="tooltip" data-placement="bottom">
+ <span class="tooltip-trigger">Hover me (bottom)</span>
+ <div class="tooltip-content">This tooltip appears at the bottom</div>
+ </div>
+ 
+ <div class="tooltip" data-placement="left">
+ <span class="tooltip-trigger">Hover me (left)</span>
+ <div class="tooltip-content">This tooltip appears to the left</div>
+ </div>
+ 
+ <div class="tooltip" data-placement="right">
+ <span class="tooltip-trigger">Hover me (right)</span>
+ <div class="tooltip-content">This tooltip appears to the right</div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Avatars -->
-  <section id="avatars" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Avatars</h2>
-        <p class="section-description">
-          User avatars in multiple sizes with fallback initials and variant styles.
-        </p>
+ <!-- Avatars -->
+ <section id="avatars" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Avatars</h2>
+ <p class="section-description">
+ User avatars in multiple sizes with fallback initials and variant styles.
+ </p>
 
-        <!-- Avatar Sizes -->
-        <div class="subsection">
-          <h3 class="subsection-title">Sizes</h3>
-          <div class="component-demo">
-            <div class="demo-group">
-              <div class="avatar" data-size="sm">SM</div>
-              <div class="avatar" data-size="md">MD</div>
-              <div class="avatar" data-size="lg">LG</div>
-              <div class="avatar" data-size="xl">XL</div>
-            </div>
-          </div>
-        </div>
+ <!-- Avatar Sizes -->
+ <div class="subsection">
+ <h3 class="subsection-title">Sizes</h3>
+ <div class="component-demo">
+ <div class="demo-group">
+ <div class="avatar" data-size="sm">SM</div>
+ <div class="avatar" data-size="md">MD</div>
+ <div class="avatar" data-size="lg">LG</div>
+ <div class="avatar" data-size="xl">XL</div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Avatar Variants -->
-        <div class="subsection">
-          <h3 class="subsection-title">Variants</h3>
-          <div class="component-demo">
-            <div class="demo-group">
-              <div class="avatar" data-size="md">JD</div>
-              <div class="avatar" data-variant="primary" data-size="md">JP</div>
-              <div class="avatar" data-variant="secondary" data-size="md">AS</div>
-              <div class="avatar" data-size="md">
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" alt="User avatar" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+ <!-- Avatar Variants -->
+ <div class="subsection">
+ <h3 class="subsection-title">Variants</h3>
+ <div class="component-demo">
+ <div class="demo-group">
+ <div class="avatar" data-size="md">JD</div>
+ <div class="avatar" data-variant="primary" data-size="md">JP</div>
+ <div class="avatar" data-variant="secondary" data-size="md">AS</div>
+ <div class="avatar" data-size="md">
+ <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" alt="User avatar" />
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Skeleton Loaders -->
-  <section id="skeletons" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Skeleton Loaders</h2>
-        <p class="section-description">
-          Animated skeleton loaders for indicating loading states with different shapes.
-        </p>
+ <!-- Skeleton Loaders -->
+ <section id="skeletons" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Skeleton Loaders</h2>
+ <p class="section-description">
+ Animated skeleton loaders for indicating loading states with different shapes.
+ </p>
 
-        <div class="skeletons-showcase">
-          <div class="skeleton-group">
-            <h4>Rectangle Shapes</h4>
-            <div class="skeleton w-250 h-20 mb-1"></div>
-            <div class="skeleton w-200 h-20 mb-1"></div>
-            <div class="skeleton w-180 h-20"></div>
-          </div>
-          
-          <div class="skeleton-group">
-            <h4>Circle & Rounded</h4>
-            <div class="skeleton circle w-60 h-60 mb-1" data-shape="circle"></div>
-            <div class="skeleton rounded w-120 h-40" data-shape="rounded"></div>
-          </div>
-        </div>
-      </div>
-    </section>
+ <div class="skeletons-showcase">
+ <div class="skeleton-group">
+ <h4>Rectangle Shapes</h4>
+ <div class="skeleton w-250 h-20 mb-1"></div>
+ <div class="skeleton w-200 h-20 mb-1"></div>
+ <div class="skeleton w-180 h-20"></div>
+ </div>
+ 
+ <div class="skeleton-group">
+ <h4>Circle & Rounded</h4>
+ <div class="skeleton circle w-60 h-60 mb-1" data-shape="circle"></div>
+ <div class="skeleton rounded w-120 h-40" data-shape="rounded"></div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Layout Utilities -->
-  <section id="layout" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Layout Utilities</h2>
-        <p class="section-description">
-          Flexible layout utilities for organizing content with proper spacing and alignment.
-        </p>
+ <!-- Layout Utilities -->
+ <section id="layout" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Layout Utilities</h2>
+ <p class="section-description">
+ Flexible layout utilities for organizing content with proper spacing and alignment.
+ </p>
 
-        <!-- Grid -->
-        <div class="subsection">
-          <h3 class="subsection-title">Grid Layout</h3>
-          <div class="grid cols-3 gap-1">
-            <div class="demo-box">Grid Item 1</div>
-            <div class="demo-box">Grid Item 2</div>
-            <div class="demo-box">Grid Item 3</div>
-          </div>
-        </div>
+ <!-- Grid -->
+ <div class="subsection">
+ <h3 class="subsection-title">Grid Layout</h3>
+ <div class="grid cols-3 gap-1">
+ <div class="demo-box">Grid Item 1</div>
+ <div class="demo-box">Grid Item 2</div>
+ <div class="demo-box">Grid Item 3</div>
+ </div>
+ </div>
 
-        <!-- Cluster -->
-        <div class="subsection">
-          <h3 class="subsection-title">Cluster Layout</h3>
-          <div class="cluster">
-            <div class="demo-box">Item 1</div>
-            <div class="demo-box">Item 2</div>
-            <div class="demo-box">Item 3</div>
-            <div class="demo-box">Item 4</div>
-          </div>
-        </div>
+ <!-- Cluster -->
+ <div class="subsection">
+ <h3 class="subsection-title">Cluster Layout</h3>
+ <div class="cluster">
+ <div class="demo-box">Item 1</div>
+ <div class="demo-box">Item 2</div>
+ <div class="demo-box">Item 3</div>
+ <div class="demo-box">Item 4</div>
+ </div>
+ </div>
 
-        <!-- Separators -->
-        <div class="subsection">
-          <h3 class="subsection-title">Separators</h3>
-          <div class="separators-demo">
-            <p>Content above separator</p>
-            <hr class="separator" />
-            <p>Content between separators</p>
-            <hr class="separator" data-emphasis="strong" />
-            <p>Content below separator</p>
-          </div>
-        </div>
-      </div>
-    </section>
+ <!-- Separators -->
+ <div class="subsection">
+ <h3 class="subsection-title">Separators</h3>
+ <div class="separators-demo">
+ <p>Content above separator</p>
+ <hr class="separator" />
+ <p>Content between separators</p>
+ <hr class="separator" data-emphasis="strong" />
+ <p>Content below separator</p>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Motion & Animation -->
-  <section id="motion" class="component-section">
-      <div class="section-container">
-        <h2 class="section-title">Motion & Animation</h2>
-        <p class="section-description">
-          Smooth animations and transitions that enhance user experience without being distracting.
-        </p>
+ <!-- Motion & Animation -->
+ <section id="motion" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Motion & Animation</h2>
+ <p class="section-description">
+ Smooth animations and transitions that enhance user experience without being distracting.
+ </p>
 
-        <div class="motion-showcase">
-          <div class="motion-demo">
-            <h4>Hover Effects</h4>
-            <div class="demo-group">
-              <div class="motion-card">Hover me</div>
-              <button class="btn motion-btn">Animated Button</button>
-            </div>
-          </div>
-          
-          <div class="motion-demo">
-            <h4>Loading States</h4>
-            <div class="demo-group">
-              <div class="skeleton motion-skeleton w-200 h-20"></div>
-              <button class="btn btn-loading">Loading Button</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+ <div class="motion-showcase">
+ <div class="motion-demo">
+ <h4>Hover Effects</h4>
+ <div class="demo-group">
+ <div class="motion-card">Hover me</div>
+ <button class="btn motion-btn">Animated Button</button>
+ </div>
+ </div>
+ 
+ <div class="motion-demo">
+ <h4>Loading States</h4>
+ <div class="demo-group">
+ <div class="skeleton motion-skeleton w-200 h-20"></div>
+ <button class="btn btn-loading">Loading Button</button>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-      <!-- Tabs -->
-    <section id="tabs" class="component-section">
-        <div class="section-container">
-          <h2 class="section-title">Tabs</h2>
-          <p class="section-description">
-            Accessible, keyboard-friendly tabs with subtle animated indicator.
-          </p>
-          <div class="tabs" role="tablist" aria-label="Sample tabs">
-            <button class="tab is-active" role="tab" aria-selected="true" aria-controls="tab-panel-1" id="tab-1">Overview</button>
-            <button class="tab" role="tab" aria-selected="false" aria-controls="tab-panel-2" id="tab-2">Details</button>
-            <button class="tab" role="tab" aria-selected="false" aria-controls="tab-panel-3" id="tab-3">Code</button>
-            <span class="tab-indicator" aria-hidden="true"></span>
-          </div>
-          <div class="tab-panels">
-            <div class="tab-panel is-active" role="tabpanel" id="tab-panel-1" aria-labelledby="tab-1">
-              <p>Use tabs to organize content by sections. The active tab is highlighted with an animated underline.</p>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="tab-panel-2" aria-labelledby="tab-2" hidden>
-              <p>Tabs are fully responsive and support keyboard navigation with Arrow keys and Home/End.</p>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="tab-panel-3" aria-labelledby="tab-3" hidden>
-              <code>/* Minimal CSS in design-system.css under Tabs */</code>
-            </div>
-          </div>
-        </div>
-      </section>
+ <!-- Tabs -->
+ <section id="tabs" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Tabs</h2>
+ <p class="section-description">
+ Accessible, keyboard-friendly tabs with subtle animated indicator.
+ </p>
+ <div class="tabs" role="tablist" aria-label="Sample tabs">
+ <button class="tab is-active" role="tab" aria-selected="true" aria-controls="tab-panel-1" id="tab-1">Overview</button>
+ <button class="tab" role="tab" aria-selected="false" aria-controls="tab-panel-2" id="tab-2">Details</button>
+ <button class="tab" role="tab" aria-selected="false" aria-controls="tab-panel-3" id="tab-3">Code</button>
+ <span class="tab-indicator" aria-hidden="true"></span>
+ </div>
+ <div class="tab-panels">
+ <div class="tab-panel is-active" role="tabpanel" id="tab-panel-1" aria-labelledby="tab-1">
+ <p>Use tabs to organize content by sections. The active tab is highlighted with an animated underline.</p>
+ </div>
+ <div class="tab-panel" role="tabpanel" id="tab-panel-2" aria-labelledby="tab-2" hidden>
+ <p>Tabs are fully responsive and support keyboard navigation with Arrow keys and Home/End.</p>
+ </div>
+ <div class="tab-panel" role="tabpanel" id="tab-panel-3" aria-labelledby="tab-3" hidden>
+ <code>/* Minimal CSS in design-system.css under Tabs */</code>
+ </div>
+ </div>
+ </div>
+ </section>
 
-      <!-- Overlays / Modal -->
-    <section id="overlays" class="component-section">
-        <div class="section-container">
-          <h2 class="section-title">Modal</h2>
-          <p class="section-description">
-            Lightweight, accessible modal using a checkbox toggle—no JavaScript required.
-          </p>
-          <div class="component-demo">
-            <label class="btn btn-outline" for="demo-modal-toggle">Open Modal</label>
-            <input type="checkbox" id="demo-modal-toggle" class="modal-toggle" aria-hidden="true" />
-            <div class="modal" aria-labelledby="modal-title" aria-modal="true" role="dialog">
-              <label class="modal-overlay" for="demo-modal-toggle" aria-hidden="true"></label>
-              <div class="modal-content card">
-                <h3 id="modal-title" class="gradient-text">This is a modal</h3>
-                <p class="text-muted">Glassmorphic surface with focus trap and escape via overlay or Close.</p>
-                <div class="cluster">
-                  <label class="btn" for="demo-modal-toggle">Close</label>
-                  <button class="btn btn-secondary">Action</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+ <!-- Overlays / Modal -->
+ <section id="overlays" class="component-section">
+ <div class="section-container">
+ <h2 class="section-title">Modal</h2>
+ <p class="section-description">
+ Lightweight, accessible modal using a checkbox toggle—no JavaScript required.
+ </p>
+ <div class="component-demo">
+ <label class="btn btn-outline" for="demo-modal-toggle">Open Modal</label>
+ <input type="checkbox" id="demo-modal-toggle" class="modal-toggle" aria-hidden="true" />
+ <div class="modal" aria-labelledby="modal-title" aria-modal="true" role="dialog">
+ <label class="modal-overlay" for="demo-modal-toggle" aria-hidden="true"></label>
+ <div class="modal-content card">
+ <h3 id="modal-title" class="gradient-text">This is a modal</h3>
+ <p class="text-muted">Glassmorphic surface with focus trap and escape via overlay or Close.</p>
+ <div class="cluster">
+ <label class="btn" for="demo-modal-toggle">Close</label>
+ <button class="btn btn-secondary">Action</button>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </section>
 
-    <!-- Usage Guidelines -->
-  <section class="guidelines-section">
-      <div class="section-container">
-        <h2 class="section-title">Usage Guidelines</h2>
-        <div class="guidelines-grid">
-          <div class="guideline-card">
-            <h3>Accessibility</h3>
-            <ul>
-              <li>All components meet WCAG 2.1 AA standards</li>
-              <li>Proper focus management and keyboard navigation</li>
-              <li>Semantic HTML and ARIA attributes</li>
-              <li>Sufficient color contrast ratios</li>
-            </ul>
-          </div>
-          
-          <div class="guideline-card">
-            <h3>Theming</h3>
-            <ul>
-              <li>Automatic light/dark mode switching</li>
-              <li>CSS custom properties for easy customization</li>
-              <li>Consistent color semantic roles</li>
-              <li>Glassmorphic aesthetic with proper fallbacks</li>
-            </ul>
-          </div>
-          
-          <div class="guideline-card">
-            <h3>Performance</h3>
-            <ul>
-              <li>Minimal CSS footprint with efficient selectors</li>
-              <li>Hardware-accelerated animations</li>
-              <li>Respect for prefers-reduced-motion</li>
-              <li>Optimized for Core Web Vitals</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-  </article>
+ <!-- Usage Guidelines -->
+ <section class="guidelines-section">
+ <div class="section-container">
+ <h2 class="section-title">Usage Guidelines</h2>
+ <div class="guidelines-grid">
+ <div class="guideline-card">
+ <h3>Accessibility</h3>
+ <ul>
+ <li>All components meet WCAG 2.1 AA standards</li>
+ <li>Proper focus management and keyboard navigation</li>
+ <li>Semantic HTML and ARIA attributes</li>
+ <li>Sufficient color contrast ratios</li>
+ </ul>
+ </div>
+ 
+ <div class="guideline-card">
+ <h3>Theming</h3>
+ <ul>
+ <li>Automatic light/dark mode switching</li>
+ <li>CSS custom properties for easy customization</li>
+ <li>Consistent color semantic roles</li>
+ <li>Glassmorphic aesthetic with proper fallbacks</li>
+ </ul>
+ </div>
+ 
+ <div class="guideline-card">
+ <h3>Performance</h3>
+ <ul>
+ <li>Minimal CSS footprint with efficient selectors</li>
+ <li>Hardware-accelerated animations</li>
+ <li>Respect for prefers-reduced-motion</li>
+ <li>Optimized for Core Web Vitals</li>
+ </ul>
+ </div>
+ </div>
+ </div>
+ </section>
+ </article>
  </Layout>
 
 <script>
-  // Smooth scrolling for TOC links
-  document.addEventListener('DOMContentLoaded', () => {
-    // global smooth scroll exists via layout; no need to duplicate here
+ // Smooth scrolling for TOC links
+ document.addEventListener('DOMContentLoaded', () => {
+ // global smooth scroll exists via layout; no need to duplicate here
 
-    // Interactive chip demonstrations
-    const chips = document.querySelectorAll('.chip');
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        const isSelected = chip.getAttribute('data-selected') === 'true';
-        chip.setAttribute('data-selected', (!isSelected).toString());
-      });
-    });
+ // Interactive chip demonstrations
+ const chips = document.querySelectorAll('.chip');
+ chips.forEach(chip => {
+ chip.addEventListener('click', () => {
+ const isSelected = chip.getAttribute('data-selected') === 'true';
+ chip.setAttribute('data-selected', (!isSelected).toString());
+ });
+ });
 
-    // Tabs: keyboard + click handling
-    const tabs = document.querySelectorAll('.tabs');
-    tabs.forEach((tabsEl) => {
-      const tabButtons = Array.from(tabsEl.querySelectorAll('.tab'));
-      const indicator = tabsEl.querySelector('.tab-indicator');
-      // const panels = Array.from(document.querySelectorAll('.tab-panel'));
+ // Tabs: keyboard + click handling
+ const tabs = document.querySelectorAll('.tabs');
+ tabs.forEach((tabsEl) => {
+ const tabButtons = Array.from(tabsEl.querySelectorAll('.tab'));
+ const indicator = tabsEl.querySelector('.tab-indicator');
+ // const panels = Array.from(document.querySelectorAll('.tab-panel'));
 
-      function setActive(index: number) {
-        tabButtons.forEach((btn, i) => {
-          const selected = i === index;
-          btn.classList.toggle('is-active', selected);
-          btn.setAttribute('aria-selected', selected.toString());
-          const panel = document.getElementById(`tab-panel-${i+1}`);
-          if (panel) {
-            panel.classList.toggle('is-active', selected);
-            if (selected) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
-          }
-        });
-        if (indicator) {
-          const active = tabButtons[index] as HTMLElement;
-          const rect = active.getBoundingClientRect();
-          const parentRect = (tabsEl as HTMLElement).getBoundingClientRect();
-          (indicator as HTMLElement).style.width = rect.width + 'px';
-          (indicator as HTMLElement).style.transform = `translateX(${rect.left - parentRect.left}px)`;
-        }
-      }
+ function setActive(index: number) {
+ tabButtons.forEach((btn, i) => {
+ const selected = i === index;
+ btn.classList.toggle('is-active', selected);
+ btn.setAttribute('aria-selected', selected.toString());
+ const panel = document.getElementById(`tab-panel-${i+1}`);
+ if (panel) {
+ panel.classList.toggle('is-active', selected);
+ if (selected) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
+ }
+ });
+ if (indicator) {
+ const active = tabButtons[index] as HTMLElement;
+ const rect = active.getBoundingClientRect();
+ const parentRect = (tabsEl as HTMLElement).getBoundingClientRect();
+ (indicator as HTMLElement).style.width = rect.width + 'px';
+ (indicator as HTMLElement).style.transform = `translateX(${rect.left - parentRect.left}px)`;
+ }
+ }
 
-      tabButtons.forEach((btn, i) => {
-        btn.addEventListener('click', () => setActive(i));
-        btn.addEventListener('keydown', (e) => {
-          const key = (e as KeyboardEvent).key;
-          let next = i;
-          if (key === 'ArrowRight') next = (i + 1) % tabButtons.length;
-          if (key === 'ArrowLeft') next = (i - 1 + tabButtons.length) % tabButtons.length;
-          if (key === 'Home') next = 0;
-          if (key === 'End') next = tabButtons.length - 1;
-          if (next !== i) {
-            e.preventDefault();
-            (tabButtons[next] as HTMLElement).focus();
-            setActive(next);
-          }
-        });
-      });
+ tabButtons.forEach((btn, i) => {
+ btn.addEventListener('click', () => setActive(i));
+ btn.addEventListener('keydown', (e) => {
+ const key = (e as KeyboardEvent).key;
+ let next = i;
+ if (key === 'ArrowRight') next = (i + 1) % tabButtons.length;
+ if (key === 'ArrowLeft') next = (i - 1 + tabButtons.length) % tabButtons.length;
+ if (key === 'Home') next = 0;
+ if (key === 'End') next = tabButtons.length - 1;
+ if (next !== i) {
+ e.preventDefault();
+ (tabButtons[next] as HTMLElement).focus();
+ setActive(next);
+ }
+ });
+ });
 
-      // initialize indicator position
-      setTimeout(() => setActive(tabButtons.findIndex(b => b.classList.contains('is-active')) || 0), 0);
-      window.addEventListener('resize', () => setActive(tabButtons.findIndex(b => b.classList.contains('is-active')) || 0));
-    });
+ // initialize indicator position
+ setTimeout(() => setActive(tabButtons.findIndex(b => b.classList.contains('is-active')) || 0), 0);
+ window.addEventListener('resize', () => setActive(tabButtons.findIndex(b => b.classList.contains('is-active')) || 0));
+ });
 
-    // Loading state demo
-    const loadingBtn = document.querySelector('.btn-loading');
-    if (loadingBtn) {
-      setTimeout(() => {
-        loadingBtn.classList.remove('btn-loading');
-        loadingBtn.textContent = 'Loaded!';
-      }, 3000);
-    }
-  });
+ // Loading state demo
+ const loadingBtn = document.querySelector('.btn-loading');
+ if (loadingBtn) {
+ setTimeout(() => {
+ loadingBtn.classList.remove('btn-loading');
+ loadingBtn.textContent = 'Loaded!';
+ }, 3000);
+ }
+ });
 </script>

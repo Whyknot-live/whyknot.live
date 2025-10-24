@@ -1,0 +1,146 @@
+# Code Owners for whyknot.live
+# 
+# This file defines who is responsible for code in this repository.
+# Code owners are automatically requested for review when someone opens a pull request.
+# 
+# More info: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ==============================================================================
+# BRANCH-BASED OWNERSHIP
+# ==============================================================================
+
+# Default owner for everything in the repo
+*       @jayptl-me
+
+# ==============================================================================
+# CRITICAL BRANCHES (Require owner approval)
+# ==============================================================================
+
+# Production branch - Maximum scrutiny
+/.github/workflows/production-*.yml    @jayptl-me
+/docs/BRANCHING_STRATEGY.md            @jayptl-me
+
+# Staging and Production deployment configs
+/vercel.json                            @jayptl-me
+/railway.json                           @jayptl-me
+/Dockerfile*                            @jayptl-me
+/docker-compose*.yml                    @jayptl-me
+
+# ==============================================================================
+# BACKEND CODE OWNERSHIP
+# ==============================================================================
+
+/backend/                               @jayptl-me
+/backend/src/routes/                    @jayptl-me
+/backend/src/middleware/                @jayptl-me
+/backend/src/utils/                     @jayptl-me
+/backend/src/tests/                     @jayptl-me
+
+# Database and infrastructure (extra careful review needed)
+/backend/src/utils/mongo.ts             @jayptl-me
+/backend/src/utils/env.ts               @jayptl-me
+/backend/src/middleware/security.ts     @jayptl-me
+
+# API routes (thorough review required)
+/backend/src/routes/*.ts                @jayptl-me
+
+# External integrations (require testing)
+/backend/src/utils/email.ts             @jayptl-me
+
+# ==============================================================================
+# FRONTEND CODE OWNERSHIP
+# ==============================================================================
+
+/frontend/                              @jayptl-me
+/frontend/src/components/               @jayptl-me
+/frontend/src/pages/                    @jayptl-me
+/frontend/src/layouts/                  @jayptl-me
+/frontend/src/styles/                   @jayptl-me
+/frontend/src/utils/                    @jayptl-me
+
+# Critical frontend files
+/frontend/astro.config.mjs              @jayptl-me
+/frontend/src/env.d.ts                  @jayptl-me
+
+# ==============================================================================
+# CONFIGURATION FILES (Require careful review)
+# ==============================================================================
+
+# Build and TypeScript configs
+*.config.*                              @jayptl-me
+tsconfig.json                           @jayptl-me
+package.json                            @jayptl-me
+package-lock.json                       @jayptl-me
+
+# ==============================================================================
+# CI/CD CONFIGURATION (Critical - affects all deployments)
+# ==============================================================================
+
+/.circleci/                             @jayptl-me
+/.circleci/config.yml                   @jayptl-me
+/.github/                               @jayptl-me
+/.github/workflows/                     @jayptl-me
+
+# ==============================================================================
+# SECURITY AND LEGAL FILES (Extra attention required)
+# ==============================================================================
+
+/SECURITY.md                            @jayptl-me
+/LICENSE                                @jayptl-me
+/CODE_OF_CONDUCT.md                     @jayptl-me
+/.github/CODEOWNERS                     @jayptl-me
+
+# ==============================================================================
+# DOCUMENTATION (More flexible)
+# ==============================================================================
+
+/docs/                                  @jayptl-me
+/README.md                              @jayptl-me
+/CONTRIBUTING.md                        @jayptl-me
+/CHANGELOG.md                           @jayptl-me
+*.md                                    @jayptl-me
+
+# ==============================================================================
+# PUBLIC ASSETS (Less critical, but still review)
+# ==============================================================================
+
+/frontend/public/                       @jayptl-me
+/frontend/public/robots.txt             @jayptl-me
+/frontend/public/manifest.json          @jayptl-me
+
+# ==============================================================================
+# WHEN YOU HIRE TEAM MEMBERS (Future)
+# ==============================================================================
+
+# Example: Backend team
+# /backend/                             @jayptl-me @backend-lead @backend-dev1
+# /backend/src/routes/                  @jayptl-me @backend-lead
+# /backend/src/tests/                   @jayptl-me @backend-lead @qa-lead
+# 
+# Example: Frontend team  
+# /frontend/                            @jayptl-me @frontend-lead @frontend-dev1
+# /frontend/src/components/             @jayptl-me @frontend-lead @ui-designer
+# /frontend/src/pages/                  @jayptl-me @frontend-lead
+# /frontend/src/styles/                 @jayptl-me @frontend-lead @ui-designer
+#
+# Example: DevOps team
+# /.circleci/                           @jayptl-me @devops-lead
+# /.github/workflows/                   @jayptl-me @devops-lead
+# /Dockerfile*                          @jayptl-me @devops-lead
+#
+# Example: Security team (for production changes)
+# Production branch protection
+# main branch changes                   @jayptl-me @security-lead @tech-lead
+# /backend/src/middleware/security.ts   @jayptl-me @security-lead
+# /backend/src/utils/env.ts             @jayptl-me @security-lead @devops-lead
+#
+# Example: Feature-specific ownership
+# /frontend/src/components/Waitlist.astro    @jayptl-me @marketing-lead
+# /backend/src/routes/waitlist.ts            @jayptl-me @backend-lead @marketing-lead
+# /docs/API.md                                @jayptl-me @tech-writer
+#
+# Example: Branch-based ownership (with GitHub Enterprise)
+# develop branch                        @jayptl-me @senior-devs
+# staging branch                        @jayptl-me @qa-lead @devops-lead  
+# main branch                           @jayptl-me @tech-lead @devops-lead
+

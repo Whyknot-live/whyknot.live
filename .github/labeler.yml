@@ -1,0 +1,35 @@
+# Labeler configuration
+# Automatically label PRs based on changed files
+
+"backend":
+  - backend/**/*
+
+"frontend":
+  - frontend/**/*
+
+"dependencies":
+  - "**/package.json"
+  - "**/package-lock.json"
+
+"documentation":
+  - "**/*.md"
+  - docs/**/*
+
+"ci/cd":
+  - .github/**/*
+  - .circleci/**/*
+
+"security":
+  - SECURITY.md
+  - backend/src/middleware/security.ts
+
+"tests":
+  - "**/*.test.ts"
+  - "**/tests/**/*"
+
+"styles":
+  - "**/*.css"
+  - frontend/src/styles/**/*
+
+"scripts":
+  - scripts/**/*

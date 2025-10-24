@@ -1,30 +1,30 @@
 ---
 export interface Props {
-  title?: string;
-  description?: string;
-  keywords?: string;
-  image?: string;
-  type?: 'website' | 'article' | 'product';
-  publishedTime?: string;
-  modifiedTime?: string;
-  author?: string;
-  canonical?: string;
-  noindex?: boolean;
-  schema?: Record<string, any>;
+ title?: string;
+ description?: string;
+ keywords?: string;
+ image?: string;
+ type?: 'website' | 'article' | 'product';
+ publishedTime?: string;
+ modifiedTime?: string;
+ author?: string;
+ canonical?: string;
+ noindex?: boolean;
+ schema?: Record<string, any>;
 }
 
 const {
-  title = "WhyKnot? - Discover Amazing Websites & Tools",
-  description = "Discover the web's most innovative websites and tools. Join thousands discovering what's next in digital innovation.",
-  keywords = "innovative websites, web tools, design inspiration, productivity tools, digital innovation, web discovery",
-  image = "/images/og-image.jpg",
-  type = "website",
-  publishedTime,
-  modifiedTime,
-  author = "WhyKnot Team",
-  canonical,
-  noindex = false,
-  schema
+ title = "WhyKnot? - Discover Amazing Websites & Tools",
+ description = "Discover the web's most innovative websites and tools. Join thousands discovering what's next in digital innovation.",
+ keywords = "innovative websites, web tools, design inspiration, productivity tools, digital innovation, web discovery",
+ image = "/images/og-image.jpg",
+ type = "website",
+ publishedTime,
+ modifiedTime,
+ author = "WhyKnot Team",
+ canonical,
+ noindex = false,
+ schema
 } = Astro.props;
 
 // Derive site from Astro.site when available to avoid hardcoding
@@ -34,26 +34,26 @@ const imageUrl = new URL(image, site).href;
 
 // Default structured data for Organization
 const defaultSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "WhyKnot",
-  "description": "Discover innovative websites and tools",
-  "url": site,
-  "logo": {
-    "@type": "ImageObject",
-    "url": `${site}/images/logo-y-knot.svg`,
-    "width": 100,
-    "height": 100
-  },
-  "sameAs": [
-    "https://twitter.com/whyknot_live",
-    "https://linkedin.com/company/whyknot-live"
-  ],
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "contactType": "customer service",
-    "email": "hello@whyknot.live"
-  }
+ "@context": "https://schema.org",
+ "@type": "Organization",
+ "name": "WhyKnot",
+ "description": "Discover innovative websites and tools",
+ "url": site,
+ "logo": {
+ "@type": "ImageObject",
+ "url": `${site}/images/logo-y-knot.svg`,
+ "width": 100,
+ "height": 100
+ },
+ "sameAs": [
+ "https://twitter.com/whyknot_live",
+ "https://linkedin.com/company/whyknot-live"
+ ],
+ "contactPoint": {
+ "@type": "ContactPoint",
+ "contactType": "customer service",
+ "email": "hello@whyknot.live"
+ }
 };
 
 const finalSchema = schema || defaultSchema;

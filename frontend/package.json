@@ -3,14 +3,17 @@
     "type": "module",
     "private": true,
     "version": "0.0.1",
+    "engines": {
+        "node": ">=20.0.0"
+    },
     "scripts": {
         "dev": "astro dev",
-        "start": "astro dev",
-        "build": "astro build",
+        "start": "node ./dist/server/entry.mjs",
+        "build": "astro check && astro build",
         "build:production": "NODE_ENV=production astro build",
-        "build:strict": "astro check && astro build",
         "preview": "astro preview",
         "check": "astro check",
+        "lint": "astro check",
         "analyze": "astro build --verbose"
     },
     "dependencies": {

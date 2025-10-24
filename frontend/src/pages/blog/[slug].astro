@@ -8,7 +8,7 @@ const { slug } = Astro.params;
 // Fetch the specific blog post
 const postResponse = await fetch(`https://api.example.com/blogs/${slug}`);
 if (!postResponse.ok) {
-  throw new Error(`Post not found: ${slug}`);
+ throw new Error(`Post not found: ${slug}`);
 }
 const post = await postResponse.json();
 
@@ -19,142 +19,142 @@ const allPosts = allResponse.ok ? await allResponse.json() : [];
 const { data } = post;
 
 const relatedPosts = allPosts
-  .filter((p: any) => {
-    // guard against unexpected entries
-    if (!p || !p.data || p.slug === slug) return false;
+.filter((p: any) => {
+ // guard against unexpected entries
+ if (!p || !p.data || p.slug === slug) return false;
 
-    const sameCategory = data?.category && p.data?.category && p.data.category === data.category;
-    const sharedTags = Array.isArray(data?.tags) && Array.isArray(p.data?.tags) && p.data.tags.some((tag: any) => data.tags.includes(tag));
+ const sameCategory = data?.category && p.data?.category && p.data.category === data.category;
+ const sharedTags = Array.isArray(data?.tags) && Array.isArray(p.data?.tags) && p.data.tags.some((tag: any) => data.tags.includes(tag));
 
-    return Boolean(sameCategory || sharedTags);
-  })
-  .slice(0, 3);
+ return Boolean(sameCategory || sharedTags);
+ })
+.slice(0, 3);
 ---
 
 <Layout title={`${data.title} — WhyKnot Blog`} description={data.description} constrainContent>
-  <div class="progress-bar fixed top-0 left-0 h-1 bg-accent z-50" id="progress-bar"></div>
-  <article class={`page-main ${data.category ? data.category.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'general'}`}>
-    <header class="hero-section">
-      <div class="section-container">
-        <div class="hero-content text-center">
-          {data.category && <p class="badge mb-4">{data.category}</p>}
-          <h1 class="gradient-text page-title">{data.title}</h1>
-          <div class="hero-description flex items-center justify-center gap-2 text-muted">
-            <span>{data.author}</span>
-            <time datetime={new Date(data.publishDate).toISOString()}>{new Date(data.publishDate).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'})}</time>
-            {data.readTime && <span>•</span>}
-            {data.readTime && <span>{data.readTime}</span>}
-          </div>
-          {data.image && (
-            <figure class="mt-8">
-              <img src={data.image} alt={data.title} loading="lazy" decoding="async" class="w-full max-w-4xl mx-auto rounded-lg" />
-            </figure>
-          )}
-        </div>
-      </div>
-    </header>
+ <div class="progress-bar fixed top-0 left-0 h-1 bg-accent z-50" id="progress-bar"></div>
+ <article class={`page-main ${data.category ? data.category.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'general'}`}>
+ <header class="hero-section">
+ <div class="section-container">
+ <div class="hero-content text-center">
+ {data.category && <p class="badge mb-4">{data.category}</p>}
+ <h1 class="gradient-text page-title">{data.title}</h1>
+ <div class="hero-description flex items-center justify-center gap-2 text-muted">
+ <span>{data.author}</span>
+ <time datetime={new Date(data.publishDate).toISOString()}>{new Date(data.publishDate).toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'})}</time>
+ {data.readTime && <span>•</span>}
+ {data.readTime && <span>{data.readTime}</span>}
+ </div>
+ {data.image && (
+ <figure class="mt-8">
+ <img src={data.image} alt={data.title} loading="lazy" decoding="async" class="w-full max-w-4xl mx-auto rounded-lg" />
+ </figure>
+ )}
+ </div>
+ </div>
+ </header>
 
-    <div class="section-spacing">
-      <div class="section-container">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
-          <!-- Share Section -->
-          <div class="lg:col-span-1">
-            <div class="card sticky top-8">
-              <div class="card-content">
-                <h3 class="card-title text-sm mb-4">Share this article</h3>
-                <div class="space-y-2">
-                  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(data.title)}&url=${encodeURIComponent(Astro.url.toString())}`} target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">Twitter</a>
-                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(Astro.url.toString())}`} target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">LinkedIn</a>
-                  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.toString())}`} target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">Facebook</a>
-                </div>
-              </div>
-            </div>
+ <div class="section-spacing">
+ <div class="section-container">
+ <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+ 
+ <!-- Share Section -->
+ <div class="lg:col-span-1">
+ <div class="card sticky top-8">
+ <div class="card-content">
+ <h3 class="card-title text-sm mb-4">Share this article</h3>
+ <div class="space-y-2">
+ <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(data.title)}&url=${encodeURIComponent(Astro.url.toString())}`} target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">Twitter</a>
+ <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(Astro.url.toString())}`} target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">LinkedIn</a>
+ <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.toString())}`} target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">Facebook</a>
+ </div>
+ </div>
+ </div>
 
-            <!-- Table of Contents -->
-            <div class="card mt-6" id="toc">
-              <div class="card-content">
-                <h3 class="card-title text-sm mb-4">Table of Contents</h3>
-                <nav id="toc-nav" class="toc-navigation"></nav>
-              </div>
-            </div>
-          </div>
+ <!-- Table of Contents -->
+ <div class="card mt-6" id="toc">
+ <div class="card-content">
+ <h3 class="card-title text-sm mb-4">Table of Contents</h3>
+ <nav id="toc-nav" class="toc-navigation"></nav>
+ </div>
+ </div>
+ </div>
 
-          <!-- Main Content -->
-          <div class="lg:col-span-3">
-            <div class="prose prose-gray max-w-none" set:html={data.content}></div>
-          </div>
-        </div>
-      </div>
-    </div>
+ <!-- Main Content -->
+ <div class="lg:col-span-3">
+ <div class="prose prose-gray max-w-none" set:html={data.content}></div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    {relatedPosts.length > 0 && (
-      <section class="section-spacing border-t border-outline-variant">
-        <div class="section-container">
-          <h2 class="section-title text-center mb-12">Related Articles</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {relatedPosts.map((post: any) => (
-              <a href={`/blog/${post.slug}`} class="card hover-lift">
-                {post.data.image && <img src={post.data.image} alt={post.data.title} loading="lazy" decoding="async" class="w-full h-48 object-cover rounded-t-lg" />}
-                <div class="card-content">
-                  <h3 class="card-title">{post.data.title}</h3>
-                  <p class="text-muted">{post.data.description}</p>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-    )}
-  </article>
+ {relatedPosts.length > 0 && (
+ <section class="section-spacing border-t border-outline-variant">
+ <div class="section-container">
+ <h2 class="section-title text-center mb-12">Related Articles</h2>
+ <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+ {relatedPosts.map((post: any) => (
+ <a href={`/blog/${post.slug}`} class="card hover-lift">
+ {post.data.image && <img src={post.data.image} alt={post.data.title} loading="lazy" decoding="async" class="w-full h-48 object-cover rounded-t-lg" />}
+ <div class="card-content">
+ <h3 class="card-title">{post.data.title}</h3>
+ <p class="text-muted">{post.data.description}</p>
+ </div>
+ </a>
+ ))}
+ </div>
+ </div>
+ </section>
+ )}
+ </article>
 </Layout>
 
 <script>
-  const progressBar = document.getElementById('progress-bar');
+ const progressBar = document.getElementById('progress-bar');
 
-  function updateProgress() {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const scrollPercent = (scrollTop / docHeight) * 100;
-    if (progressBar) {
-      progressBar.style.width = scrollPercent + '%';
-    }
-  }
+ function updateProgress() {
+ const scrollTop = window.scrollY;
+ const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+ const scrollPercent = (scrollTop / docHeight) * 100;
+ if (progressBar) {
+ progressBar.style.width = scrollPercent + '%';
+ }
+ }
 
-  window.addEventListener('scroll', updateProgress);
-  window.addEventListener('resize', updateProgress);
+ window.addEventListener('scroll', updateProgress);
+ window.addEventListener('resize', updateProgress);
 
-  // Generate Table of Contents
-  const tocNav = document.getElementById('toc-nav');
-  const headings = document.querySelectorAll('.prose h2, .prose h3');
-  if (headings.length > 0 && tocNav) {
-    const ul = document.createElement('ul');
-    ul.className = 'space-y-2 text-sm';
-    
-    headings.forEach((heading, index) => {
-      const id = `heading-${index}`;
-      heading.id = id;
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = `#${id}`;
-      a.textContent = heading.textContent;
-      a.className = 'text-muted hover:text-accent transition-colors block py-1';
-      
-      if (heading.tagName === 'H3') {
-        a.style.paddingLeft = '1rem';
-      }
-      
-      li.appendChild(a);
-      ul.appendChild(li);
-    });
-    
-    tocNav.appendChild(ul);
-  } else {
-    const tocElement = document.getElementById('toc');
-    if (tocElement) {
-      tocElement.style.display = 'none';
-    }
-  }
+ // Generate Table of Contents
+ const tocNav = document.getElementById('toc-nav');
+ const headings = document.querySelectorAll('.prose h2,.prose h3');
+ if (headings.length > 0 && tocNav) {
+ const ul = document.createElement('ul');
+ ul.className = 'space-y-2 text-sm';
+ 
+ headings.forEach((heading, index) => {
+ const id = `heading-${index}`;
+ heading.id = id;
+ const li = document.createElement('li');
+ const a = document.createElement('a');
+ a.href = `#${id}`;
+ a.textContent = heading.textContent;
+ a.className = 'text-muted hover:text-accent transition-colors block py-1';
+ 
+ if (heading.tagName === 'H3') {
+ a.style.paddingLeft = '1rem';
+ }
+ 
+ li.appendChild(a);
+ ul.appendChild(li);
+ });
+ 
+ tocNav.appendChild(ul);
+ } else {
+ const tocElement = document.getElementById('toc');
+ if (tocElement) {
+ tocElement.style.display = 'none';
+ }
+ }
 </script>
 
 

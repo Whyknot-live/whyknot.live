@@ -8,9 +8,14 @@ export default defineConfig({
     adapter: node({
         mode: 'standalone'
     }),
+    server: {
+        port: Number(process.env.PORT) || 4321,
+        host: process.env.HOST || '0.0.0.0'
+    },
     build: {
         inlineStylesheets: 'auto',
-        assets: '_astro'
+        assets: '_astro',
+        format: 'directory'
     },
     compressHTML: true,
     // Use an intent-based prefetch strategy to avoid unnecessary bandwidth usage
@@ -19,5 +24,14 @@ export default defineConfig({
     },
     experimental: {
         contentIntellisense: true
+    },
+    vite: {
+        build: {
+            rollupOptions: {
+                output: {
+                    manualChunks: undefined
+                }
+            }
+        }
     }
 });

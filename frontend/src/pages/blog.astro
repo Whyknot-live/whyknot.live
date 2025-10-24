@@ -9,376 +9,376 @@ const allPosts: any[] = [];
 const featuredPosts: any[] = [];
 const recentPosts: any[] = [];
 const categories = [
-  { slug: 'all', name: 'All Categories', count: 0 },
-  { slug: 'tools', name: 'Tools', count: 0 },
-  { slug: 'productivity', name: 'Productivity', count: 0 },
-  { slug: 'design', name: 'Design', count: 0 }
+ { slug: 'all', name: 'All Categories', count: 0 },
+ { slug: 'tools', name: 'Tools', count: 0 },
+ { slug: 'productivity', name: 'Productivity', count: 0 },
+ { slug: 'design', name: 'Design', count: 0 }
 ];
 
 const schema = {
-  "@context": "https://schema.org",
-  "@type": "Blog",
-  "name": "WhyKnot Blog",
-  "description": "Explore our blog for expert insights on innovative tools, productivity tips, and trends that can transform your workflow.",
-  "url": "https://whyknot.live/blog"
+ "@context": "https://schema.org",
+ "@type": "Blog",
+ "name": "WhyKnot Blog",
+ "description": "Explore our blog for expert insights on innovative tools, productivity tips, and trends that can transform your workflow.",
+ "url": "https://whyknot.live/blog"
 };
 ---
 
 <Layout 
-  title="Blog - WhyKnot | Discover Tools & Insights You Didn't Know You Needed"
-  description="Explore our blog for expert insights on innovative tools, productivity tips, and trends that can transform your workflow. Discover what you didn't know you needed."
-  keywords="tools blog, productivity tips, software reviews, tech insights, innovation, workflows, business tools"
-  schema={schema}
+ title="Blog - WhyKnot | Discover Tools & Insights You Didn't Know You Needed"
+ description="Explore our blog for expert insights on innovative tools, productivity tips, and trends that can transform your workflow. Discover what you didn't know you needed."
+ keywords="tools blog, productivity tips, software reviews, tech insights, innovation, workflows, business tools"
+ schema={schema}
 >
-  <main class="page-main">
-    <!-- Header Section -->
-    <section class="hero-section">
-      <div class="section-container">
-        <div class="hero-content text-center">
-          <h1 class="gradient-text page-title">Blog</h1>
-          <p class="hero-description">
-            Discover innovative tools, insights, and trends that you didn't know you needed
-          </p>
-          <p class="text-muted">
-            Expert reviews, in-depth guides, and practical tips to help you stay ahead 
-            of the curve in an ever-evolving digital landscape.
-          </p>
-        </div>
-      </div>
-    </section>
+ <main class="page-main">
+ <!-- Header Section -->
+ <section class="hero-section">
+ <div class="section-container">
+ <div class="hero-content text-center">
+ <h1 class="gradient-text page-title">Blog</h1>
+ <p class="hero-description">
+ Discover innovative tools, insights, and trends that you didn't know you needed
+ </p>
+ <p class="text-muted">
+ Expert reviews, in-depth guides, and practical tips to help you stay ahead 
+ of the curve in an ever-evolving digital landscape.
+ </p>
+ </div>
+ </div>
+ </section>
 
-    <!-- Blog Content -->
-    <section class="section-spacing">
-      <div class="section-container">
-        {allPosts.length > 0 ? (
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- Main Content -->
-            <div class="lg:col-span-2">
-              
-              <!-- Featured Posts -->
-              {featuredPosts.length > 0 && (
-                <section class="mb-12" aria-labelledby="featured-heading">
-                  <h2 id="featured-heading" class="section-title">Featured</h2>
-                  <div class="space-y-6">
-                    {featuredPosts.map(({ slug, data }) => (
-                      <article class="card featured-post">
-                        <div class="aspect-video overflow-hidden rounded-t-lg">
-                          <img
-                            src={data.image || '/images/blog/placeholder.jpg'}
-                            alt={data.title}
-                            width="600"
-                            height="300"
-                            loading="lazy" decoding="async"
-                            class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                          />
-                          <div class="badge absolute top-4 left-4">{data.category || 'Uncategorized'}</div>
-                        </div>
-                        <div class="card-content">
-                          <header class="mb-4">
-                            <h3 class="card-title text-xl">
-                              <a href={`/blog/${slug}`} class="link-hover" data-astro-prefetch>{data.title}</a>
-                            </h3>
-                            <div class="text-muted text-sm flex items-center gap-3 mt-2">
-                              <time datetime={String(data.publishDate)}>
-                                {new Date(String(data.publishDate)).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })}
-                              </time>
-                              {data.readTime && <span class="before:content-['•'] before:mr-3">{data.readTime}</span>}
-                            </div>
-                          </header>
-                          <p class="text-muted mb-4">{data.description}</p>
-                          <a href={`/blog/${slug}`} class="btn btn-ghost btn-sm" data-astro-prefetch>
-                            Read More
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                              <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                          </a>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              )}
+ <!-- Blog Content -->
+ <section class="section-spacing">
+ <div class="section-container">
+ {allPosts.length > 0 ? (
+ <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+ 
+ <!-- Main Content -->
+ <div class="lg:col-span-2">
+ 
+ <!-- Featured Posts -->
+ {featuredPosts.length > 0 && (
+ <section class="mb-12" aria-labelledby="featured-heading">
+ <h2 id="featured-heading" class="section-title">Featured</h2>
+ <div class="space-y-6">
+ {featuredPosts.map(({ slug, data }) => (
+ <article class="card featured-post">
+ <div class="aspect-video overflow-hidden rounded-t-lg">
+ <img
+ src={data.image || '/images/blog/placeholder.jpg'}
+ alt={data.title}
+ width="600"
+ height="300"
+ loading="lazy" decoding="async"
+ class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+ />
+ <div class="badge absolute top-4 left-4">{data.category || 'Uncategorized'}</div>
+ </div>
+ <div class="card-content">
+ <header class="mb-4">
+ <h3 class="card-title text-xl">
+ <a href={`/blog/${slug}`} class="link-hover" data-astro-prefetch>{data.title}</a>
+ </h3>
+ <div class="text-muted text-sm flex items-center gap-3 mt-2">
+ <time datetime={String(data.publishDate)}>
+ {new Date(String(data.publishDate)).toLocaleDateString('en-US', {
+ year: 'numeric',
+ month: 'long',
+ day: 'numeric'
+ })}
+ </time>
+ {data.readTime && <span class="before:content-['•'] before:mr-3">{data.readTime}</span>}
+ </div>
+ </header>
+ <p class="text-muted mb-4">{data.description}</p>
+ <a href={`/blog/${slug}`} class="btn btn-ghost btn-sm" data-astro-prefetch>
+ Read More
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+ <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ </a>
+ </div>
+ </article>
+ ))}
+ </div>
+ </section>
+ )}
 
-              <!-- Search & Filter -->
-              <section class="mb-8" aria-labelledby="filter-heading">
-                <h2 id="filter-heading" class="sr-only">Search and Filter</h2>
-                <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-                  <div class="relative flex-1 max-w-md">
-                    <label for="blog-search" class="sr-only">Search blog posts</label>
-                    <input 
-                      type="search" 
-                      id="blog-search"
-                      placeholder="Search articles..."
-                      class="form-input pl-10"
-                      aria-describedby="search-help"
-                    />
-                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                      <path d="M9 17A8 8 0 109 1a8 8 0 000 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <div id="search-help" class="sr-only">Search through blog post titles and content</div>
-                  </div>
-                  
-                  <div class="flex items-center gap-3">
-                    <label for="category-filter" class="form-label mb-0">Category:</label>
-                    <select id="category-filter" class="form-select min-w-40">
-                      {categories.map(category => (
-                        <option value={category.slug}>
-                          {category.name} ({category.count})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </section>
+ <!-- Search & Filter -->
+ <section class="mb-8" aria-labelledby="filter-heading">
+ <h2 id="filter-heading" class="sr-only">Search and Filter</h2>
+ <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+ <div class="relative flex-1 max-w-md">
+ <label for="blog-search" class="sr-only">Search blog posts</label>
+ <input 
+ type="search" 
+ id="blog-search"
+ placeholder="Search articles..."
+ class="form-input pl-10"
+ aria-describedby="search-help"
+ />
+ <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+ <path d="M9 17A8 8 0 109 1a8 8 0 000 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ <div id="search-help" class="sr-only">Search through blog post titles and content</div>
+ </div>
+ 
+ <div class="flex items-center gap-3">
+ <label for="category-filter" class="form-label mb-0">Category:</label>
+ <select id="category-filter" class="form-select min-w-40">
+ {categories.map(category => (
+ <option value={category.slug}>
+ {category.name} ({category.count})
+ </option>
+ ))}
+ </select>
+ </div>
+ </div>
+ </section>
 
-              <!-- Recent Posts -->
-              <section class="mb-8" aria-labelledby="recent-heading">
-                <h2 id="recent-heading" class="section-title">Recent Articles</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {recentPosts.map(({ slug, data }) => (
-                    <article class="card recent-post">
-                      <div class="card-content">
-                        <header class="mb-3">
-                          <div class="badge badge-sm mb-3">{data.category || 'Uncategorized'}</div>
-                          <h3 class="card-title">
-                            <a href={`/blog/${slug}`} class="link-hover">{data.title}</a>
-                          </h3>
-                          <div class="text-muted text-sm flex items-center gap-3 mt-2">
-                            <time datetime={String(data.publishDate)}>
-                              {new Date(String(data.publishDate)).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </time>
-                            {data.readTime && <span class="before:content-['•'] before:mr-3">{data.readTime}</span>}
-                          </div>
-                        </header>
-                        <p class="text-muted mb-4">{data.description}</p>
-                        <a href={`/blog/${slug}`} class="btn btn-ghost btn-sm" data-astro-prefetch>
-                          Read Article
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                          </svg>
-                        </a>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
+ <!-- Recent Posts -->
+ <section class="mb-8" aria-labelledby="recent-heading">
+ <h2 id="recent-heading" class="section-title">Recent Articles</h2>
+ <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+ {recentPosts.map(({ slug, data }) => (
+ <article class="card recent-post">
+ <div class="card-content">
+ <header class="mb-3">
+ <div class="badge badge-sm mb-3">{data.category || 'Uncategorized'}</div>
+ <h3 class="card-title">
+ <a href={`/blog/${slug}`} class="link-hover">{data.title}</a>
+ </h3>
+ <div class="text-muted text-sm flex items-center gap-3 mt-2">
+ <time datetime={String(data.publishDate)}>
+ {new Date(String(data.publishDate)).toLocaleDateString('en-US', {
+ year: 'numeric',
+ month: 'short',
+ day: 'numeric'
+ })}
+ </time>
+ {data.readTime && <span class="before:content-['•'] before:mr-3">{data.readTime}</span>}
+ </div>
+ </header>
+ <p class="text-muted mb-4">{data.description}</p>
+ <a href={`/blog/${slug}`} class="btn btn-ghost btn-sm" data-astro-prefetch>
+ Read Article
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+ <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ </a>
+ </div>
+ </article>
+ ))}
+ </div>
+ </section>
 
-              <!-- Newsletter & CTA Section -->
-              <section class="mb-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <!-- Newsletter Signup -->
-                  <div class="card">
-                    <div class="card-content text-center">
-                      <h2 class="card-title mb-3">Stay Updated</h2>
-                      <p class="text-muted mb-6">
-                        Get the latest insights on innovative tools and productivity tips 
-                        delivered straight to your inbox.
-                      </p>
-                      <form class="newsletter-form" action="/api/newsletter" method="POST">
-                        <div class="flex flex-col sm:flex-row gap-3 mb-3">
-                          <label for="newsletter-email" class="sr-only">Email address</label>
-                          <input 
-                            type="email" 
-                            id="newsletter-email"
-                            name="email"
-                            placeholder="Enter your email"
-                            required
-                            class="form-input flex-1"
-                            aria-describedby="newsletter-privacy"
-                          />
-                          <button type="submit" class="btn btn-primary newsletter-button">
-                            Subscribe
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                              <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                          </button>
-                        </div>
-                        <p id="newsletter-privacy" class="text-muted text-sm">
-                          By subscribing, you agree to our <a href="/privacy-policy" class="link">Privacy Policy</a>. 
-                          Unsubscribe at any time.
-                        </p>
-                      </form>
-                    </div>
-                  </div>
+ <!-- Newsletter & CTA Section -->
+ <section class="mb-8">
+ <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+ <!-- Newsletter Signup -->
+ <div class="card">
+ <div class="card-content text-center">
+ <h2 class="card-title mb-3">Stay Updated</h2>
+ <p class="text-muted mb-6">
+ Get the latest insights on innovative tools and productivity tips 
+ delivered straight to your inbox.
+ </p>
+ <form class="newsletter-form" action="/api/newsletter" method="POST">
+ <div class="flex flex-col sm:flex-row gap-3 mb-3">
+ <label for="newsletter-email" class="sr-only">Email address</label>
+ <input 
+ type="email" 
+ id="newsletter-email"
+ name="email"
+ placeholder="Enter your email"
+ required
+ class="form-input flex-1"
+ aria-describedby="newsletter-privacy"
+ />
+ <button type="submit" class="btn btn-primary newsletter-button">
+ Subscribe
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+ <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ </button>
+ </div>
+ <p id="newsletter-privacy" class="text-muted text-sm">
+ By subscribing, you agree to our <a href="/privacy-policy" class="link">Privacy Policy</a>. 
+ Unsubscribe at any time.
+ </p>
+ </form>
+ </div>
+ </div>
 
-                  <!-- Tools Directory CTA -->
-                  <div class="card">
-                    <div class="card-content text-center">
-                      <h2 class="card-title mb-3">Explore Our Directory</h2>
-                      <p class="text-muted mb-6">
-                        Discover hundreds of carefully curated tools that can transform 
-                        your workflow and boost productivity.
-                      </p>
-                      <a href="/" class="btn btn-primary">
-                        Browse Tools
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </section>
+ <!-- Tools Directory CTA -->
+ <div class="card">
+ <div class="card-content text-center">
+ <h2 class="card-title mb-3">Explore Our Directory</h2>
+ <p class="text-muted mb-6">
+ Discover hundreds of carefully curated tools that can transform 
+ your workflow and boost productivity.
+ </p>
+ <a href="/" class="btn btn-primary">
+ Browse Tools
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+ <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ </a>
+ </div>
+ </div>
+ </div>
+ </section>
 
-            </div>
+ </div>
 
-            <!-- Sidebar -->
-            <aside class="lg:col-span-1" aria-labelledby="sidebar-heading">
-              <h2 id="sidebar-heading" class="sr-only">Blog Sidebar</h2>
-              
-              <div class="space-y-6">
-                <!-- Popular Categories -->
-                <section class="card" aria-labelledby="categories-heading">
-                  <div class="card-header">
-                    <h3 id="categories-heading" class="card-title">Popular Categories</h3>
-                  </div>
-                  <div class="card-content">
-                    <nav class="space-y-2" aria-label="Blog categories">
-                      {categories.filter(cat => cat.slug !== 'all').map(category => (
-                        <a href={`/blog/category/${category.slug}`} class="flex items-center justify-between p-2 rounded hover:bg-surface-container transition-colors link-hover">
-                          <span>{category.name}</span>
-                          <span class="text-muted text-sm">({category.count})</span>
-                        </a>
-                      ))}
-                    </nav>
-                  </div>
-                </section>
+ <!-- Sidebar -->
+ <aside class="lg:col-span-1" aria-labelledby="sidebar-heading">
+ <h2 id="sidebar-heading" class="sr-only">Blog Sidebar</h2>
+ 
+ <div class="space-y-6">
+ <!-- Popular Categories -->
+ <section class="card" aria-labelledby="categories-heading">
+ <div class="card-header">
+ <h3 id="categories-heading" class="card-title">Popular Categories</h3>
+ </div>
+ <div class="card-content">
+ <nav class="space-y-2" aria-label="Blog categories">
+ {categories.filter(cat => cat.slug !== 'all').map(category => (
+ <a href={`/blog/category/${category.slug}`} class="flex items-center justify-between p-2 rounded hover:bg-surface-container transition-colors link-hover">
+ <span>{category.name}</span>
+ <span class="text-muted text-sm">({category.count})</span>
+ </a>
+ ))}
+ </nav>
+ </div>
+ </section>
 
-                <!-- Popular Posts -->
-                <section class="card" aria-labelledby="popular-heading">
-                  <div class="card-header">
-                    <h3 id="popular-heading" class="card-title">Popular Posts</h3>
-                  </div>
-                  <div class="card-content">
-                    <div class="space-y-4">
-                      {featuredPosts.slice(0, 3).map(post => (
-                        <article class="border-b border-outline-variant last:border-b-0 pb-4 last:pb-0">
-                          <h4 class="font-medium leading-snug mb-2">
-                            <a href={`/blog/${post.slug}`} class="link-hover" data-astro-prefetch>{post.data.title}</a>
-                          </h4>
-                          <div class="text-muted text-sm flex items-center gap-2">
-                            <time datetime={String(post.data.publishDate)}>
-                              {new Date(String(post.data.publishDate)).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </time>
-                            {post.data.readTime && <span class="before:content-['•'] before:mr-2">{post.data.readTime}</span>}
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-              </div>
+ <!-- Popular Posts -->
+ <section class="card" aria-labelledby="popular-heading">
+ <div class="card-header">
+ <h3 id="popular-heading" class="card-title">Popular Posts</h3>
+ </div>
+ <div class="card-content">
+ <div class="space-y-4">
+ {featuredPosts.slice(0, 3).map(post => (
+ <article class="border-b border-outline-variant last:border-b-0 pb-4 last:pb-0">
+ <h4 class="font-medium leading-snug mb-2">
+ <a href={`/blog/${post.slug}`} class="link-hover" data-astro-prefetch>{post.data.title}</a>
+ </h4>
+ <div class="text-muted text-sm flex items-center gap-2">
+ <time datetime={String(post.data.publishDate)}>
+ {new Date(String(post.data.publishDate)).toLocaleDateString('en-US', {
+ month: 'short',
+ day: 'numeric'
+ })}
+ </time>
+ {post.data.readTime && <span class="before:content-['•'] before:mr-2">{post.data.readTime}</span>}
+ </div>
+ </article>
+ ))}
+ </div>
+ </div>
+ </section>
+ </div>
 
-            </aside>
-          </div>
-        ) : (
-          <div class="text-center py-16">
-            <h2 class="text-2xl font-bold mb-4">No blogs yet</h2>
-            <p class="text-muted">We're working on bringing you amazing content. Check back soon!</p>
-          </div>
-        )}
-      </div>
-    </section>
-  </main>
+ </aside>
+ </div>
+ ) : (
+ <div class="text-center py-16">
+ <h2 class="text-2xl font-bold mb-4">No blogs yet</h2>
+ <p class="text-muted">We're working on bringing you amazing content. Check back soon!</p>
+ </div>
+ )}
+ </div>
+ </section>
+ </main>
 </Layout>
 
 <script>
 // Blog search functionality
 function initBlogSearch() {
-  const searchInput = document.getElementById('blog-search') as HTMLInputElement;
-  const categorySelect = document.getElementById('category-filter') as HTMLSelectElement;
-  
-  if (!searchInput || !categorySelect) return;
-  
-  function filterPosts() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedCategory = categorySelect.value || 'all';
-    
-    const posts = document.querySelectorAll('.featured-post, .recent-post');
-    
-    posts.forEach(node => {
-      const title = node.querySelector('.post-title')?.textContent?.toLowerCase() || '';
-      const excerpt = node.querySelector('.post-excerpt')?.textContent?.toLowerCase() || '';
-      const category = node.querySelector('.post-category, .post-category-small')?.textContent?.toLowerCase() || '';
-      
-      const matchesSearch = !searchTerm || title.includes(searchTerm) || excerpt.includes(searchTerm);
-      const matchesCategory = selectedCategory === 'all' || category.includes(selectedCategory.replace('-', ' '));
-      
-      if (matchesSearch && matchesCategory) {
-        (node as HTMLElement).style.display = '';
-        (node as HTMLElement).style.opacity = '1';
-      } else {
-        (node as HTMLElement).style.opacity = '0.3';
-      }
-    });
-  }
-  
-  let searchTimeout: NodeJS.Timeout | number;
-  searchInput.addEventListener('input', () => {
-    if (searchTimeout) clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(filterPosts, 300);
-  });
-  
-  categorySelect.addEventListener('change', filterPosts);
+ const searchInput = document.getElementById('blog-search') as HTMLInputElement;
+ const categorySelect = document.getElementById('category-filter') as HTMLSelectElement;
+ 
+ if (!searchInput || !categorySelect) return;
+ 
+ function filterPosts() {
+ const searchTerm = searchInput.value.toLowerCase();
+ const selectedCategory = categorySelect.value || 'all';
+ 
+ const posts = document.querySelectorAll('.featured-post,.recent-post');
+ 
+ posts.forEach(node => {
+ const title = node.querySelector('.post-title')?.textContent?.toLowerCase() || '';
+ const excerpt = node.querySelector('.post-excerpt')?.textContent?.toLowerCase() || '';
+ const category = node.querySelector('.post-category,.post-category-small')?.textContent?.toLowerCase() || '';
+ 
+ const matchesSearch = !searchTerm || title.includes(searchTerm) || excerpt.includes(searchTerm);
+ const matchesCategory = selectedCategory === 'all' || category.includes(selectedCategory.replace('-', ' '));
+ 
+ if (matchesSearch && matchesCategory) {
+ (node as HTMLElement).style.display = '';
+ (node as HTMLElement).style.opacity = '1';
+ } else {
+ (node as HTMLElement).style.opacity = '0.3';
+ }
+ });
+ }
+ 
+ let searchTimeout: NodeJS.Timeout | number;
+ searchInput.addEventListener('input', () => {
+ if (searchTimeout) clearTimeout(searchTimeout);
+ searchTimeout = setTimeout(filterPosts, 300);
+ });
+ 
+ categorySelect.addEventListener('change', filterPosts);
 }
 
 // Newsletter form handling
 function initNewsletterForm() {
-  const form = document.querySelector('.newsletter-form') as HTMLFormElement;
-  if (!form) return;
-  
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const formData = new FormData(form);
-    const email = formData.get('email');
-    
-    if (!email) return;
-    
-    const button = form.querySelector('.newsletter-button') as HTMLButtonElement;
-    if (!button) return;
-    const originalText = button.innerHTML;
-    
-    try {
-      button.innerHTML = 'Subscribing...';
-      button.disabled = true;
-      
-      // In a real implementation, this would make an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      button.innerHTML = 'Subscribed!';
-      form.reset();
-      
-      setTimeout(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-      }, 2000);
-      
-    } catch (error) {
-      button.innerHTML = 'Try Again';
-      setTimeout(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-      }, 2000);
-    }
-  });
+ const form = document.querySelector('.newsletter-form') as HTMLFormElement;
+ if (!form) return;
+ 
+ form.addEventListener('submit', async (e) => {
+ e.preventDefault();
+ 
+ const formData = new FormData(form);
+ const email = formData.get('email');
+ 
+ if (!email) return;
+ 
+ const button = form.querySelector('.newsletter-button') as HTMLButtonElement;
+ if (!button) return;
+ const originalText = button.innerHTML;
+ 
+ try {
+ button.innerHTML = 'Subscribing...';
+ button.disabled = true;
+ 
+ // In a real implementation, this would make an API call
+ await new Promise(resolve => setTimeout(resolve, 1000));
+ 
+ button.innerHTML = 'Subscribed!';
+ form.reset();
+ 
+ setTimeout(() => {
+ button.innerHTML = originalText;
+ button.disabled = false;
+ }, 2000);
+ 
+ } catch (error) {
+ button.innerHTML = 'Try Again';
+ setTimeout(() => {
+ button.innerHTML = originalText;
+ button.disabled = false;
+ }, 2000);
+ }
+ });
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  initBlogSearch();
-  initNewsletterForm();
+ initBlogSearch();
+ initNewsletterForm();
 });
 </script>

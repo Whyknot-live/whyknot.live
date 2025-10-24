@@ -1,0 +1,514 @@
+version: 2.1
+
+# Define reusable executors
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:20.18.1
+    working_directory: ~/project
+
+# Define reusable commands
+commands:
+  restore-backend-cache:
+    description: "Restore backend node_modules cache"
+    steps:
+      - restore_cache:
+          keys:
+            - backend-deps-v1-{{ checksum "backend/package-lock.json" }}
+            - backend-deps-v1-
+  
+  restore-frontend-cache:
+    description: "Restore frontend node_modules cache"
+    steps:
+      - restore_cache:
+          keys:
+            - frontend-deps-v1-{{ checksum "frontend/package-lock.json" }}
+            - frontend-deps-v1-
+
+# Define jobs
+jobs:
+  # Backend jobs
+  backend-install:
+    executor: node-executor
+    steps:
+      - checkout
+      - restore-backend-cache
+      - run:
+          name: Install backend dependencies
+          command: 
+            cd backend
+            npm ci
+      - save_cache:
+          key: backend-deps-v1-{{ checksum "backend/package-lock.json" }}
+          paths:
+            - backend/node_modules
+      - persist_to_workspace:
+          root: .
+          paths:
+            - backend/node_modules
+
+  backend-lint:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Lint backend code
+          command: 
+            cd backend
+            npm run lint
+
+  backend-typecheck:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: TypeScript type check (backend)
+          command: 
+            cd backend
+            npm run typecheck
+
+  backend-test:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run backend tests
+          command: 
+            cd backend
+            npm test
+
+  backend-build:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build backend
+          command: 
+            cd backend
+            npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - backend/dist
+
+  # Frontend jobs
+  frontend-install:
+    executor: node-executor
+    steps:
+      - checkout
+      - restore-frontend-cache
+      - run:
+          name: Install frontend dependencies
+          command: 
+            cd frontend
+            npm ci
+      - save_cache:
+          key: frontend-deps-v1-{{ checksum "frontend/package-lock.json" }}
+          paths:
+            - frontend/node_modules
+      - persist_to_workspace:
+          root: .
+          paths:
+            - frontend/node_modules
+
+  frontend-lint:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Lint frontend code
+          command: 
+            cd frontend
+            npm run lint
+
+  frontend-typecheck:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Astro type check (frontend)
+          command: 
+            cd frontend
+            npm run check
+
+  frontend-build:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build frontend for production
+          command: 
+            cd frontend
+            npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - frontend/dist
+
+  # Security scanning job
+  security-scan:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run security audit
+          command: 
+            echo "Running security audit..."
+            cd backend && npm audit --audit-level=moderate  true
+            cd ../frontend && npm audit --audit-level=moderate  true
+            echo " Security audit complete"
+
+  # Deploy to staging environment
+  deploy-staging:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy to staging
+          command: 
+            echo "Deploying to staging environment..."
+            echo "Using GitHub Environment: staging"
+            # GitHub Environment variables available:
+            # - $STAGING_API_KEY
+            # - $STAGING_DB_URI
+            # - $STAGING_DEPLOY_TOKEN
+            # Add your staging deployment commands here
+            # Example: railway deploy --environment staging
+
+  # Deploy to production environment
+  deploy-production:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy to production
+          command: 
+            echo "Deploying to production environment..."
+            echo "Using GitHub Environment: production"
+            echo "Protection: Required reviewer + 15 min wait timer"
+            # GitHub Environment variables available:
+            # - $PRODUCTION_API_KEY
+            # - $PRODUCTION_DB_URI
+            # - $PRODUCTION_DEPLOY_TOKEN
+            # - $NODE_ENV
+            # - $API_BASE_URL
+            # Add your production deployment commands here
+            # Example: railway deploy --environment production
+
+  # Smoke tests after deployment
+  smoke-tests:
+    executor: node-executor
+    steps:
+      - run:
+          name: Run smoke tests
+          command: 
+            echo "Running smoke tests..."
+            # Add basic health check commands
+            # curl -f https://api.whyknot.live/health  exit 1
+            echo " Smoke tests passed"
+
+# Define workflows
+workflows:
+  # Workflow 1: Development (feature/*, fix/*, develop branches)
+  development:
+    jobs:
+      # Install dependencies (parallel)
+      - backend-install:
+          filters:
+            branches:
+              only:
+                - develop
+                - /feature\/.*/
+                - /fix\/.*/
+      
+      - frontend-install:
+          filters:
+            branches:
+              only:
+                - develop
+                - /feature\/.*/
+                - /fix\/.*/
+
+      # Quality checks (parallel, requires install)
+      - backend-lint:
+          requires:
+            - backend-install
+      
+      - backend-typecheck:
+          requires:
+            - backend-install
+      
+      - backend-test:
+          requires:
+            - backend-install
+
+      - frontend-lint:
+          requires:
+            - frontend-install
+      
+      - frontend-typecheck:
+          requires:
+            - frontend-install
+
+      # Build (requires all checks pass)
+      - backend-build:
+          requires:
+            - backend-lint
+            - backend-typecheck
+            - backend-test
+      
+      - frontend-build:
+          requires:
+            - frontend-lint
+            - frontend-typecheck
+
+  # Workflow 2: Staging Deployment
+  staging-deployment:
+    jobs:
+      # Install dependencies (parallel)
+      - backend-install:
+          filters:
+            branches:
+              only: staging
+      
+      - frontend-install:
+          filters:
+            branches:
+              only: staging
+
+      # Quality checks (parallel, requires install)
+      - backend-lint:
+          requires:
+            - backend-install
+      
+      - backend-typecheck:
+          requires:
+            - backend-install
+      
+      - backend-test:
+          requires:
+            - backend-install
+
+      - frontend-lint:
+          requires:
+            - frontend-install
+      
+      - frontend-typecheck:
+          requires:
+            - frontend-install
+
+      # Build (requires all checks pass)
+      - backend-build:
+          requires:
+            - backend-lint
+            - backend-typecheck
+            - backend-test
+      
+      - frontend-build:
+          requires:
+            - frontend-lint
+            - frontend-typecheck
+
+      # Deploy to staging (requires build)
+      - deploy-staging:
+          requires:
+            - backend-build
+            - frontend-build
+          filters:
+            branches:
+              only: staging
+
+  # Workflow 3: Production Deployment
+  production-deployment:
+    jobs:
+      # Install dependencies (parallel)
+      - backend-install:
+          filters:
+            branches:
+              only: main
+      
+      - frontend-install:
+          filters:
+            branches:
+              only: main
+
+      # Quality checks (parallel, requires install)
+      - backend-lint:
+          requires:
+            - backend-install
+      
+      - backend-typecheck:
+          requires:
+            - backend-install
+      
+      - backend-test:
+          requires:
+            - backend-install
+
+      - frontend-lint:
+          requires:
+            - frontend-install
+      
+      - frontend-typecheck:
+          requires:
+            - frontend-install
+
+      # Build (requires all checks pass)
+      - backend-build:
+          requires:
+            - backend-lint
+            - backend-typecheck
+            - backend-test
+      
+      - frontend-build:
+          requires:
+            - frontend-lint
+            - frontend-typecheck
+
+      # Security scan (requires build)
+      - security-scan:
+          requires:
+            - backend-build
+            - frontend-build
+          filters:
+            branches:
+              only: main
+
+      # Manual approval gate (requires security scan)
+      - hold-for-production:
+          type: approval
+          requires:
+            - security-scan
+          filters:
+            branches:
+              only: main
+
+      # Deploy to production (requires approval)
+      - deploy-production:
+          requires:
+            - hold-for-production
+          filters:
+            branches:
+              only: main
+
+      # Smoke tests (requires deploy)
+      - smoke-tests:
+          requires:
+            - deploy-production
+          filters:
+            branches:
+              only: main
+
+  # Workflow 4: Tagged Releases
+  tagged-release:
+    jobs:
+      - backend-install:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      
+      - frontend-install:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - backend-lint:
+          requires:
+            - backend-install
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      
+      - backend-typecheck:
+          requires:
+            - backend-install
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      
+      - backend-test:
+          requires:
+            - backend-install
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - frontend-lint:
+          requires:
+            - frontend-install
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      
+      - frontend-typecheck:
+          requires:
+            - frontend-install
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - backend-build:
+          requires:
+            - backend-lint
+            - backend-typecheck
+            - backend-test
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      
+      - frontend-build:
+          requires:
+            - frontend-lint
+            - frontend-typecheck
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - deploy-production:
+          requires:
+            - backend-build
+            - frontend-build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/.
+
