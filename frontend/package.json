@@ -17,7 +17,7 @@
         "analyze": "astro build --verbose"
     },
     "dependencies": {
-        "@astrojs/check": "^0.9.4",
+        "@astrojs/check": "^0.9.5",
         "@astrojs/node": "^9.4.3",
         "@astrojs/react": "^4.4.0",
         "astro": "5.14.3",
