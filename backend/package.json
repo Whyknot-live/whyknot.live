@@ -17,7 +17,7 @@
  },
  "dependencies": {
  "@hono/node-server": "^1.19.5",
- "dotenv": "^16.0.0",
+ "dotenv": "^17.2.3",
  "hono": "^4.8.0",
  "mongodb": "^5.8.0",
  "nodemailer": "^7.0.10",
