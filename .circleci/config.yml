@@ -35,7 +35,7 @@ jobs:
       - restore-backend-cache
       - run:
           name: Install backend dependencies
-          command: 
+          command: |
             cd backend
             npm ci
       - save_cache:
@@ -55,7 +55,7 @@ jobs:
           at: .
       - run:
           name: Lint backend code
-          command: 
+          command: |
             cd backend
             npm run lint
 
@@ -67,7 +67,7 @@ jobs:
           at: .
       - run:
           name: TypeScript type check (backend)
-          command: 
+          command: |
             cd backend
             npm run typecheck
 
@@ -79,7 +79,7 @@ jobs:
           at: .
       - run:
           name: Run backend tests
-          command: 
+          command: |
             cd backend
             npm test
 
@@ -91,7 +91,7 @@ jobs:
           at: .
       - run:
           name: Build backend
-          command: 
+          command: |
             cd backend
             npm run build
       - persist_to_workspace:
@@ -107,7 +107,7 @@ jobs:
       - restore-frontend-cache
       - run:
           name: Install frontend dependencies
-          command: 
+          command: |
             cd frontend
             npm ci
       - save_cache:
@@ -127,7 +127,7 @@ jobs:
           at: .
       - run:
           name: Lint frontend code
-          command: 
+          command: |
             cd frontend
             npm run lint
 
@@ -139,7 +139,7 @@ jobs:
           at: .
       - run:
           name: Astro type check (frontend)
-          command: 
+          command: |
             cd frontend
             npm run check
 
@@ -151,7 +151,7 @@ jobs:
           at: .
       - run:
           name: Build frontend for production
-          command: 
+          command: |
             cd frontend
             npm run build
       - persist_to_workspace:
@@ -168,11 +168,11 @@ jobs:
           at: .
       - run:
           name: Run security audit
-          command: 
+          command: |
             echo "Running security audit..."
-            cd backend && npm audit --audit-level=moderate  true
-            cd ../frontend && npm audit --audit-level=moderate  true
-            echo " Security audit complete"
+            cd backend && npm audit --audit-level=moderate || true
+            cd ../frontend && npm audit --audit-level=moderate || true
+            echo "✓ Security audit complete"
 
   # Deploy to staging environment
   deploy-staging:
@@ -183,7 +183,7 @@ jobs:
           at: .
       - run:
           name: Deploy to staging
-          command: 
+          command: |
             echo "Deploying to staging environment..."
             echo "Using GitHub Environment: staging"
             # GitHub Environment variables available:
@@ -202,7 +202,7 @@ jobs:
           at: .
       - run:
           name: Deploy to production
-          command: 
+          command: |
             echo "Deploying to production environment..."
             echo "Using GitHub Environment: production"
             echo "Protection: Required reviewer + 15 min wait timer"
@@ -221,11 +221,11 @@ jobs:
     steps:
       - run:
           name: Run smoke tests
-          command: 
+          command: |
             echo "Running smoke tests..."
             # Add basic health check commands
-            # curl -f https://api.whyknot.live/health  exit 1
-            echo " Smoke tests passed"
+            # curl -f https://api.whyknot.live/health || exit 1
+            echo "✓ Smoke tests passed"
 
 # Define workflows
 workflows:
