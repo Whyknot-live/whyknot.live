@@ -4,7 +4,7 @@ import node from '@astrojs/node';
 // https://docs.astro.build/en/guides/configuring-astro/
 export default defineConfig({
     site: 'https://whyknot.live',
-    output: 'server',
+    output: 'static',
     adapter: node({
         mode: 'standalone'
     }),
