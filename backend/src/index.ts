@@ -1,7 +1,5 @@
 import 'dotenv/config'
 import { Hono } from 'hono'
-import { serve } from '@hono/node-server'
-import { setTimeout as scheduleTimeout } from 'node:timers'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { timeout } from 'hono/timeout'
@@ -97,29 +95,18 @@ async function startup() {
 const port = Number(process.env.PORT ?? 10000)
 const host = '0.0.0.0' // Required for Render
 
-let server: ReturnType<typeof serve> | null = null
-
 // Graceful shutdown
 async function shutdown(signal: string) {
  console.info(`\n${signal} received, starting graceful shutdown...`)
  
- if (server) {
- console.info('Closing HTTP server...')
- // Give existing requests 10s to finish
- scheduleTimeout(() => {
- console.info('Forcing server close')
- process.exit(1)
- }, 10000)
- }
- 
  try {
- await disconnectRedis()
- await closeMongo()
- console.info('[check] All connections closed')
- process.exit(0)
+  await disconnectRedis()
+  await closeMongo()
+  console.info('[check] All connections closed')
+  process.exit(0)
  } catch (error) {
- console.error('Error during shutdown:', error)
- process.exit(1)
+  console.error('Error during shutdown:', error)
+  process.exit(1)
  }
 }
 
@@ -128,18 +115,19 @@ process.on('SIGINT', () => shutdown('SIGINT'))
 
 // Start server
 startup().then(() => {
- server = serve({ 
- fetch: app.fetch, 
- port,
- hostname: host
- }, () => {
  if (process.env.NODE_ENV !== 'test') {
- console.info(`\n Server running on http://${host}:${port}`)
- console.info(` Health check: http://${host}:${port}/health`)
- console.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}\n`)
+  console.info(`\n Server running on http://${host}:${port}`)
+  console.info(` Health check: http://${host}:${port}/health`)
+  console.info(`Environment: ${process.env.NODE_ENV || 'development'}\n`)
  }
- })
 }).catch((error) => {
  console.error('Failed to start server:', error)
  process.exit(1)
 })
+
+// Export for Bun server
+export default {
+ port,
+ hostname: host,
+ fetch: app.fetch,
+}
