@@ -1,9 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-// Redirect to main coming soon page during launch phase
-return Astro.redirect('/', 302);
-
 const schema = {
  "@context": "https://schema.org",
  "@type": "AboutPage",
@@ -11,6 +8,9 @@ const schema = {
  "description": "Learn about WhyKnot's mission to curate the web's most innovative websites and tools for creators, developers, and entrepreneurs.",
  "url": "https://whyknot.live/about"
 };
+
+// Redirect to main coming soon page during launch phase
+return Astro.redirect('/', 302);
 ---
 
 <Layout 
