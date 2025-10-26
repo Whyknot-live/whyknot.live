@@ -1,9 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-// Redirect to main coming soon page during launch phase
-return Astro.redirect('/', 302);
-
 const title = "Design System - WhyKnot";
 const description = "WhyKnot's comprehensive component library and design tokens";
 const schema = {
@@ -13,6 +10,9 @@ const schema = {
  "description": description,
  "url": "https://whyknot.live/design-system"
 };
+
+// Redirect to main coming soon page during launch phase
+return Astro.redirect('/', 302);
 --- 
 
 <Layout

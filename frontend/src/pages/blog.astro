@@ -1,9 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-// Redirect to main coming soon page during launch phase
-return Astro.redirect('/', 302);
-
 // Mock data for when content collections are implemented
 const allPosts: any[] = [];
 const featuredPosts: any[] = [];
@@ -22,6 +19,9 @@ const schema = {
  "description": "Explore our blog for expert insights on innovative tools, productivity tips, and trends that can transform your workflow.",
  "url": "https://whyknot.live/blog"
 };
+
+// Redirect to main coming soon page during launch phase
+return Astro.redirect('/', 302);
 ---
 
 <Layout 
