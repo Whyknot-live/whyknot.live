@@ -8,7 +8,7 @@
     },
     "scripts": {
         "dev": "astro dev",
-        "start": "node ./dist/server/entry.mjs",
+        "start": "astro preview",
         "build": "astro check && astro build",
         "build:production": "NODE_ENV=production astro build",
         "preview": "astro preview",
@@ -18,7 +18,6 @@
     },
     "dependencies": {
         "@astrojs/check": "^0.9.5",
-        "@astrojs/node": "^9.5.0",
         "@astrojs/react": "^4.4.0",
         "astro": "5.15.1",
         "typescript": "^5.9.3"
