@@ -5,8 +5,8 @@
  "main": "dist/index.js",
  "scripts": {
   "dev": "bun --watch src/index.ts",
-  "build": "bun build --compile --minify --sourcemap src/index.ts --outfile whyknot-backend",
-  "start": "bun run dist/index.js",
+  "build": "bun build src/index.ts --outdir dist --target bun",
+  "start": "NODE_ENV=production bun run src/index.ts",
   "typecheck": "tsc --noEmit",
   "lint": "eslint src --ext .ts",
   "lint:fix": "eslint src --ext .ts --fix",
