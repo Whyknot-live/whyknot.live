@@ -24,9 +24,15 @@ app.use('*', timeout(30000))
 // Security headers for all routes
 app.use('*', securityHeaders)
 
-// CORS for API routes
+// CORS for API routes - allow both www and non-www domains
+const corsOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) ?? ['https://whyknot.live', 'https://www.whyknot.live'];
+// Add localhost for development
+if (process.env.NODE_ENV !== 'production') {
+ corsOrigins.push('http://localhost:4321', 'http://127.0.0.1:4321');
+}
+
 app.use('/api/*', cors({ 
- origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
+ origin: corsOrigins,
  credentials: true,
  allowMethods: ['GET', 'POST', 'OPTIONS'],
  allowHeaders: ['Content-Type', 'Authorization'],

@@ -1,4 +1,4 @@
-import { MongoClient, Db } from 'mongodb'
+import { MongoClient, Db, ServerApiVersion } from 'mongodb'
 
 let client: MongoClient | null = null
 let db: Db | null = null
@@ -14,13 +14,18 @@ export async function connectMongo(uri: string, dbName: string) {
  maxPoolSize: 3, // Even more conservative for Render free tier
  minPoolSize: 1,
  maxIdleTimeMS: 10000, // Close idle connections after 10s
- serverSelectionTimeoutMS: 15000,
- socketTimeoutMS: 45000,
- connectTimeoutMS: 15000,
+ serverSelectionTimeoutMS: 60000, // Allow cold-started Atlas clusters to come back online
+ socketTimeoutMS: 60000,
+ connectTimeoutMS: 60000,
  retryWrites: true,
  retryReads: true,
  heartbeatFrequencyMS: 10000,
- compressors: ['snappy', 'zlib'], // Enable compression to reduce data transfer
+ compressors: ['zlib'],
+ serverApi: {
+ version: ServerApiVersion.v1,
+ strict: false,
+ deprecationErrors: true,
+ },
  // Bun TLS compatibility - required for Bun runtime
  tls: true,
  tlsAllowInvalidCertificates: true, // Required for Bun compatibility with MongoDB Atlas
