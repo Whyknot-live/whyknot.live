@@ -195,11 +195,19 @@ return Astro.redirect('/', 302);
  class="form-input flex-1"
  aria-describedby="newsletter-privacy"
  />
- <button type="submit" class="btn btn-primary newsletter-button">
- Subscribe
- <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+ <button type="submit" class="btn btn-primary newsletter-button" id="newsletter-submit">
+ <span class="btn-content">
+ <span class="btn-text">Subscribe</span>
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="btn-icon">
  <path d="M8.5 3L13.5 8L8.5 13M13 8H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
  </svg>
+ <span class="btn-loader is-hidden" aria-hidden="true">
+ <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/>
+ <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+ </svg>
+ </span>
+ </span>
  </button>
  </div>
  <p id="newsletter-privacy" class="text-muted text-sm">
@@ -337,43 +345,79 @@ function initBlogSearch() {
 // Newsletter form handling
 function initNewsletterForm() {
  const form = document.querySelector('.newsletter-form') as HTMLFormElement;
- if (!form) return;
+ const submitBtn = document.getElementById('newsletter-submit') as HTMLButtonElement | null;
+ const btnText = submitBtn?.querySelector('.btn-text') as HTMLElement | null;
+ const btnLoader = submitBtn?.querySelector('.btn-loader') as HTMLElement | null;
+ const btnIcon = submitBtn?.querySelector('.btn-icon') as HTMLElement | null;
+ 
+ if (!form || !submitBtn) return;
  
  form.addEventListener('submit', async (e) => {
  e.preventDefault();
  
  const formData = new FormData(form);
- const email = formData.get('email');
+ const email = formData.get('email') as string;
  
- if (!email) return;
+ if (!email || !isValidEmail(email)) {
+ alert('Please enter a valid email address.');
+ return;
+ }
  
- const button = form.querySelector('.newsletter-button') as HTMLButtonElement;
- if (!button) return;
- const originalText = button.innerHTML;
+ // Show loading state
+ submitBtn.disabled = true;
+ btnText?.classList.add('is-hidden');
+ btnIcon?.classList.add('is-hidden');
+ btnLoader?.classList.remove('is-hidden');
  
  try {
- button.innerHTML = 'Subscribing...';
- button.disabled = true;
+ // Determine API URL based on environment
+ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:10000';
+ const apiUrl = `${apiBaseUrl}/api/waitlist`;
  
- // In a real implementation, this would make an API call
- await new Promise(resolve => setTimeout(resolve, 1000));
+ // Submit to backend API
+ const response = await fetch(apiUrl, {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ },
+ body: JSON.stringify({ 
+ email,
+ type: 'newsletter',
+ timestamp: new Date().toISOString()
+ })
+ });
  
- button.innerHTML = 'Subscribed!';
+ if (!response.ok) {
+ if (response.status === 409) {
+ alert('This email is already subscribed.');
+ } else if (response.status === 429) {
+ alert('Too many requests. Please try again later.');
+ } else {
+ alert('Failed to subscribe. Please try again.');
+ }
+ return;
+ }
+ 
+ // Success
+ alert('Thank you for subscribing! Check your email for confirmation.');
  form.reset();
  
- setTimeout(() => {
- button.innerHTML = originalText;
- button.disabled = false;
- }, 2000);
- 
  } catch (error) {
- button.innerHTML = 'Try Again';
- setTimeout(() => {
- button.innerHTML = originalText;
- button.disabled = false;
- }, 2000);
+ console.error('Newsletter subscription error:', error);
+ alert('Network error. Please try again.');
+ } finally {
+ // Reset button state
+ submitBtn.disabled = false;
+ btnText?.classList.remove('is-hidden');
+ btnIcon?.classList.remove('is-hidden');
+ btnLoader?.classList.add('is-hidden');
  }
  });
+ 
+ function isValidEmail(email: string): boolean {
+ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+ return emailRegex.test(email);
+ }
 }
 
 // Initialize when DOM is loaded

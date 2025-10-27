@@ -8,7 +8,10 @@ import { connectRedis, rateLimitCheck } from '../utils/redis'
 const router = new Hono()
 
 const schema = z.object({
- email: z.string().email()
+ email: z.string().email(),
+ interests: z.array(z.string()).optional(),
+ timestamp: z.string().optional(),
+ type: z.string().optional()
 })
 
 // naive in-memory rate limit per IP (fallback)
@@ -61,7 +64,16 @@ router.post('/waitlist', async (c) => {
  }
 
  try {
- const res = await db.collection('waitlist').insertOne({ email: parsed.data.email, createdAt: new Date() })
+ // Prepare document with all data
+ const document = {
+ email: parsed.data.email,
+ interests: parsed.data.interests || [],
+ type: parsed.data.type || 'waitlist',
+ createdAt: new Date(),
+ ...(parsed.data.timestamp && { submittedAt: new Date(parsed.data.timestamp) })
+ }
+ 
+ const res = await db.collection('waitlist').insertOne(document)
  
  // Get waitlist position for the email
  const position = await db.collection('waitlist').countDocuments()
