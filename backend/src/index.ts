@@ -72,12 +72,17 @@ app.get('/health', async (c) => {
  }
 })
 
-// Startup function
+// Startup function with retry logic
 async function startup() {
+ const maxRetries = 3
+ let retries = 0
+ 
+ while (retries < maxRetries) {
  try {
  // Connect to MongoDB
+ console.info(`[check] Attempting MongoDB connection (attempt ${retries + 1}/${maxRetries})...`)
  await connectMongo(env.MONGODB_URI, env.MONGODB_DB)
- console.info('[check] MongoDB connected')
+ console.info('[check] MongoDB connected successfully')
  
  // Connect to Redis if configured
  if (env.REDIS_URL) {
@@ -86,9 +91,22 @@ async function startup() {
  } else {
  console.warn('[warning] Redis not configured - using in-memory rate limiting')
  }
+ 
+ return // Success
  } catch (error) {
- console.error('Failed to connect to services:', error)
+ retries++
+ console.error(`Failed to connect to services (attempt ${retries}/${maxRetries}):`, error)
+ 
+ if (retries >= maxRetries) {
+ console.error('Max retries reached. Exiting...')
  process.exit(1)
+ }
+ 
+ // Wait before retrying (exponential backoff)
+ const waitTime = Math.min(1000 * Math.pow(2, retries - 1), 5000)
+ console.info(`Retrying in ${waitTime}ms...`)
+ await new Promise(resolve => setTimeout(resolve, waitTime))
+ }
  }
 }
 

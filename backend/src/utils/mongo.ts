@@ -11,25 +11,38 @@ export async function connectMongo(uri: string, dbName: string) {
  // - Keep pool small (max 5) to avoid exhausting connections
  // - Use aggressive timeouts to free up connections quickly
  client = new MongoClient(uri, {
- maxPoolSize: 5, // Reduced from 10 for free tier
- minPoolSize: 1, // Reduced from 2 for free tier
+ maxPoolSize: 3, // Even more conservative for Render free tier
+ minPoolSize: 1,
  maxIdleTimeMS: 10000, // Close idle connections after 10s
- serverSelectionTimeoutMS: 5000,
- socketTimeoutMS: 30000, // Reduced from 45s
- connectTimeoutMS: 10000,
+ serverSelectionTimeoutMS: 10000, // Increased from 5s
+ socketTimeoutMS: 45000, // Increased for stability
+ connectTimeoutMS: 15000, // Increased from 10s
  retryWrites: true,
  retryReads: true,
+ heartbeatFrequencyMS: 10000,
  compressors: ['snappy', 'zlib'], // Enable compression to reduce data transfer
+ tlsAllowInvalidCertificates: false,
+ tlsAllowInvalidHostnames: false,
+ directConnection: false, // Important for replica sets
  })
  
  await client.connect()
  db = client.db(dbName)
+ 
+ // Verify connection
+ await db.admin().ping()
 
  // Ensure indexes with background creation to not block
+ try {
  await db.collection('waitlist').createIndex(
  { email: 1 }, 
  { unique: true, background: true }
  )
+ console.info('MongoDB indexes created successfully')
+ } catch (error) {
+ console.warn('Index creation warning:', error)
+ // Don't fail on index creation errors in production
+ }
  
  // Add TTL index for automatic cleanup if needed (optional)
  // Uncomment to auto-delete entries after 365 days
@@ -38,7 +51,7 @@ export async function connectMongo(uri: string, dbName: string) {
  //   { expireAfterSeconds: 31536000, background: true }
  // )
 
- console.info('MongoDB connected and indexes created')
+ console.info('MongoDB connected and ready')
  return { client, db }
 }
 

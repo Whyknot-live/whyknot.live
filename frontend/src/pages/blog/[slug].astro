@@ -1,0 +1,251 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+// For static builds with client-side fetching, we return a wildcard page
+// This generates a single page that will handle all /blog/* routes
+export function getStaticPaths() {
+	// Return a wildcard path that matches all slugs
+	return [{ params: { slug: '...' } }];
+}
+---
+
+<Layout title="Blog Post — WhyKnot" description="Read our latest insights and articles" constrainContent>
+	<div class="progress-bar fixed top-0 left-0 h-1 bg-accent z-50" id="progress-bar"></div>
+	
+	<!-- Loading State -->
+	<div id="loading-state" class="section-spacing text-center">
+		<div class="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-accent rounded-full" role="status" aria-label="Loading">
+			<span class="sr-only">Loading...</span>
+		</div>
+		<p class="text-muted mt-4">Loading blog post...</p>
+	</div>
+	
+	<!-- Error State -->
+	<div id="error-state" class="section-spacing text-center" style="display: none;">
+		<div class="card" data-tone="error">
+			<div class="card-content">
+				<h1 class="text-2xl font-bold mb-4">Blog Post Not Found</h1>
+				<p class="text-muted mb-6">Sorry, we couldn't find the blog post you're looking for.</p>
+				<a href="/blog" class="btn btn-primary">Back to Blog</a>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Main Content (hidden until loaded) -->
+	<article id="blog-content" class="article-container" itemscope itemtype="https://schema.org/BlogPosting" style="display: none;">
+		<div class="section-spacing border-b border-outline-variant">
+			<div class="section-container max-w-4xl">
+				<header class="article-header text-center mb-8">
+					<div class="mb-4">
+						<a href="#" class="badge" data-category></a>
+					</div>
+					<h1 class="article-title" itemprop="headline" data-title></h1>
+					<p class="text-muted text-lg mt-4" itemprop="description" data-description></p>
+					<div class="article-meta flex items-center justify-center gap-4 mt-6 text-sm text-muted">
+						<span itemprop="author" itemscope itemtype="https://schema.org/Person">
+							<span itemprop="name" data-author></span>
+						</span>
+						<span class="separator">•</span>
+						<time datetime="" itemprop="datePublished" data-date></time>
+						<span class="separator" data-readtime-separator style="display: none;">•</span>
+						<span data-readtime style="display: none;"></span>
+					</div>
+				</header>
+			</div>
+		</div>
+
+		<div class="section-spacing">
+			<div class="section-container">
+				<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+					
+					<!-- Share Section -->
+					<div class="lg:col-span-1">
+						<div class="card sticky top-8">
+							<div class="card-content">
+								<h3 class="card-title text-sm mb-4">Share this article</h3>
+								<div class="space-y-2" id="share-buttons">
+									<!-- Will be populated dynamically -->
+								</div>
+							</div>
+						</div>
+
+						<!-- Table of Contents -->
+						<div class="card mt-6" id="toc">
+							<div class="card-content">
+								<h3 class="card-title text-sm mb-4">Table of Contents</h3>
+								<nav id="toc-nav" class="toc-navigation"></nav>
+							</div>
+						</div>
+					</div>
+
+					<!-- Main Content -->
+					<div class="lg:col-span-3">
+						<div class="prose prose-gray max-w-none" data-content></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<section id="related-posts-section" class="section-spacing border-t border-outline-variant" style="display: none;">
+			<div class="section-container">
+				<h2 class="section-title text-center mb-12">Related Articles</h2>
+				<div id="related-posts-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+			</div>
+		</section>
+	</article>
+</Layout>
+
+<script>
+	// Get slug from URL
+	const pathParts = window.location.pathname.split('/');
+	const slug = pathParts[pathParts.length - 1];
+	
+	// API endpoint - use environment variable or default to production
+	const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'https://api.whyknot.live';
+	
+	// Fetch blog post data
+	async function loadBlogPost() {
+		try {
+			const response = await fetch(`${API_BASE_URL}/api/blog/${slug}`);
+			
+			if (!response.ok) {
+				throw new Error('Post not found');
+			}
+			
+			const post = await response.json();
+			
+			// Update page title
+			document.title = `${post.title} — WhyKnot Blog`;
+			
+			// Update meta description
+			const metaDesc = document.querySelector('meta[name="description"]');
+			if (metaDesc) metaDesc.setAttribute('content', post.description);
+			
+			// Populate content
+			const categoryEl = document.querySelector('[data-category]') as HTMLElement;
+			const titleEl = document.querySelector('[data-title]');
+			const descriptionEl = document.querySelector('[data-description]');
+			const authorEl = document.querySelector('[data-author]');
+			const dateEl = document.querySelector('[data-date]') as HTMLElement;
+			const readtimeEl = document.querySelector('[data-readtime]') as HTMLElement;
+			const readtimeSeparator = document.querySelector('[data-readtime-separator]') as HTMLElement;
+			const contentEl = document.querySelector('[data-content]');
+			
+			if (categoryEl && post.category) {
+				categoryEl.textContent = post.category;
+				categoryEl.setAttribute('href', `/blog/category/${post.category.toLowerCase().replace(/\s+/g, '-')}`);
+			}
+			if (titleEl) titleEl.textContent = post.title;
+			if (descriptionEl) descriptionEl.textContent = post.description;
+			if (authorEl) authorEl.textContent = post.author || 'WhyKnot Team';
+			if (dateEl) {
+				const date = new Date(post.publishDate);
+				dateEl.textContent = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+				dateEl.setAttribute('datetime', post.publishDate);
+			}
+			if (post.readTime && readtimeEl && readtimeSeparator) {
+				readtimeEl.textContent = post.readTime;
+				readtimeEl.style.display = '';
+				readtimeSeparator.style.display = '';
+			}
+			if (contentEl) contentEl.innerHTML = post.content;
+			
+			// Setup share buttons
+			setupShareButtons(post.title);
+			
+			// Load related posts if available
+			if (post.relatedPosts && post.relatedPosts.length > 0) {
+				loadRelatedPosts(post.relatedPosts);
+			}
+			
+			// Show content, hide loading
+			const loadingState = document.getElementById('loading-state');
+			const blogContent = document.getElementById('blog-content');
+			if (loadingState) loadingState.style.display = 'none';
+			if (blogContent) blogContent.style.display = 'block';
+			
+			// Initialize TOC and other features
+			generateTableOfContents();
+		} catch (error) {
+			console.error('Error loading blog post:', error);
+			const loadingState = document.getElementById('loading-state');
+			const errorState = document.getElementById('error-state');
+			if (loadingState) loadingState.style.display = 'none';
+			if (errorState) errorState.style.display = 'block';
+		}
+	}
+	
+	function setupShareButtons(title: string) {
+		const shareButtons = document.getElementById('share-buttons');
+		if (!shareButtons) return;
+		
+		const currentUrl = encodeURIComponent(window.location.href);
+		const encodedTitle = encodeURIComponent(title);
+		
+		shareButtons.innerHTML = `
+			<a href="https://twitter.com/intent/tweet?text=${encodedTitle}&url=${currentUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">Twitter</a>
+			<a href="https://www.linkedin.com/sharing/share-offsite/?url=${currentUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">LinkedIn</a>
+			<a href="https://www.facebook.com/sharer/sharer.php?u=${currentUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">Facebook</a>
+		`;
+	}
+	
+	function loadRelatedPosts(relatedPosts: any[]) {
+		const gridEl = document.getElementById('related-posts-grid');
+		const sectionEl = document.getElementById('related-posts-section');
+		
+		if (!gridEl || !sectionEl) return;
+		
+		gridEl.innerHTML = relatedPosts.map(post => `
+			<a href="/blog/${post.slug}" class="card hover-lift">
+				${post.image ? `<img src="${post.image}" alt="${post.title}" loading="lazy" decoding="async" class="w-full h-48 object-cover rounded-t-lg" />` : ''}
+				<div class="card-content">
+					<h3 class="card-title">${post.title}</h3>
+					<p class="text-muted">${post.description}</p>
+				</div>
+			</a>
+		`).join('');
+		
+		sectionEl.style.display = 'block';
+	}
+	
+	function generateTableOfContents() {
+		const contentEl = document.querySelector('[data-content]');
+		const tocNav = document.getElementById('toc-nav');
+		const tocCard = document.getElementById('toc');
+		
+		if (!contentEl || !tocNav) return;
+		
+		const headings = contentEl.querySelectorAll('h2, h3');
+		if (headings.length === 0) {
+			if (tocCard) tocCard.style.display = 'none';
+			return;
+		}
+		
+		const tocHtml = Array.from(headings).map((heading, index) => {
+			const id = `heading-${index}`;
+			heading.id = id;
+			const level = heading.tagName === 'H2' ? '' : 'pl-4';
+			return `<a href="#${id}" class="block py-1 text-muted hover:text-accent transition-colors ${level}">${heading.textContent}</a>`;
+		}).join('');
+		
+		tocNav.innerHTML = tocHtml;
+	}
+	
+	// Progress bar
+	const progressBar = document.getElementById('progress-bar');
+	
+	function updateProgress() {
+		const scrollTop = window.scrollY;
+		const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+		const scrollPercent = (scrollTop / docHeight) * 100;
+		if (progressBar) {
+			progressBar.style.width = scrollPercent + '%';
+		}
+	}
+	
+	window.addEventListener('scroll', updateProgress);
+	window.addEventListener('resize', updateProgress);
+	
+	// Load post on page load
+	loadBlogPost();
+</script>
