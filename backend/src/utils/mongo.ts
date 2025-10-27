@@ -14,15 +14,17 @@ export async function connectMongo(uri: string, dbName: string) {
  maxPoolSize: 3, // Even more conservative for Render free tier
  minPoolSize: 1,
  maxIdleTimeMS: 10000, // Close idle connections after 10s
- serverSelectionTimeoutMS: 10000, // Increased from 5s
- socketTimeoutMS: 45000, // Increased for stability
- connectTimeoutMS: 15000, // Increased from 10s
+ serverSelectionTimeoutMS: 15000,
+ socketTimeoutMS: 45000,
+ connectTimeoutMS: 15000,
  retryWrites: true,
  retryReads: true,
  heartbeatFrequencyMS: 10000,
  compressors: ['snappy', 'zlib'], // Enable compression to reduce data transfer
- tlsAllowInvalidCertificates: false,
- tlsAllowInvalidHostnames: false,
+ // Bun TLS compatibility - required for Bun runtime
+ tls: true,
+ tlsAllowInvalidCertificates: true, // Required for Bun compatibility with MongoDB Atlas
+ tlsAllowInvalidHostnames: true, // Required for Bun compatibility
  directConnection: false, // Important for replica sets
  })
  
