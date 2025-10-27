@@ -23,6 +23,12 @@ export default [
         module: 'readonly',
         require: 'readonly',
         exports: 'readonly',
+        setTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        fetch: 'readonly',
+        AbortSignal: 'readonly',
+        NodeJS: 'readonly',
       },
     },
     plugins: {

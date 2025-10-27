@@ -1,10 +1,12 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 
-// For catch-all routes in static mode, return undefined to render 404-like behavior
-// but still generate the page for client-side handling
+// This catch-all route handles individual blog posts like /blog/my-post
+// Note: The main /blog page is handled by blog.astro
 export function getStaticPaths() {
-	return [{ params: { slug: undefined } }];
+	// Return empty array - this will be populated by CMS/API in the future
+	// For now, pages will be handled client-side
+	return [];
 }
 ---
 

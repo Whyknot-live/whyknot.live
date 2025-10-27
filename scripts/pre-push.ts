@@ -212,7 +212,8 @@ class PrePushValidator {
  const startTime = Date.now();
  try {
  this.log(' Running: Backend security audit', BLUE);
- execSync('npm audit --audit-level=moderate || true', {
+ // Use bun's audit command instead of npm
+ execSync('bun pm audit || true', {
  cwd: backendDir,
  stdio: 'inherit'
  });
@@ -236,7 +237,8 @@ class PrePushValidator {
  const startTime = Date.now();
  try {
  this.log(' Running: Frontend security audit', BLUE);
- execSync('npm audit --audit-level=moderate || true', {
+ // Use bun's audit command instead of npm
+ execSync('bun pm audit || true', {
  cwd: frontendDir,
  stdio: 'inherit'
  });

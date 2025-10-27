@@ -127,8 +127,14 @@ const finalSchema = schema || defaultSchema;
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 
 <!-- Performance Hints -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" media="print" onload="this.media='all'" />
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" as="style" id="font-preload" />
 <noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" /></noscript>
+<script is:inline>
+  const fontLink = document.getElementById('font-preload');
+  if (fontLink) {
+    fontLink.rel = 'stylesheet';
+  }
+</script>
 
 <!-- Feed Discovery -->
 <!-- If/when RSS is available, expose it here -->

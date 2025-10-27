@@ -22,6 +22,7 @@
   "nodemailer": "^7.0.10",
   "redis": "^5.9.0",
   "resend": "^6.2.2",
+  "socks": "^2.8.7",
   "zod": "^4.1.12"
  },
  "devDependencies": {
