@@ -62,9 +62,14 @@ router.post('/waitlist', async (c) => {
 
  try {
  const res = await db.collection('waitlist').insertOne({ email: parsed.data.email, createdAt: new Date() })
- // send optional email (fire-and-forget)
- void sendWelcomeEmailIfEnabled(parsed.data.email)
- return c.json({ ok: true, id: res.insertedId })
+ 
+ // Get waitlist position for the email
+ const position = await db.collection('waitlist').countDocuments()
+ 
+ // Send optional email with position (fire-and-forget)
+ void sendWelcomeEmailIfEnabled(parsed.data.email, position)
+ 
+ return c.json({ ok: true, id: res.insertedId, position })
  } catch (err: unknown) {
  if (err && typeof err === 'object' && 'code' in err && err.code === 11000) {
  return c.json({ error: 'already_exists' }, 409)

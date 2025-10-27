@@ -31,22 +31,26 @@ export async function connectRedis(url?: string): Promise<RedisClientType> {
  throw new Error('REDIS_URL environment variable is required')
  }
 
- redisClient = createClient({
- url: redisUrl,
- socket: {
- connectTimeout: 10000,
- reconnectStrategy: (retries: number) => {
- if (retries > 10) {
- console.error('Redis: Max reconnection attempts reached')
- return new Error('Max reconnection attempts reached')
- }
- // Exponential backoff: 100ms, 200ms, 400ms, etc., max 3s
- return Math.min(retries * 100, 3000)
- }
- }
- })
+    // Redis Free Tier (Upstash/Redis Cloud) Optimizations:
+    // - Free tier: 10,000 commands/day, 30 connections max
+    // - Use minimal connections and aggressive timeouts
+    redisClient = createClient({
+      url: redisUrl,
+      socket: {
+        connectTimeout: 5000, // Faster timeout for free tier
+        reconnectStrategy: (retries: number) => {
+          // Reduce reconnection attempts for free tier
+          if (retries > 5) {
+            console.error('Redis: Max reconnection attempts reached')
+            return new Error('Max reconnection attempts reached')
+          }
+          // Exponential backoff: 200ms, 400ms, 800ms, 1.6s, 3s
+          return Math.min(retries * 200, 3000)
+        }
+      }
+    })
 
- redisClient.on('error', (err: Error) => {
+    redisClient.on('error', (err: Error) => {
  console.error('Redis Client Error:', err)
  })
 
@@ -98,18 +102,21 @@ export async function rateLimitCheck(
  windowSeconds: number = 60
 ): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
  const client = getRedisClient()
- const redisKey = `ratelimit:${key}`
+ const redisKey = `rl:${key}` // Shorter key to save memory
  
- const current = await client.incr(redisKey)
- 
- if (current === 1) {
- // First request in window, set expiration
+  // Use pipeline to reduce round trips (saves commands for free tier)
+  const pipeline = client.multi()
+  pipeline.incr(redisKey)
+  pipeline.ttl(redisKey)
+  
+  const results = await pipeline.exec()
+  const current = results[0] as unknown as number
+  const ttl = results[1] as unknown as number // Set expiration only on first request
+ if (current === 1 || ttl === -1) {
  await client.expire(redisKey, windowSeconds)
  }
  
- const ttl = await client.ttl(redisKey)
- const resetAt = Date.now() + (ttl * 1000)
- 
+ const resetAt = Date.now() + ((ttl > 0 ? ttl : windowSeconds) * 1000)
  const remaining = Math.max(0, maxRequests - current)
  const allowed = current <= maxRequests
  
@@ -122,19 +129,17 @@ export async function rateLimitCheck(
 
 /**
  * Cache helper for storing data with TTL
+ * Optimized for free tier with shorter default TTLs
  */
 export async function cacheSet(
  key: string,
  value: string,
- ttlSeconds?: number
+ ttlSeconds: number = 300 // Default 5 minutes (reduced from no limit)
 ): Promise<void> {
  const client = getRedisClient()
+ const redisKey = `c:${key}` // Shorter prefix
  
- if (ttlSeconds) {
- await client.setEx(key, ttlSeconds, value)
- } else {
- await client.set(key, value)
- }
+ await client.setEx(redisKey, ttlSeconds, value)
 }
 
 /**
@@ -142,7 +147,8 @@ export async function cacheSet(
  */
 export async function cacheGet(key: string): Promise<string | null> {
  const client = getRedisClient()
- return await client.get(key)
+ const redisKey = `c:${key}`
+ return await client.get(redisKey)
 }
 
 /**
@@ -150,7 +156,8 @@ export async function cacheGet(key: string): Promise<string | null> {
  */
 export async function cacheDelete(key: string): Promise<void> {
  const client = getRedisClient()
- await client.del(key)
+ const redisKey = `c:${key}`
+ await client.del(redisKey)
 }
 
 /**
@@ -158,20 +165,22 @@ export async function cacheDelete(key: string): Promise<void> {
  */
 export async function cacheExists(key: string): Promise<boolean> {
  const client = getRedisClient()
- const exists = await client.exists(key)
+ const redisKey = `c:${key}`
+ const exists = await client.exists(redisKey)
  return exists === 1
 }
 
 /**
  * Session storage helper
+ * Optimized for free tier with shorter TTL and keys
  */
 export async function sessionSet(
  sessionId: string,
  data: Record<string, unknown>,
- ttlSeconds: number = 86400 // 24 hours default
+ ttlSeconds: number = 3600 // Default 1 hour (reduced from 24h)
 ): Promise<void> {
  const client = getRedisClient()
- const key = `session:${sessionId}`
+ const key = `s:${sessionId}` // Shorter prefix
  await client.setEx(key, ttlSeconds, JSON.stringify(data))
 }
 
@@ -180,7 +189,7 @@ export async function sessionSet(
  */
 export async function sessionGet(sessionId: string): Promise<Record<string, unknown> | null> {
  const client = getRedisClient()
- const key = `session:${sessionId}`
+ const key = `s:${sessionId}`
  const data = await client.get(key)
  
  if (!data) return null
@@ -197,7 +206,7 @@ export async function sessionGet(sessionId: string): Promise<Record<string, unkn
  */
 export async function sessionDelete(sessionId: string): Promise<void> {
  const client = getRedisClient()
- const key = `session:${sessionId}`
+ const key = `s:${sessionId}`
  await client.del(key)
 }
 
