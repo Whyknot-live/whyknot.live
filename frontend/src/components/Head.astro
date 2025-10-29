@@ -57,12 +57,18 @@ const defaultSchema = {
 };
 
 const finalSchema = schema || defaultSchema;
+
+// Google AdSense ID from environment or default
+const adsenseId = import.meta.env.PUBLIC_GOOGLE_ADSENSE_ID || 'pub-1034433596436259';
 ---
 
 <!-- Essential Meta Tags -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
+
+<!-- Google AdSense Verification -->
+<meta name="google-adsense-account" content={`ca-${adsenseId}`} />
 
 <!-- SEO Meta Tags -->
 <title>{title}</title>

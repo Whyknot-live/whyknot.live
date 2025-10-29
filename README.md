@@ -60,10 +60,11 @@
 ### Current Features
 - **Coming Soon Landing Page**: Engaging scroll-based experience
 - **Waitlist System**: Join the alpha community
+- **🔐 Admin Dashboard**: Secure panel to manage waitlist users (NEW)
 - **Email Notifications**: Get notified when we launch
 - **Responsive Design**: Mobile-first approach
 - **SEO Optimized**: Built-in schema.org markup
-- **Security Hardened**: Rate limiting, CORS, security headers
+- **Security Hardened**: Rate limiting, CORS, security headers, JWT authentication
 
 ### Planned Features (Roadmap)
 - **Website Directory**: Browse curated collections
@@ -212,18 +213,60 @@ Frontend will run on `http://localhost:4321`
 docker-compose up --build
 ```
 
+### Admin Dashboard Setup
+
+To access the admin panel for managing waitlist users:
+
+1. **Configure Backend** - Add to `backend/.env`:
+```env
+ADMIN_PASSWORD=YourSecurePassword123!
+ADMIN_JWT_SECRET=generate-with-openssl-rand-hex-32
+```
+
+2. **Setup Admin Frontend**:
+```bash
+cd admin
+bun install
+cp .env.example .env
+```
+
+3. **Run Admin** (in separate terminal):
+```bash
+cd admin
+bun run dev
+```
+Admin panel runs on `http://localhost:4322`
+
+4. **Access Dashboard**: Open browser and login with your `ADMIN_PASSWORD`
+
+📖 **Full documentation**: See [ADMIN.md](./ADMIN.md) and [admin/README.md](./admin/README.md)
+
 ---
 
 ## Project Structure
 
 ```
 whyknot.live/
+├── admin/ # 🔐 Admin Dashboard (NEW)
+│ ├── src/
+│ │ ├── layouts/
+│ │ │ └── AdminLayout.astro # Admin base layout
+│ │ ├── pages/
+│ │ │ ├── index.astro # Login page
+│ │ │ └── dashboard.astro # Waitlist dashboard
+│ │ └── styles/
+│ │ ├── admin.css # Admin-specific styles
+│ │ └── tokens.css # Shared design tokens
+│ ├── astro.config.mjs
+│ ├── package.json
+│ └── README.md # Full admin documentation
 ├── backend/ # Backend API server
 │ ├── src/
 │ │ ├── index.ts # Entry point
 │ │ ├── middleware/
 │ │ │ └── security.ts # Security headers & middleware
 │ │ ├── routes/
+│ │ │ ├── admin.ts # 🔐 Admin API routes (NEW)
 │ │ │ └── waitlist.ts # Waitlist API routes
 │ │ ├── tests/
 │ │ │ └── schema.test.ts # Unit tests

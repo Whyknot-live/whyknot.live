@@ -1,0 +1,89 @@
+---
+export interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Admin Dashboard',
+  description = 'WhyKnot Admin Panel'
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content={description}>
+  <meta name="robots" content="noindex, nofollow">
+  <title>{title} | WhyKnot Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style is:global>
+    @import '../styles/admin.css';
+  </style>
+</head>
+<body>
+  <!-- Theme initialization script -->
+  <script is:inline>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      let theme;
+      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+        theme = savedTheme;
+      } else {
+        theme = systemPrefersDark ? 'dark' : 'light';
+      }
+      
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <slot />
+
+  <script>
+    // Global admin utilities
+    window.adminAPI = {
+      baseURL: import.meta.env.PUBLIC_API_URL || 'http://localhost:10000/api',
+      
+      getToken() {
+        return localStorage.getItem('adminToken');
+      },
+      
+      setToken(token: string) {
+        localStorage.setItem('adminToken', token);
+      },
+      
+      clearToken() {
+        localStorage.removeItem('adminToken');
+      },
+      
+      async fetch(endpoint: string, options: RequestInit = {}) {
+        const token = this.getToken();
+        
+        const headers = {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+          ...options.headers,
+        };
+        
+        const response = await fetch(`${this.baseURL}${endpoint}`, {
+          ...options,
+          headers,
+        });
+        
+        if (response.status === 401) {
+          // Token expired or invalid
+          this.clearToken();
+          window.location.href = '/';
+          throw new Error('Unauthorized');
+        }
+        
+        return response;
+      }
+    };
+  </script>
+</body>
+</html>

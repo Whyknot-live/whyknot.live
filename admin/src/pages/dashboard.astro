@@ -1,0 +1,217 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Dashboard">
+  <div class="admin-container">
+    <!-- Logout Button -->
+    <button id="logoutBtn" class="logout-btn">
+      Logout
+    </button>
+
+    <!-- Header -->
+    <div class="admin-header">
+      <h1>📊 Admin Dashboard</h1>
+      <p>WhyKnot Waitlist Management</p>
+    </div>
+
+    <!-- Stats -->
+    <div id="statsContainer" class="stats-grid" style="display: none;">
+      <div class="stat-card">
+        <div class="stat-label">Total Signups</div>
+        <div class="stat-value" id="statTotal">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Last 24 Hours</div>
+        <div class="stat-value" id="statLast24h">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Last 7 Days</div>
+        <div class="stat-value" id="statLast7days">-</div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading">
+      Loading dashboard...
+    </div>
+
+    <!-- Waitlist Table -->
+    <div id="tableContainer" style="display: none;">
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Email</th>
+              <th>Interests</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination">
+        <button id="prevBtn" disabled>Previous</button>
+        <span class="pagination-info" id="pageInfo">Page 1</span>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <h3>No Users Yet</h3>
+      <p>When users join the waitlist, they'll appear here.</p>
+    </div>
+  </div>
+
+  <script>
+    // Check authentication
+    if (!window.adminAPI.getToken()) {
+      window.location.href = '/';
+    }
+
+    let currentPage = 1;
+    const limit = 50;
+    let totalPages = 1;
+
+    const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
+    const loadingState = document.getElementById('loadingState') as HTMLDivElement;
+    const statsContainer = document.getElementById('statsContainer') as HTMLDivElement;
+    const tableContainer = document.getElementById('tableContainer') as HTMLDivElement;
+    const emptyState = document.getElementById('emptyState') as HTMLDivElement;
+    const tableBody = document.getElementById('tableBody') as HTMLTableSectionElement;
+    const prevBtn = document.getElementById('prevBtn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('nextBtn') as HTMLButtonElement;
+    const pageInfo = document.getElementById('pageInfo') as HTMLSpanElement;
+
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+      window.adminAPI.clearToken();
+      window.location.href = '/';
+    });
+
+    // Format date
+    function formatDate(dateString: string): string {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Load stats
+    async function loadStats() {
+      try {
+        const response = await window.adminAPI.fetch('/admin/stats');
+        const data = await response.json();
+
+        if (data.ok && data.stats) {
+          document.getElementById('statTotal')!.textContent = data.stats.total.toLocaleString();
+          document.getElementById('statLast24h')!.textContent = data.stats.last24h.toLocaleString();
+          document.getElementById('statLast7days')!.textContent = data.stats.last7days.toLocaleString();
+          statsContainer.style.display = 'grid';
+        }
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      }
+    }
+
+    // Load waitlist data
+    async function loadWaitlist(page = 1) {
+      try {
+        loadingState.style.display = 'flex';
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'none';
+
+        const response = await window.adminAPI.fetch(
+          `/admin/waitlist?page=${page}&limit=${limit}`
+        );
+        const data = await response.json();
+
+        if (!data.ok) {
+          throw new Error('Failed to load waitlist');
+        }
+
+        currentPage = data.pagination.page;
+        totalPages = data.pagination.pages;
+
+        // Update pagination
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+
+        // Populate table
+        tableBody.innerHTML = '';
+
+        if (data.data.length === 0) {
+          loadingState.style.display = 'none';
+          emptyState.style.display = 'block';
+          return;
+        }
+
+        data.data.forEach((user: any, index: number) => {
+          const row = document.createElement('tr');
+          const position = (currentPage - 1) * limit + index + 1;
+          
+          row.innerHTML = `
+            <td>${position}</td>
+            <td><strong>${user.email}</strong></td>
+            <td>
+              ${user.interests && user.interests.length > 0
+                ? user.interests.map((interest: string) => 
+                    `<span class="interest-badge">${interest}</span>`
+                  ).join('')
+                : '<span style="opacity: 0.5;">None</span>'
+              }
+            </td>
+            <td>${formatDate(user.createdAt)}</td>
+          `;
+          
+          tableBody.appendChild(row);
+        });
+
+        loadingState.style.display = 'none';
+        tableContainer.style.display = 'block';
+      } catch (error) {
+        console.error('Failed to load waitlist:', error);
+        loadingState.innerHTML = `
+          <div style="color: var(--color-danger);">
+            Failed to load waitlist. Please try again.
+          </div>
+        `;
+      }
+    }
+
+    // Pagination handlers
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        loadWaitlist(currentPage - 1);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        loadWaitlist(currentPage + 1);
+      }
+    });
+
+    // Initial load
+    Promise.all([loadStats(), loadWaitlist()]).catch(error => {
+      console.error('Initialization error:', error);
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+      loadStats();
+      loadWaitlist(currentPage);
+    }, 30000);
+  </script>
+</AdminLayout>

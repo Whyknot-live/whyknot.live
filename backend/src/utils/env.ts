@@ -11,7 +11,9 @@ const envSchema = z.object({
  SMTP_HOST: z.string().optional(),
  SMTP_PORT: z.string().optional(),
  SMTP_USER: z.string().optional(),
- SMTP_PASS: z.string().optional()
+ SMTP_PASS: z.string().optional(),
+ ADMIN_PASSWORD: z.string().min(8),
+ ADMIN_JWT_SECRET: z.string().min(32)
 })
 
 export function validateEnv() {

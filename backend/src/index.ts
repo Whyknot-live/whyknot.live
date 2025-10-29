@@ -5,6 +5,7 @@ import { logger } from 'hono/logger'
 import { timeout } from 'hono/timeout'
 import { securityHeaders, rateLimitMiddleware } from './middleware/security'
 import waitlistRouter from './routes/waitlist'
+import adminRouter from './routes/admin'
 import { validateEnv } from './utils/env'
 import { connectMongo, closeMongo, checkMongoHealth } from './utils/mongo'
 import { connectRedis, disconnectRedis, checkRedisHealth } from './utils/redis'
@@ -24,11 +25,11 @@ app.use('*', timeout(30000))
 // Security headers for all routes
 app.use('*', securityHeaders)
 
-// CORS for API routes - allow both www and non-www domains
+// CORS for API routes - allow both www and non-www domains, plus admin
 const corsOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) ?? ['https://whyknot.live', 'https://www.whyknot.live'];
-// Add localhost for development
+// Add localhost for development (frontend + admin)
 if (process.env.NODE_ENV !== 'production') {
- corsOrigins.push('http://localhost:4321', 'http://127.0.0.1:4321');
+ corsOrigins.push('http://localhost:4321', 'http://127.0.0.1:4321', 'http://localhost:4322', 'http://127.0.0.1:4322');
 }
 
 app.use('/api/*', cors({ 
@@ -44,6 +45,7 @@ app.use('/api/*', cors({
 app.use('/api/*', rateLimitMiddleware())
 
 app.route('/api', waitlistRouter)
+app.route('/api', adminRouter)
 
 // Root health check
 app.get('/', (c) => c.json({ 

@@ -1,0 +1,108 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Login">
+  <div class="login-container">
+    <div class="login-card">
+      <h1>🔐 Admin Login</h1>
+      <p>Enter your admin password to access the dashboard</p>
+
+      <div id="error" class="error-message" style="display: none;"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="Enter admin password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm') as HTMLFormElement;
+    const errorDiv = document.getElementById('error') as HTMLDivElement;
+    const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+    const passwordInput = document.getElementById('password') as HTMLInputElement;
+
+    // Check if already logged in
+    if (window.adminAPI.getToken()) {
+      window.location.href = '/dashboard';
+    }
+
+    function showError(message: string) {
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+
+    function hideError() {
+      errorDiv.style.display = 'none';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      const password = passwordInput.value;
+
+      if (!password) {
+        showError('Please enter a password');
+        return;
+      }
+
+      // Disable button
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in...';
+
+      try {
+        const response = await fetch(`${window.adminAPI.baseURL}/admin/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ password }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Login failed');
+        }
+
+        // Store token
+        window.adminAPI.setToken(data.token);
+
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message === 'invalid_credentials') {
+            showError('Invalid password. Please try again.');
+          } else {
+            showError('Login failed. Please try again.');
+          }
+        } else {
+          showError('An unexpected error occurred.');
+        }
+        
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    });
+  </script>
+</AdminLayout>
