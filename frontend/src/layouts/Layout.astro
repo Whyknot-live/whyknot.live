@@ -259,8 +259,8 @@ const currentYear = new Date().getFullYear();
 
  // Performance monitoring for Core Web Vitals (production-ready)
  function initPerformanceMonitoring() {
- // Only monitor performance in development or when explicitly enabled
- if ('performance' in window && (import.meta.env.DEV || window.location.search.includes('perf=1'))) {
+ // Only monitor performance when explicitly enabled via query param
+ if ('performance' in window && window.location.search.includes('perf=1')) {
  // Web Vitals monitoring
  function getCLS() {
  return new Promise((resolve) => {
@@ -321,9 +321,8 @@ const currentYear = new Date().getFullYear();
  lcp: lcp.status === 'fulfilled' ? lcp.value : null
  };
  
- if (import.meta.env.DEV) {
+ // Log metrics when performance monitoring is enabled
  console.log('Performance Metrics:', performanceData);
- }
  // Production: Send performanceData to your analytics service
  });
  }
