@@ -1,71 +1,70 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import ComingSoon from '../components/ComingSoon.astro';
-import Waitlist from '../components/Waitlist.astro';
+import Layout from "../layouts/Layout.astro";
+import ComingSoon from "../components/ComingSoon.astro";
+import Waitlist from "../components/Waitlist.astro";
 
 const title = "WhyKnot? - Launching Soon";
-const description = "Something amazing is coming December 19, 2025. Join our alpha community starting September 19th and be the first to discover the web's most innovative websites and tools.";
+const description =
+    "Something amazing is coming September 19, 2026. Join our alpha community starting September 19th and be the first to discover the web's most innovative websites and tools.";
 
 const schema = {
- "@context": "https://schema.org",
- "@type": "WebSite",
- "name": "WhyKnot",
- "description": description,
- "url": "https://whyknot.live"
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "WhyKnot",
+    description: description,
+    url: "https://whyknot.live",
 };
 ---
 
-<Layout 
- title={title}
- description={description}
- keywords="innovative websites, creative tools, web discovery, design inspiration, coming soon, alpha access"
- schema={schema}
- transparentNav={true}
- hideFooter={true}
- bodyClass="snap-scroll-container"
+<Layout
+    title={title}
+    description={description}
+    keywords="innovative websites, creative tools, web discovery, design inspiration, coming soon, alpha access"
+    schema={schema}
+    transparentNav={true}
+    hideFooter={true}
+    bodyClass="snap-scroll-container"
 >
- <div class="snap-scroll-wrapper">
- <ComingSoon />
- <Waitlist />
- </div>
+    <div class="snap-scroll-wrapper">
+        <ComingSoon />
+        <Waitlist />
+    </div>
 </Layout>
 
 <style>
-.snap-scroll-container {
- scroll-snap-type: y mandatory;
- overflow-y: scroll;
- height: 100vh;
- }
+    .snap-scroll-container {
+        scroll-snap-type: y mandatory;
+        overflow-y: scroll;
+        height: 100vh;
+    }
 
-.snap-scroll-wrapper {
- height: 100vh;
- overflow-y: scroll;
- scroll-snap-type: y mandatory;
- scroll-behavior: smooth;
- }
+    .snap-scroll-wrapper {
+        height: 100vh;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+    }
 
- /* Hide scrollbar but keep functionality */
-.snap-scroll-wrapper::-webkit-scrollbar {
- display: none;
- }
- 
-.snap-scroll-wrapper {
- -ms-overflow-style: none;
- scrollbar-width: none;
- }
+    /* Hide scrollbar but keep functionality */
+    .snap-scroll-wrapper::-webkit-scrollbar {
+        display: none;
+    }
 
- /* Ensure sections take full height and snap */
- :global(.coming-soon-section),
- :global(.waitlist-section) {
- height: 100vh;
- scroll-snap-align: start;
- scroll-snap-stop: always;
- }
+    .snap-scroll-wrapper {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 
- /* Add smooth scroll behavior */
- html {
- scroll-behavior: smooth;
- }
+    /* Ensure sections take full height and snap */
+    :global(.coming-soon-section),
+    :global(.waitlist-section) {
+        height: 100vh;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+    }
+
+    /* Add smooth scroll behavior */
+    html {
+        scroll-behavior: smooth;
+    }
 </style>
-
-</Layout>

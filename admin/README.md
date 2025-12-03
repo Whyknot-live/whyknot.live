@@ -7,6 +7,8 @@ Secure admin panel for managing the WhyKnot waitlist.
 - 🔐 **Secure Authentication**: Token-based JWT authentication with env-based password
 - 📊 **Real-time Statistics**: View total signups, recent activity, and interest distribution
 - 📋 **User Management**: Browse and search all waitlist users
+- 🔍 **Search & Filters**: Filter the waitlist by email keyword or interest tag
+- 📁 **CSV Export**: Download filtered waitlist data for deeper analysis
 - 🎨 **Themed Design**: Uses the same design system as the main WhyKnot site
 - 📱 **Responsive**: Works seamlessly on desktop, tablet, and mobile devices
 - ♻️ **Auto-refresh**: Dashboard updates automatically every 30 seconds
@@ -84,6 +86,12 @@ The dashboard displays:
   - Email address
   - Selected interests
   - Join date/time
+- **Filter Controls**:
+  - Live search by email address
+  - Interest dropdown populated from real data
+  - Result counter and pagination helpers
+- **Interest Breakdown**: Visual ranking of the most popular interests
+- **CSV Export**: Download the current filtered dataset with one click
 - **Pagination**: Browse through users (50 per page)
 - **Auto-refresh**: Data updates every 30 seconds
 

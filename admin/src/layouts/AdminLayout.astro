@@ -44,44 +44,84 @@ const {
   <slot />
 
   <script>
+    function isLocalhostOrigin(origin: string): boolean {
+      try {
+        const url = new URL(origin);
+        if (url.hostname === 'localhost') {
+          return true;
+        }
+        return url.hostname.startsWith('127.') || url.hostname === '[::1]';
+      } catch {
+        return false;
+      }
+    }
+
+    function resolveApiBaseUrl(): string {
+      const fromEnv = (import.meta.env.PUBLIC_API_URL ?? '').trim();
+      if (fromEnv) {
+        return fromEnv;
+      }
+      if (isLocalhostOrigin(window.location.origin)) {
+        console.warn('PUBLIC_API_URL not set, defaulting to local API for development');
+        return 'http://localhost:10000/api';
+      }
+      throw new Error('PUBLIC_API_URL is not configured for the admin client.');
+    }
+
+    let adminBaseURL: string;
+    try {
+      adminBaseURL = resolveApiBaseUrl();
+    } catch (error) {
+      console.error(error);
+      document.body.innerHTML = '<main class="config-error"><h1>Configuration error</h1><p>Admin API URL is not configured. Please set PUBLIC_API_URL.</p></main>';
+      throw error;
+    }
+
     // Global admin utilities
     window.adminAPI = {
-      baseURL: import.meta.env.PUBLIC_API_URL || 'http://localhost:10000/api',
-      
-      getToken() {
-        return localStorage.getItem('adminToken');
+      baseURL: adminBaseURL,
+
+      // Check if authenticated by verifying with backend
+      async isAuthenticated() {
+        try {
+          const response = await fetch(`${this.baseURL}/admin/verify`, {
+            method: 'GET',
+            credentials: 'include', // Include cookies
+          });
+          return response.ok;
+        } catch {
+          return false;
+        }
       },
-      
-      setToken(token: string) {
-        localStorage.setItem('adminToken', token);
-      },
-      
-      clearToken() {
-        localStorage.removeItem('adminToken');
-      },
-      
+
       async fetch(endpoint: string, options: RequestInit = {}) {
-        const token = this.getToken();
-        
         const headers = {
           'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
           ...options.headers,
         };
-        
+
         const response = await fetch(`${this.baseURL}${endpoint}`, {
           ...options,
           headers,
+          credentials: 'include', // Always include cookies
         });
-        
+
         if (response.status === 401) {
-          // Token expired or invalid
-          this.clearToken();
+          // Token expired or invalid - redirect to login
           window.location.href = '/';
           throw new Error('Unauthorized');
         }
-        
+
         return response;
+      },
+
+      async logout() {
+        try {
+          await this.fetch('/admin/logout', { method: 'POST' });
+        } catch {
+          // Ignore errors, just redirect
+        }
+        window.location.href = '/';
       }
     };
   </script>

@@ -96,6 +96,8 @@ export function getStaticPaths() {
 </Layout>
 
 <script>
+	import DOMPurify from 'dompurify';
+	
 	// Get slug from URL
 	const pathParts = window.location.pathname.split('/');
 	const slug = pathParts[pathParts.length - 1];
@@ -148,7 +150,7 @@ export function getStaticPaths() {
 				readtimeEl.style.display = '';
 				readtimeSeparator.style.display = '';
 			}
-			if (contentEl) contentEl.innerHTML = post.content;
+			if (contentEl) contentEl.innerHTML = DOMPurify.sanitize(post.content);
 			
 			// Setup share buttons
 			setupShareButtons(post.title);
@@ -188,6 +190,25 @@ export function getStaticPaths() {
 			<a href="https://www.facebook.com/sharer/sharer.php?u=${currentUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm w-full">Facebook</a>
 		`;
 	}
+
+	function sanitizeSlug(value: unknown): string | null {
+		if (typeof value !== 'string') {
+			return null;
+		}
+		const trimmed = value.trim();
+		return /^[A-Za-z0-9\-_/]+$/.test(trimmed) ? trimmed : null;
+	}
+
+	function sanitizeImageUrl(value: unknown): string | null {
+		if (typeof value !== 'string') {
+			return null;
+		}
+		const trimmed = value.trim();
+		if (trimmed.startsWith('https://') || trimmed.startsWith('http://') || trimmed.startsWith('/')) {
+			return trimmed;
+		}
+		return null;
+	}
 	
 	function loadRelatedPosts(relatedPosts: any[]) {
 		const gridEl = document.getElementById('related-posts-grid');
@@ -195,15 +216,47 @@ export function getStaticPaths() {
 		
 		if (!gridEl || !sectionEl) return;
 		
-		gridEl.innerHTML = relatedPosts.map(post => `
-			<a href="/blog/${post.slug}" class="card hover-lift">
-				${post.image ? `<img src="${post.image}" alt="${post.title}" loading="lazy" decoding="async" class="w-full h-48 object-cover rounded-t-lg" />` : ''}
-				<div class="card-content">
-					<h3 class="card-title">${post.title}</h3>
-					<p class="text-muted">${post.description}</p>
-				</div>
-			</a>
-		`).join('');
+		gridEl.innerHTML = '';
+		relatedPosts.forEach((post) => {
+			const slug = sanitizeSlug((post as Record<string, unknown>).slug);
+			const title = typeof post?.title === 'string' ? post.title : '';
+			const description = typeof post?.description === 'string' ? post.description : '';
+			if (!slug || !title) {
+				return;
+			}
+
+			const card = document.createElement('a');
+			card.className = 'card hover-lift';
+			card.href = `/blog/${slug}`;
+			card.setAttribute('aria-label', `Read ${title}`);
+
+			const imageSrc = sanitizeImageUrl(post?.image);
+			if (imageSrc) {
+				const image = document.createElement('img');
+				image.src = imageSrc;
+				image.alt = title;
+				image.loading = 'lazy';
+				image.decoding = 'async';
+				image.className = 'w-full h-48 object-cover rounded-t-lg';
+				card.appendChild(image);
+			}
+
+			const content = document.createElement('div');
+			content.className = 'card-content';
+
+			const heading = document.createElement('h3');
+			heading.className = 'card-title';
+			heading.textContent = title;
+
+			const summary = document.createElement('p');
+			summary.className = 'text-muted';
+			summary.textContent = description;
+
+			content.appendChild(heading);
+			content.appendChild(summary);
+			card.appendChild(content);
+			gridEl.appendChild(card);
+		});
 		
 		sectionEl.style.display = 'block';
 	}

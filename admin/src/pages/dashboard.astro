@@ -11,7 +11,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
 
     <!-- Header -->
     <div class="admin-header">
-      <h1>📊 Admin Dashboard</h1>
+      <h1>Admin Dashboard</h1>
       <p>WhyKnot Waitlist Management</p>
     </div>
 
@@ -29,6 +29,46 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         <div class="stat-label">Last 7 Days</div>
         <div class="stat-value" id="statLast7days">-</div>
       </div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controlPanel" class="dashboard-controls" style="display: none;">
+      <div class="filter-group">
+        <label class="filter-label" for="searchInput">Search email</label>
+        <div class="filter-field">
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="Search by email"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="interestFilter">Filter by interest</label>
+        <div class="filter-field">
+          <select id="interestFilter">
+            <option value="">All interests</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-actions">
+        <span id="resultCount" class="result-count">&nbsp;</span>
+        <button id="exportBtn" class="control-button" type="button">
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Interest Breakdown -->
+    <div id="interestCard" class="interest-card" style="display: none;">
+      <div class="interest-card-header">
+        <h2>Top Interests</h2>
+        <span id="interestSummary" class="interest-summary"></span>
+      </div>
+      <ul id="interestList" class="interest-list"></ul>
     </div>
 
     <!-- Loading State -->
@@ -70,14 +110,20 @@ import AdminLayout from '../layouts/AdminLayout.astro';
   </div>
 
   <script>
-    // Check authentication
-    if (!window.adminAPI.getToken()) {
-      window.location.href = '/';
-    }
+    // Check authentication early to avoid flicker
+    window.adminAPI.isAuthenticated().then((isAuth) => {
+      if (!isAuth) {
+        window.location.href = '/';
+      }
+    });
 
     let currentPage = 1;
     const limit = 50;
     let totalPages = 1;
+    let currentSearch = '';
+    let currentInterest = '';
+    let cachedInterests: Array<{ name: string; count: number }> = [];
+    let searchTimeout: number | undefined;
 
     const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
     const loadingState = document.getElementById('loadingState') as HTMLDivElement;
@@ -88,14 +134,20 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     const prevBtn = document.getElementById('prevBtn') as HTMLButtonElement;
     const nextBtn = document.getElementById('nextBtn') as HTMLButtonElement;
     const pageInfo = document.getElementById('pageInfo') as HTMLSpanElement;
+    const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+    const interestFilter = document.getElementById('interestFilter') as HTMLSelectElement;
+    const resultCount = document.getElementById('resultCount') as HTMLSpanElement;
+    const controlPanel = document.getElementById('controlPanel') as HTMLDivElement;
+    const interestCard = document.getElementById('interestCard') as HTMLDivElement;
+    const interestList = document.getElementById('interestList') as HTMLUListElement;
+    const interestSummary = document.getElementById('interestSummary') as HTMLSpanElement;
+    const exportBtn = document.getElementById('exportBtn') as HTMLButtonElement;
 
-    // Logout
-    logoutBtn.addEventListener('click', () => {
-      window.adminAPI.clearToken();
-      window.location.href = '/';
+    // Logout handler
+    logoutBtn.addEventListener('click', async () => {
+      await window.adminAPI.logout();
     });
 
-    // Format date
     function formatDate(dateString: string): string {
       const date = new Date(dateString);
       return date.toLocaleDateString('en-US', {
@@ -103,11 +155,90 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       });
     }
 
-    // Load stats
+    function updateResultCount(total: number, currentRows: number) {
+      if (!resultCount) {
+        return;
+      }
+
+      if (total === 0 || currentRows === 0) {
+        resultCount.textContent = '0 results';
+        return;
+      }
+
+      const start = (currentPage - 1) * limit + 1;
+      const end = start + currentRows - 1;
+      resultCount.textContent = `${start.toLocaleString()}-${end.toLocaleString()} of ${total.toLocaleString()}`;
+    }
+
+    function updateInterestFilterOptions(interests: Array<{ name: string; count: number }>) {
+      const previousValue = interestFilter.value;
+      interestFilter.innerHTML = '<option value="">All interests</option>';
+
+      interests.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.name;
+        option.textContent = `${item.name} (${item.count})`;
+        interestFilter.appendChild(option);
+      });
+
+      if (previousValue && interestFilter.querySelector(`option[value="${previousValue}"]`)) {
+        interestFilter.value = previousValue;
+      } else {
+        interestFilter.value = '';
+        currentInterest = '';
+      }
+    }
+
+    function renderInterestList(interests: Array<{ name: string; count: number }>) {
+      if (!interests || interests.length === 0) {
+        interestCard.style.display = 'none';
+        interestList.innerHTML = '';
+        interestSummary.textContent = '';
+        return;
+      }
+
+      interestCard.style.display = 'block';
+      interestList.innerHTML = '';
+
+      const total = interests.reduce((sum, item) => sum + item.count, 0);
+      interestSummary.textContent = `${total.toLocaleString()} tagged responses`;
+
+      interests.slice(0, 8).forEach((item) => {
+        const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
+        const li = document.createElement('li');
+        
+        // Create interest label container
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'interest-label';
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = item.name;
+        
+        const statsSpan = document.createElement('span');
+        statsSpan.textContent = `${item.count.toLocaleString()} · ${percentage}%`;
+        
+        labelDiv.appendChild(nameSpan);
+        labelDiv.appendChild(statsSpan);
+        
+        // Create interest meter
+        const meterDiv = document.createElement('div');
+        meterDiv.className = 'interest-meter';
+        
+        const meterBar = document.createElement('span');
+        meterBar.style.width = `${percentage}%`;
+        
+        meterDiv.appendChild(meterBar);
+        
+        li.appendChild(labelDiv);
+        li.appendChild(meterDiv);
+        interestList.appendChild(li);
+      });
+    }
+
     async function loadStats() {
       try {
         const response = await window.adminAPI.fetch('/admin/stats');
@@ -117,23 +248,39 @@ import AdminLayout from '../layouts/AdminLayout.astro';
           document.getElementById('statTotal')!.textContent = data.stats.total.toLocaleString();
           document.getElementById('statLast24h')!.textContent = data.stats.last24h.toLocaleString();
           document.getElementById('statLast7days')!.textContent = data.stats.last7days.toLocaleString();
+          cachedInterests = Array.isArray(data.stats.interests) ? data.stats.interests : [];
+          updateInterestFilterOptions(cachedInterests);
+          renderInterestList(cachedInterests);
           statsContainer.style.display = 'grid';
+          controlPanel.style.display = 'grid';
         }
       } catch (error) {
         console.error('Failed to load stats:', error);
       }
     }
 
-    // Load waitlist data
     async function loadWaitlist(page = 1) {
       try {
         loadingState.style.display = 'flex';
         tableContainer.style.display = 'none';
         emptyState.style.display = 'none';
 
-        const response = await window.adminAPI.fetch(
-          `/admin/waitlist?page=${page}&limit=${limit}`
-        );
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+          sort: 'createdAt',
+          order: 'desc',
+        });
+
+        if (currentSearch) {
+          params.set('search', currentSearch);
+        }
+
+        if (currentInterest) {
+          params.set('interest', currentInterest);
+        }
+
+        const response = await window.adminAPI.fetch(`/admin/waitlist?${params.toString()}`);
         const data = await response.json();
 
         if (!data.ok) {
@@ -143,17 +290,18 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         currentPage = data.pagination.page;
         totalPages = data.pagination.pages;
 
-        // Update pagination
         pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
         prevBtn.disabled = currentPage <= 1;
         nextBtn.disabled = currentPage >= totalPages;
 
-        // Populate table
         tableBody.innerHTML = '';
+        controlPanel.style.display = 'grid';
 
-        if (data.data.length === 0) {
+        if (!Array.isArray(data.data) || data.data.length === 0) {
           loadingState.style.display = 'none';
+          tableContainer.style.display = 'none';
           emptyState.style.display = 'block';
+          updateResultCount(0, 0);
           return;
         }
 
@@ -161,36 +309,98 @@ import AdminLayout from '../layouts/AdminLayout.astro';
           const row = document.createElement('tr');
           const position = (currentPage - 1) * limit + index + 1;
           
-          row.innerHTML = `
-            <td>${position}</td>
-            <td><strong>${user.email}</strong></td>
-            <td>
-              ${user.interests && user.interests.length > 0
-                ? user.interests.map((interest: string) => 
-                    `<span class="interest-badge">${interest}</span>`
-                  ).join('')
-                : '<span style="opacity: 0.5;">None</span>'
-              }
-            </td>
-            <td>${formatDate(user.createdAt)}</td>
-          `;
+          // Position cell
+          const posCell = document.createElement('td');
+          posCell.textContent = position.toString();
           
+          // Email cell
+          const emailCell = document.createElement('td');
+          const emailStrong = document.createElement('strong');
+          emailStrong.textContent = user.email;
+          emailCell.appendChild(emailStrong);
+          
+          // Interests cell
+          const interestsCell = document.createElement('td');
+          if (Array.isArray(user.interests) && user.interests.length > 0) {
+            user.interests.forEach((interest: string) => {
+              const badge = document.createElement('span');
+              badge.className = 'interest-badge';
+              badge.textContent = interest;
+              interestsCell.appendChild(badge);
+            });
+          } else {
+            const noneSpan = document.createElement('span');
+            noneSpan.style.opacity = '0.5';
+            noneSpan.textContent = 'None';
+            interestsCell.appendChild(noneSpan);
+          }
+          
+          // Date cell
+          const dateCell = document.createElement('td');
+          dateCell.textContent = formatDate(user.createdAt);
+          
+          row.appendChild(posCell);
+          row.appendChild(emailCell);
+          row.appendChild(interestsCell);
+          row.appendChild(dateCell);
+
           tableBody.appendChild(row);
         });
+
+        updateResultCount(data.pagination.total ?? 0, data.data.length);
 
         loadingState.style.display = 'none';
         tableContainer.style.display = 'block';
       } catch (error) {
         console.error('Failed to load waitlist:', error);
-        loadingState.innerHTML = `
-          <div style="color: var(--color-danger);">
-            Failed to load waitlist. Please try again.
-          </div>
-        `;
+        loadingState.textContent = 'Failed to load waitlist. Please try again.';
+        loadingState.style.color = 'var(--color-danger)';
       }
     }
 
-    // Pagination handlers
+    async function downloadCsv() {
+      try {
+        exportBtn.disabled = true;
+        exportBtn.textContent = 'Exporting...';
+
+        const params = new URLSearchParams({
+          format: 'csv',
+          order: 'desc',
+          sort: 'createdAt',
+        });
+
+        if (currentSearch) {
+          params.set('search', currentSearch);
+        }
+
+        if (currentInterest) {
+          params.set('interest', currentInterest);
+        }
+
+        const response = await window.adminAPI.fetch(`/admin/waitlist?${params.toString()}`);
+
+        if (!response.ok) {
+          throw new Error('export_failed');
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `whyknot-waitlist-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Failed to export waitlist CSV:', error);
+        alert('Unable to export CSV at the moment. Please try again.');
+      } finally {
+        exportBtn.disabled = false;
+        exportBtn.textContent = 'Export CSV';
+      }
+    }
+
     prevBtn.addEventListener('click', () => {
       if (currentPage > 1) {
         loadWaitlist(currentPage - 1);
@@ -203,15 +413,32 @@ import AdminLayout from '../layouts/AdminLayout.astro';
       }
     });
 
-    // Initial load
-    Promise.all([loadStats(), loadWaitlist()]).catch(error => {
+    searchInput.addEventListener('input', () => {
+      currentSearch = searchInput.value.trim();
+      if (searchTimeout) {
+        window.clearTimeout(searchTimeout);
+      }
+      searchTimeout = window.setTimeout(() => {
+        loadWaitlist(1);
+      }, 300);
+    });
+
+    interestFilter.addEventListener('change', () => {
+      currentInterest = interestFilter.value;
+      loadWaitlist(1);
+    });
+
+    exportBtn.addEventListener('click', () => {
+      void downloadCsv();
+    });
+
+    Promise.all([loadStats(), loadWaitlist()]).catch((error) => {
       console.error('Initialization error:', error);
     });
 
-    // Auto-refresh every 30 seconds
     setInterval(() => {
-      loadStats();
-      loadWaitlist(currentPage);
+      void loadStats();
+      void loadWaitlist(currentPage);
     }, 30000);
   </script>
 </AdminLayout>

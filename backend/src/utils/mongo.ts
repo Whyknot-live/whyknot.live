@@ -26,10 +26,10 @@ export async function connectMongo(uri: string, dbName: string) {
  strict: false,
  deprecationErrors: true,
  },
- // Bun TLS compatibility - required for Bun runtime
+ // Bun TLS compatibility - only disable validation in development
  tls: true,
- tlsAllowInvalidCertificates: true, // Required for Bun compatibility with MongoDB Atlas
- tlsAllowInvalidHostnames: true, // Required for Bun compatibility
+ tlsAllowInvalidCertificates: process.env.NODE_ENV === 'development',
+ tlsAllowInvalidHostnames: process.env.NODE_ENV === 'development',
  directConnection: false, // Important for replica sets
  })
  

@@ -12,8 +12,14 @@ const envSchema = z.object({
  SMTP_PORT: z.string().optional(),
  SMTP_USER: z.string().optional(),
  SMTP_PASS: z.string().optional(),
- ADMIN_PASSWORD: z.string().min(8),
- ADMIN_JWT_SECRET: z.string().min(32)
+ TRUST_PROXY_FORWARDED: z.enum(['0', '1']).optional(),
+ ADMIN_PASSWORD: z.string()
+   .min(12, 'Password must be at least 12 characters')
+   .regex(
+     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+     'Password must contain uppercase, lowercase, number, and special character (@$!%*?&)'
+   ),
+ ADMIN_JWT_SECRET: z.string().min(32, 'JWT secret must be at least 32 characters')
 })
 
 export function validateEnv() {

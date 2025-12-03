@@ -17,9 +17,13 @@
         "analyze": "astro build --verbose"
     },
     "dependencies": {
-        "@astrojs/check": "^0.9.5",
-        "@astrojs/react": "^4.4.0",
-        "astro": "5.15.1",
+        "@astrojs/check": "0.9.6",
+        "@astrojs/react": "4.4.2",
+        "astro": "5.16.4",
+        "dompurify": "^3.3.0",
         "typescript": "^5.9.3"
+    },
+    "devDependencies": {
+        "@types/dompurify": "^3.2.0"
     }
 }

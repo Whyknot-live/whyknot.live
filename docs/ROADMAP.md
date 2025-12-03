@@ -20,19 +20,25 @@ WhyKnot.live product roadmap and future development plans.
 ```
 2025
 │
-├─ Q3 2025 (Current)
+├─ Q4 2025 (Current)
 │ └─ Phase 1: Foundation
 │ ├─ Landing page
 │ ├─ Waitlist system
 │ └─ Beta testing
 │
 └─ Q4 2025
- └─ Phase 2: Alpha Launch (Dec 19)
- ├─ User authentication
- ├─ Basic directory
- └─ Search functionality
+ └─ Phase 1: Foundation (Continued)
 
 2026
+│
+├─ Q3 2026
+│ └─ Phase 2: Alpha Launch (Sept 19)
+│ ├─ User authentication
+│ ├─ Basic directory
+│ └─ Search functionality
+│
+└─ Q4 2026
+ └─ Phase 3: Full Launch (Oct 9)
 │
 ├─ Q1 2026
 │ └─ Phase 4: API & Extensions
@@ -94,7 +100,7 @@ WhyKnot.live product roadmap and future development plans.
 
 ---
 
-## Phase 2: Alpha Launch (December 19, 2025)
+## Phase 2: Alpha Launch (September 19, 2026)
 
 **Goal**: Launch to alpha community with core discovery features.
 
@@ -316,7 +322,7 @@ WhyKnot.live product roadmap and future development plans.
 
 ## Success Metrics
 
-### Alpha Launch Goals (December 2025)
+### Alpha Launch Goals (September 2026)
 - 500 alpha users
 - 100 websites curated
 - 50 active daily users

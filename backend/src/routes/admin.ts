@@ -1,8 +1,12 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { sign, verify } from 'hono/jwt'
+import { setCookie, getCookie, deleteCookie } from 'hono/cookie'
+import type { Filter } from 'mongodb'
+import { timingSafeEqual, createHash } from 'node:crypto'
 import { connectMongo, getDb } from '../utils/mongo'
 import { validateEnv } from '../utils/env'
+import { getClientAddress } from '../utils/request'
 
 const router = new Hono()
 
@@ -10,8 +14,59 @@ const loginSchema = z.object({
   password: z.string().min(1),
 })
 
+const CSV_EXPORT_LIMIT = 5000
+
+function escapeRegexFragment(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function toCsvField(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '""'
+  }
+
+  const asString = String(value)
+  if (asString === '') {
+    return '""'
+  }
+
+  const escaped = asString.replace(/"/g, '""')
+  return `"${escaped}"`
+}
+
 // Admin login - verify password and return JWT token
-router.post('/admin/login', async (c) => {
+// Apply strict rate limiting: 5 attempts per 15 minutes
+router.post('/admin/login', 
+  async (c, next) => {
+    const ip = getClientAddress(c)
+    const env = validateEnv()
+    
+    // Use Redis rate limiting if available
+    if (env.USE_REDIS_RATE_LIMIT === '1' && env.REDIS_URL) {
+      try {
+        const { rateLimitCheck, connectRedis } = await import('../utils/redis')
+        await connectRedis(env.REDIS_URL)
+        const rateLimit = await rateLimitCheck(`admin-login:${ip}`, 5, 900) // 5 attempts per 15 minutes
+        
+        c.header('X-RateLimit-Limit', '5')
+        c.header('X-RateLimit-Remaining', String(rateLimit.remaining))
+        c.header('X-RateLimit-Reset', String(rateLimit.resetAt))
+        
+        if (!rateLimit.allowed) {
+          return c.json({ 
+            error: 'rate_limited',
+            message: 'Too many login attempts. Please try again later.',
+            retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+          }, 429)
+        }
+      } catch (error) {
+        console.error('Redis rate limit error:', error)
+      }
+    }
+    
+    await next()
+  },
+  async (c) => {
   const body = await c.req.json()
   const parsed = loginSchema.safeParse(body)
   
@@ -21,8 +76,11 @@ router.post('/admin/login', async (c) => {
 
   const env = validateEnv()
   
-  // Check password against env variable
-  if (parsed.data.password !== env.ADMIN_PASSWORD) {
+  const submittedHash = createHash('sha256').update(parsed.data.password).digest()
+  const expectedHash = createHash('sha256').update(env.ADMIN_PASSWORD).digest()
+
+  // Check password using constant-time comparison
+  if (!timingSafeEqual(submittedHash, expectedHash)) {
     return c.json({ error: 'invalid_credentials' }, 401)
   }
 
@@ -35,26 +93,40 @@ router.post('/admin/login', async (c) => {
     env.ADMIN_JWT_SECRET
   )
 
+  // Set token as HttpOnly cookie for security
+  setCookie(c, 'adminToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    maxAge: 60 * 60 * 24, // 24 hours
+    path: '/',
+  })
+
   return c.json({ 
-    ok: true, 
-    token,
+    ok: true,
     expiresIn: 60 * 60 * 24 // 24 hours in seconds
   })
-})
+  }
+)
 
 // Middleware to verify admin token
 async function verifyAdminToken(c: any, next: any) {
-  const authHeader = c.req.header('Authorization')
+  // Read token from HttpOnly cookie
+  const token = getCookie(c, 'adminToken')
   
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!token) {
     return c.json({ error: 'unauthorized' }, 401)
   }
 
-  const token = authHeader.substring(7) // Remove 'Bearer ' prefix
   const env = validateEnv()
 
   try {
     const payload = await verify(token, env.ADMIN_JWT_SECRET)
+    
+    // Validate expiration explicitly
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      return c.json({ error: 'token_expired' }, 401)
+    }
     
     if (payload.sub !== 'admin') {
       return c.json({ error: 'unauthorized' }, 401)
@@ -62,9 +134,19 @@ async function verifyAdminToken(c: any, next: any) {
     
     // Token is valid, proceed
     await next()
-  } catch (err) {
+  } catch (err: any) {
+    if (err.name === 'JwtTokenExpired') {
+      return c.json({ error: 'token_expired' }, 401)
+    }
     return c.json({ error: 'invalid_token' }, 401)
   }
+}
+
+type WaitlistDoc = {
+  email: string
+  interests?: string[]
+  createdAt?: Date
+  [key: string]: unknown
 }
 
 // Get all waitlist users (protected route)
@@ -74,22 +156,64 @@ router.get('/admin/waitlist', verifyAdminToken, async (c) => {
   const db = getDb()
 
   try {
-    // Get query parameters for pagination
-    const page = parseInt(c.req.query('page') || '1', 10)
-    const limit = parseInt(c.req.query('limit') || '50', 10)
+    const page = Math.max(1, Number.parseInt(c.req.query('page') ?? '1', 10) || 1)
+    const limit = Math.max(1, Math.min(Number.parseInt(c.req.query('limit') ?? '50', 10) || 50, 200))
     const skip = (page - 1) * limit
+    const search = (c.req.query('search') ?? '').trim()
+    const interest = (c.req.query('interest') ?? '').trim()
+    const format = (c.req.query('format') ?? 'json').toLowerCase()
+    const sortParam = (c.req.query('sort') ?? 'createdAt').trim()
+    const orderParam = (c.req.query('order') ?? 'desc').trim()
 
-    // Get total count
-    const total = await db.collection('waitlist').countDocuments()
+    const sortField = sortParam === 'email' ? 'email' : 'createdAt'
+    const sortDirection = orderParam === 'asc' ? 1 : -1
 
-    // Get paginated users
-    const users = await db
-      .collection('waitlist')
-      .find()
-      .sort({ createdAt: -1 }) // Most recent first
-      .skip(skip)
-      .limit(limit)
-      .toArray()
+    const collection = db.collection<WaitlistDoc>('waitlist')
+    const filter: Filter<WaitlistDoc> = {}
+
+    // Ensure search is a string and sanitize for NoSQL injection
+    if (search && typeof search === 'string') {
+      filter.email = { $regex: escapeRegexFragment(search), $options: 'i' }
+    }
+
+    // Ensure interest is a string to prevent NoSQL injection
+    if (interest && typeof interest === 'string') {
+      filter.interests = interest
+    }
+
+    const total = await collection.countDocuments(filter)
+    const cursor = collection
+      .find(filter)
+      .sort({ [sortField]: sortDirection as 1 | -1 })
+
+    if (format === 'csv') {
+      const exportLimit = Math.max(1, Math.min(Number.parseInt(c.req.query('limit') ?? String(CSV_EXPORT_LIMIT), 10) || CSV_EXPORT_LIMIT, CSV_EXPORT_LIMIT))
+      const users = await cursor.limit(exportLimit).toArray()
+      const rows: string[] = ['\uFEFF"Position","Email","Interests","Joined"']
+
+      users.forEach((user, index) => {
+        const position = index + 1
+        const interests = Array.isArray(user.interests) ? user.interests.join('; ') : ''
+        const joined = user.createdAt ? new Date(user.createdAt).toISOString() : ''
+
+        rows.push([
+          position,
+          toCsvField(user.email),
+          toCsvField(interests),
+          toCsvField(joined),
+        ].join(','))
+      })
+
+      const csvContent = rows.join('\n')
+      const filename = `waitlist-${new Date().toISOString().split('T')[0]}.csv`
+
+      return c.text(csvContent, 200, {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      })
+    }
+
+    const users = await cursor.skip(skip).limit(limit).toArray()
 
     return c.json({
       ok: true,
@@ -98,11 +222,24 @@ router.get('/admin/waitlist', verifyAdminToken, async (c) => {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.max(1, Math.ceil(total / limit)),
+      },
+      filters: {
+        search,
+        interest,
+        sort: sortField,
+        order: sortDirection === 1 ? 'asc' : 'desc',
       },
     })
   } catch (err) {
-    console.error('Admin waitlist error:', err)
+    // Environment-aware error logging
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Admin waitlist error:', err)
+    } else {
+      console.error('Admin waitlist error:', {
+        message: err instanceof Error ? err.message : 'Unknown error'
+      })
+    }
     return c.json({ error: 'server_error' }, 500)
   }
 })
@@ -151,7 +288,14 @@ router.get('/admin/stats', verifyAdminToken, async (c) => {
       },
     })
   } catch (err) {
-    console.error('Admin stats error:', err)
+    // Environment-aware error logging
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Admin stats error:', err)
+    } else {
+      console.error('Admin stats error:', {
+        message: err instanceof Error ? err.message : 'Unknown error'
+      })
+    }
     return c.json({ error: 'server_error' }, 500)
   }
 })
@@ -159,6 +303,14 @@ router.get('/admin/stats', verifyAdminToken, async (c) => {
 // Verify token endpoint (to check if token is still valid)
 router.get('/admin/verify', verifyAdminToken, async (c) => {
   return c.json({ ok: true, valid: true })
+})
+
+// Logout endpoint - clear the HttpOnly cookie
+router.post('/admin/logout', verifyAdminToken, async (c) => {
+  deleteCookie(c, 'adminToken', {
+    path: '/',
+  })
+  return c.json({ ok: true })
 })
 
 export default router

@@ -9,7 +9,7 @@
  </p>
 
  <p>
- <strong> Alpha Launch:</strong> December 19, 2025 <strong> Full Launch:</strong> October 9, 2026
+ <strong> Alpha Launch:</strong> September 19, 2026 <strong> Full Launch:</strong> October 9, 2026
  </p>
 </div>
 
@@ -647,14 +647,14 @@ Security is a top priority for WhyKnot. If you discover a security vulnerability
 - [x] Security hardening
 - [ ] Beta testing with alpha users
 
-### Phase 2: Alpha Launch (September 2025)
+### Phase 2: Alpha Launch (September 2026)
 - [ ] User authentication system
 - [ ] Basic website directory
 - [ ] Search functionality
 - [ ] Category filtering
 - [ ] User profiles
 
-### Phase 3: Full Launch (December 2025)
+### Phase 3: Full Launch (October 2026)
 - [ ] Advanced filtering and sorting
 - [ ] User submissions
 - [ ] Collections and favorites

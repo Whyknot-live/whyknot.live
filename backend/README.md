@@ -43,7 +43,7 @@ Then edit `.env` and set `MONGODB_URI` and `MONGODB_DB` appropriately.
 npm run dev
 ```
 
-The server starts on `http://localhost:3001`. Health check: `GET /` returns `{ ok: true, service: "whyknot-backend" }`.
+The server starts on `http://localhost:10000`. Health check: `GET /` returns `{ ok: true, service: "whyknot-backend" }`.
 
 ## API Reference
 
@@ -68,10 +68,20 @@ Accepts JSON payload:
 **Example (curl):**
 
 ```bash
-curl -X POST http://localhost:3001/api/waitlist \
+curl -X POST http://localhost:10000/api/waitlist \
  -H 'Content-Type: application/json' \
  -d '{"email":"test@example.com"}'
 ```
+
+### Admin Endpoints (Protected with JWT)
+
+These routes require a valid admin token obtained from `POST /api/admin/login`. Set `ADMIN_PASSWORD` and `ADMIN_JWT_SECRET` in the backend `.env` file.
+
+- `POST /api/admin/login` – exchange the env-based password for a 24-hour JWT token
+- `GET /api/admin/verify` – validate an existing token
+- `GET /api/admin/stats` – aggregate waitlist totals, recency metrics, and interest distribution
+- `GET /api/admin/waitlist` – paginated waitlist data with optional `search`, `interest`, `page`, `limit`, `sort`, and `order` query parameters
+- `GET /api/admin/waitlist?format=csv` – download the filtered waitlist as a CSV export (max 5,000 rows per request)
 
 ## Docker
 

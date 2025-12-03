@@ -674,6 +674,38 @@
  const formError = document.getElementById('form-error');
  const errorText = document.getElementById('error-text');
 
+ function isLocalhostOrigin(origin: string): boolean {
+	try {
+		const url = new URL(origin);
+		if (url.hostname === 'localhost') {
+			return true;
+		}
+		return url.hostname.startsWith('127.') || url.hostname === '[::1]';
+	} catch {
+		return false;
+	}
+ }
+
+ function resolveApiBaseUrl(): string {
+	const fromEnv = (import.meta.env.PUBLIC_API_BASE_URL ?? '').trim();
+	if (fromEnv) {
+		return fromEnv;
+	}
+	if (isLocalhostOrigin(window.location.origin)) {
+		console.warn('PUBLIC_API_BASE_URL not set, defaulting to local API for development');
+		return 'http://localhost:10000';
+	}
+	throw new Error('PUBLIC_API_BASE_URL is not configured for the waitlist form.');
+ }
+
+ let apiBaseUrl: string | null = null;
+ try {
+	apiBaseUrl = resolveApiBaseUrl();
+ } catch (error) {
+	console.error('Waitlist configuration error:', error);
+	disableWaitlistForm('Waitlist signup is temporarily unavailable. Please try again later.');
+ }
+
  // Interest chips handling
  const interestChips = document.querySelectorAll('.interest-chip');
  const selectedInterests = new Set();
@@ -698,6 +730,11 @@
  waitlistForm.addEventListener('submit', async function(e) {
  e.preventDefault();
  
+ if (!apiBaseUrl) {
+  showError('Waitlist signup is temporarily unavailable.');
+  return;
+ }
+
  const email = emailInput?.value.trim();
  if (!email || !isValidEmail(email)) {
  showError('Please enter a valid email address.');
@@ -718,7 +755,6 @@
  };
  
  // Determine API URL based on environment
- const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:10000';
  const apiUrl = `${apiBaseUrl}/api/waitlist`;
  
  // Submit to backend API
@@ -804,4 +840,14 @@
  if (formSuccess) formSuccess.classList.remove('show');
  if (formError) formError.classList.remove('show');
  }
+
+function disableWaitlistForm(message: string) {
+ if (submitBtn) {
+  (submitBtn as HTMLButtonElement).disabled = true;
+ }
+ if (waitlistForm) {
+  waitlistForm.setAttribute('aria-disabled', 'true');
+ }
+ showError(message);
+}
 </script>

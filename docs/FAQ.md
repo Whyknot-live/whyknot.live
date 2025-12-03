@@ -30,7 +30,7 @@ WhyKnot is for:
 
 ### When will WhyKnot launch?
 
-- **Alpha Access**: December 19, 2025 (for waitlist members)
+- **Alpha Access**: September 19, 2026 (for waitlist members)
 - **Public Launch**: October 9, 2026 (for everyone)
 
 ### How do I join the waitlist?

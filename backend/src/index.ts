@@ -27,8 +27,8 @@ app.use('*', securityHeaders)
 
 // CORS for API routes - allow both www and non-www domains, plus admin
 const corsOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) ?? ['https://whyknot.live', 'https://www.whyknot.live'];
-// Add localhost for development (frontend + admin)
-if (process.env.NODE_ENV !== 'production') {
+// Add localhost only in development environment
+if (process.env.NODE_ENV === 'development') {
  corsOrigins.push('http://localhost:4321', 'http://127.0.0.1:4321', 'http://localhost:4322', 'http://127.0.0.1:4322');
 }
 
