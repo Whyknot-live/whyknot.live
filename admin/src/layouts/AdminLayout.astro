@@ -4,126 +4,144 @@ export interface Props {
   description?: string;
 }
 
-const {
-  title = 'Admin Dashboard',
-  description = 'WhyKnot Admin Panel'
-} = Astro.props;
+const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
+  Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content={description}>
-  <meta name="robots" content="noindex, nofollow">
-  <title>{title} | WhyKnot Admin</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <style is:global>
-    @import '../styles/admin.css';
-  </style>
-</head>
-<body>
-  <!-- Theme initialization script -->
-  <script is:inline>
-    (function() {
-      const savedTheme = localStorage.getItem('theme');
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      
-      let theme;
-      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-        theme = savedTheme;
-      } else {
-        theme = systemPrefersDark ? 'dark' : 'light';
-      }
-      
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} | WhyKnot Admin</title>
+    <link rel="icon" type="image/png" href="/images/logo-y-knot.png" />
+    <link rel="apple-touch-icon" href="/images/logo-y-knot.png" />
+    <style is:global>
+      @import "../styles/admin.css";
+    </style>
+  </head>
+  <body>
+    <!-- Theme initialization script -->
+    <script is:inline>
+      (function () {
+        const savedTheme = localStorage.getItem("theme");
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
 
-  <slot />
-
-  <script>
-    function isLocalhostOrigin(origin: string): boolean {
-      try {
-        const url = new URL(origin);
-        if (url.hostname === 'localhost') {
-          return true;
+        let theme;
+        if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
+          theme = savedTheme;
+        } else {
+          theme = systemPrefersDark ? "dark" : "light";
         }
-        return url.hostname.startsWith('127.') || url.hostname === '[::1]';
-      } catch {
-        return false;
-      }
-    }
 
-    function resolveApiBaseUrl(): string {
-      const fromEnv = (import.meta.env.PUBLIC_API_URL ?? '').trim();
-      if (fromEnv) {
-        return fromEnv;
-      }
-      if (isLocalhostOrigin(window.location.origin)) {
-        console.warn('PUBLIC_API_URL not set, defaulting to local API for development');
-        return 'http://localhost:10000/api';
-      }
-      throw new Error('PUBLIC_API_URL is not configured for the admin client.');
-    }
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
 
-    let adminBaseURL: string;
-    try {
-      adminBaseURL = resolveApiBaseUrl();
-    } catch (error) {
-      console.error(error);
-      document.body.innerHTML = '<main class="config-error"><h1>Configuration error</h1><p>Admin API URL is not configured. Please set PUBLIC_API_URL.</p></main>';
-      throw error;
-    }
+    <slot />
 
-    // Global admin utilities
-    window.adminAPI = {
-      baseURL: adminBaseURL,
-
-      // Check if authenticated by verifying with backend
-      async isAuthenticated() {
+    <script>
+      function isLocalhostOrigin(origin: string): boolean {
         try {
-          const response = await fetch(`${this.baseURL}/admin/verify`, {
-            method: 'GET',
-            credentials: 'include', // Include cookies
-          });
-          return response.ok;
+          const url = new URL(origin);
+          if (url.hostname === "localhost") {
+            return true;
+          }
+          return url.hostname.startsWith("127.") || url.hostname === "[::1]";
         } catch {
           return false;
         }
-      },
-
-      async fetch(endpoint: string, options: RequestInit = {}) {
-        const headers = {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        };
-
-        const response = await fetch(`${this.baseURL}${endpoint}`, {
-          ...options,
-          headers,
-          credentials: 'include', // Always include cookies
-        });
-
-        if (response.status === 401) {
-          // Token expired or invalid - redirect to login
-          window.location.href = '/';
-          throw new Error('Unauthorized');
-        }
-
-        return response;
-      },
-
-      async logout() {
-        try {
-          await this.fetch('/admin/logout', { method: 'POST' });
-        } catch {
-          // Ignore errors, just redirect
-        }
-        window.location.href = '/';
       }
-    };
-  </script>
-</body>
+
+      function resolveApiBaseUrl(): string {
+        const fromEnv = (import.meta.env.PUBLIC_API_URL ?? "").trim();
+        if (fromEnv) {
+          return fromEnv;
+        }
+        if (isLocalhostOrigin(window.location.origin)) {
+          console.warn(
+            "PUBLIC_API_URL not set, defaulting to local API for development",
+          );
+          return "http://localhost:10000/api";
+        }
+        throw new Error(
+          "PUBLIC_API_URL is not configured for the admin client.",
+        );
+      }
+
+      let adminBaseURL: string;
+      try {
+        adminBaseURL = resolveApiBaseUrl();
+      } catch (error) {
+        console.error(error);
+        document.body.innerHTML =
+          '<main class="config-error"><h1>Configuration error</h1><p>Admin API URL is not configured. Please set PUBLIC_API_URL.</p></main>';
+        throw error;
+      }
+
+      // Global admin utilities
+      window.adminAPI = {
+        baseURL: adminBaseURL,
+
+        getToken() {
+          return null; // Cookie-based auth, no token
+        },
+
+        setToken() {
+          // No-op for cookie-based auth
+        },
+
+        clearToken() {
+          // No-op for cookie-based auth
+        },
+
+        // Check if authenticated by verifying with backend
+        async isAuthenticated() {
+          try {
+            const response = await fetch(`${this.baseURL}/admin/verify`, {
+              method: "GET",
+              credentials: "include", // Include cookies
+            });
+            return response.ok;
+          } catch {
+            return false;
+          }
+        },
+
+        async fetch(endpoint: string, options: RequestInit = {}) {
+          const headers = {
+            "Content-Type": "application/json",
+            ...options.headers,
+          };
+
+          const response = await fetch(`${this.baseURL}${endpoint}`, {
+            ...options,
+            headers,
+            credentials: "include", // Always include cookies
+          });
+
+          if (response.status === 401) {
+            // Token expired or invalid - redirect to login
+            window.location.href = "/";
+            throw new Error("Unauthorized");
+          }
+
+          return response;
+        },
+
+        async logout() {
+          try {
+            await this.fetch("/admin/logout", { method: "POST" });
+          } catch {
+            // Ignore errors, just redirect
+          }
+          window.location.href = "/";
+        },
+      };
+    </script>
+  </body>
 </html>
