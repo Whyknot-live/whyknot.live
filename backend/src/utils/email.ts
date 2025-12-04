@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { generateWaitlistWelcomeEmail, generateWaitlistWelcomeText } from '../templates/waitlist-welcome'
+import { emailLogger } from './logger'
 
 /**
  * Send welcome email to new waitlist subscriber using Resend
@@ -11,19 +12,21 @@ import { generateWaitlistWelcomeEmail, generateWaitlistWelcomeText } from '../te
 export async function sendWaitlistWelcomeEmail(email: string, position?: number): Promise<void> {
   // Only send if email is enabled
   if (process.env.ENABLE_EMAIL !== '1') {
-    console.info('Email disabled, skipping send')
+    emailLogger.debug('Email disabled, skipping send', { email })
     return
   }
 
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
-    console.warn('RESEND_API_KEY not configured, skipping email send')
+    emailLogger.warn('RESEND_API_KEY not configured, skipping email send')
     return
   }
 
   try {
+    emailLogger.debug('Preparing welcome email', { email, position })
+
     const resend = new Resend(apiKey)
-    
+
     // Generate email content
     const htmlContent = generateWaitlistWelcomeEmail({ email, position })
     const textContent = generateWaitlistWelcomeText({ email, position })
@@ -46,13 +49,23 @@ export async function sendWaitlistWelcomeEmail(email: string, position?: number)
     })
 
     if (error) {
-      console.error('Failed to send email via Resend:', error)
+      emailLogger.error('Failed to send email via Resend', {
+        email,
+        error: error.message
+      })
       return
     }
 
-    console.info(`Email sent successfully to ${email}, ID: ${data?.id}`)
+    emailLogger.info('Email sent successfully', {
+      email,
+      emailId: data?.id,
+      position
+    })
   } catch (err) {
-    console.error('Email send error:', err)
+    emailLogger.error('Email send error', {
+      email,
+      error: err instanceof Error ? err.message : 'Unknown error'
+    })
     // Don't throw - email failures shouldn't break the API
   }
 }

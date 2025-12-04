@@ -7,6 +7,7 @@ import { timingSafeEqual, createHash } from 'node:crypto'
 import { connectMongo, getDb } from '../utils/mongo'
 import { validateEnv } from '../utils/env'
 import { getClientAddress } from '../utils/request'
+import { authLogger, apiLogger } from '../utils/logger'
 
 const router = new Hono()
 
@@ -36,76 +37,87 @@ function toCsvField(value: unknown): string {
 
 // Admin login - verify password and return JWT token
 // Apply strict rate limiting: 5 attempts per 15 minutes
-router.post('/admin/login', 
+router.post('/admin/login',
   async (c, next) => {
     const ip = getClientAddress(c)
     const env = validateEnv()
-    
+
+    authLogger.debug('Admin login attempt', { ip })
+
     // Use Redis rate limiting if available
     if (env.USE_REDIS_RATE_LIMIT === '1' && env.REDIS_URL) {
       try {
         const { rateLimitCheck, connectRedis } = await import('../utils/redis')
         await connectRedis(env.REDIS_URL)
         const rateLimit = await rateLimitCheck(`admin-login:${ip}`, 5, 900) // 5 attempts per 15 minutes
-        
+
         c.header('X-RateLimit-Limit', '5')
         c.header('X-RateLimit-Remaining', String(rateLimit.remaining))
         c.header('X-RateLimit-Reset', String(rateLimit.resetAt))
-        
+
         if (!rateLimit.allowed) {
-          return c.json({ 
+          authLogger.warn('Admin login rate limit exceeded', { ip })
+          return c.json({
             error: 'rate_limited',
             message: 'Too many login attempts. Please try again later.',
             retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
           }, 429)
         }
       } catch (error) {
-        console.error('Redis rate limit error:', error)
+        authLogger.error('Redis rate limit error during admin login', {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
       }
     }
-    
+
     await next()
   },
   async (c) => {
-  const body = await c.req.json()
-  const parsed = loginSchema.safeParse(body)
-  
-  if (!parsed.success) {
-    return c.json({ error: 'invalid_request' }, 400)
-  }
+    const body = await c.req.json()
+    const parsed = loginSchema.safeParse(body)
 
-  const env = validateEnv()
-  
-  const submittedHash = createHash('sha256').update(parsed.data.password).digest()
-  const expectedHash = createHash('sha256').update(env.ADMIN_PASSWORD).digest()
+    if (!parsed.success) {
+      authLogger.debug('Invalid admin login request format')
+      return c.json({ error: 'invalid_request' }, 400)
+    }
 
-  // Check password using constant-time comparison
-  if (!timingSafeEqual(submittedHash, expectedHash)) {
-    return c.json({ error: 'invalid_credentials' }, 401)
-  }
+    const env = validateEnv()
 
-  // Generate JWT token
-  const token = await sign(
-    {
-      sub: 'admin',
-      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), // 24 hours
-    },
-    env.ADMIN_JWT_SECRET
-  )
+    const submittedHash = createHash('sha256').update(parsed.data.password).digest()
+    const expectedHash = createHash('sha256').update(env.ADMIN_PASSWORD).digest()
 
-  // Set token as HttpOnly cookie for security
-  setCookie(c, 'adminToken', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
-    maxAge: 60 * 60 * 24, // 24 hours
-    path: '/',
-  })
+    // Check password using constant-time comparison
+    if (!timingSafeEqual(submittedHash, expectedHash)) {
+      const ip = getClientAddress(c)
+      authLogger.warn('Failed admin login attempt', { ip })
+      return c.json({ error: 'invalid_credentials' }, 401)
+    }
 
-  return c.json({ 
-    ok: true,
-    expiresIn: 60 * 60 * 24 // 24 hours in seconds
-  })
+    // Generate JWT token
+    const token = await sign(
+      {
+        sub: 'admin',
+        exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), // 24 hours
+      },
+      env.ADMIN_JWT_SECRET
+    )
+
+    // Set token as HttpOnly cookie for security
+    setCookie(c, 'adminToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/',
+    })
+
+    const ip = getClientAddress(c)
+    authLogger.info('Admin login successful', { ip })
+
+    return c.json({
+      ok: true,
+      expiresIn: 60 * 60 * 24 // 24 hours in seconds
+    })
   }
 )
 
@@ -113,8 +125,9 @@ router.post('/admin/login',
 async function verifyAdminToken(c: any, next: any) {
   // Read token from HttpOnly cookie
   const token = getCookie(c, 'adminToken')
-  
+
   if (!token) {
+    authLogger.debug('Admin token missing')
     return c.json({ error: 'unauthorized' }, 401)
   }
 
@@ -122,22 +135,27 @@ async function verifyAdminToken(c: any, next: any) {
 
   try {
     const payload = await verify(token, env.ADMIN_JWT_SECRET)
-    
+
     // Validate expiration explicitly
     if (payload.exp && payload.exp * 1000 < Date.now()) {
+      authLogger.debug('Admin token expired')
       return c.json({ error: 'token_expired' }, 401)
     }
-    
+
     if (payload.sub !== 'admin') {
+      authLogger.warn('Invalid admin token subject', { subject: payload.sub })
       return c.json({ error: 'unauthorized' }, 401)
     }
-    
+
+    authLogger.debug('Admin token verified successfully')
     // Token is valid, proceed
     await next()
   } catch (err: any) {
     if (err.name === 'JwtTokenExpired') {
+      authLogger.debug('Admin token JWT expired')
       return c.json({ error: 'token_expired' }, 401)
     }
+    authLogger.warn('Invalid admin token', { error: err.message })
     return c.json({ error: 'invalid_token' }, 401)
   }
 }
@@ -167,6 +185,8 @@ router.get('/admin/waitlist', verifyAdminToken, async (c) => {
 
     const sortField = sortParam === 'email' ? 'email' : 'createdAt'
     const sortDirection = orderParam === 'asc' ? 1 : -1
+
+    apiLogger.debug('Admin waitlist query', { page, limit, search, interest, format, sortField, sortDirection })
 
     const collection = db.collection<WaitlistDoc>('waitlist')
     const filter: Filter<WaitlistDoc> = {}
@@ -233,13 +253,9 @@ router.get('/admin/waitlist', verifyAdminToken, async (c) => {
     })
   } catch (err) {
     // Environment-aware error logging
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Admin waitlist error:', err)
-    } else {
-      console.error('Admin waitlist error:', {
-        message: err instanceof Error ? err.message : 'Unknown error'
-      })
-    }
+    apiLogger.error('Admin waitlist fetch error', {
+      error: err instanceof Error ? err.message : 'Unknown error'
+    })
     return c.json({ error: 'server_error' }, 500)
   }
 })
@@ -251,8 +267,10 @@ router.get('/admin/stats', verifyAdminToken, async (c) => {
   const db = getDb()
 
   try {
+    apiLogger.debug('Fetching admin stats')
+
     const total = await db.collection('waitlist').countDocuments()
-    
+
     // Get signups in last 24 hours
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
     const last24h = await db.collection('waitlist').countDocuments({
@@ -275,6 +293,8 @@ router.get('/admin/stats', verifyAdminToken, async (c) => {
       ])
       .toArray()
 
+    apiLogger.info('Admin stats fetched', { total, last24h, last7days })
+
     return c.json({
       ok: true,
       stats: {
@@ -289,19 +309,16 @@ router.get('/admin/stats', verifyAdminToken, async (c) => {
     })
   } catch (err) {
     // Environment-aware error logging
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Admin stats error:', err)
-    } else {
-      console.error('Admin stats error:', {
-        message: err instanceof Error ? err.message : 'Unknown error'
-      })
-    }
+    apiLogger.error('Admin stats fetch error', {
+      error: err instanceof Error ? err.message : 'Unknown error'
+    })
     return c.json({ error: 'server_error' }, 500)
   }
 })
 
 // Verify token endpoint (to check if token is still valid)
 router.get('/admin/verify', verifyAdminToken, async (c) => {
+  authLogger.debug('Admin token verification successful')
   return c.json({ ok: true, valid: true })
 })
 
@@ -310,6 +327,7 @@ router.post('/admin/logout', verifyAdminToken, async (c) => {
   deleteCookie(c, 'adminToken', {
     path: '/',
   })
+  authLogger.info('Admin logout successful')
   return c.json({ ok: true })
 })
 

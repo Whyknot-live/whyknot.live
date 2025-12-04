@@ -13,6 +13,7 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   TRUST_PROXY_FORWARDED: z.enum(['0', '1']).optional(),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).optional(),
   ADMIN_PASSWORD: z.string()
     .min(12, 'Password must be at least 12 characters')
     .regex(
