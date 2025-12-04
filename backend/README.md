@@ -75,7 +75,12 @@ curl -X POST http://localhost:10000/api/waitlist \
 
 ### Admin Endpoints (Protected with JWT)
 
-These routes require a valid admin token obtained from `POST /api/admin/login`. Set `ADMIN_PASSWORD` and `ADMIN_JWT_SECRET` in the backend `.env` file.
+These routes require a valid admin token obtained from `POST /api/admin/login`. Set `ADMIN_PASSWORD_HASH` (bcrypt hash) and `ADMIN_JWT_SECRET` in the backend `.env` file.
+
+Generate a password hash:
+```bash
+bun run src/scripts/hash-password.ts "YourSecureP@ssw0rd123!"
+```
 
 - `POST /api/admin/login` – exchange the env-based password for a 24-hour JWT token
 - `GET /api/admin/verify` – validate an existing token

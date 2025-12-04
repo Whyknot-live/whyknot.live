@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { sign, verify } from 'hono/jwt'
 import { setCookie, getCookie, deleteCookie } from 'hono/cookie'
 import type { Filter } from 'mongodb'
-import { timingSafeEqual, createHash } from 'node:crypto'
+import bcrypt from 'bcrypt'
 import { connectMongo, getDb } from '../utils/mongo'
 import { validateEnv } from '../utils/env'
 import { getClientAddress } from '../utils/request'
@@ -83,11 +83,10 @@ router.post('/admin/login',
 
     const env = validateEnv()
 
-    const submittedHash = createHash('sha256').update(parsed.data.password).digest()
-    const expectedHash = createHash('sha256').update(env.ADMIN_PASSWORD).digest()
+    // Use bcrypt for secure password comparison (constant-time comparison built-in)
+    const isValidPassword = await bcrypt.compare(parsed.data.password, env.ADMIN_PASSWORD_HASH)
 
-    // Check password using constant-time comparison
-    if (!timingSafeEqual(submittedHash, expectedHash)) {
+    if (!isValidPassword) {
       const ip = getClientAddress(c)
       authLogger.warn('Failed admin login attempt', { ip })
       return c.json({ error: 'invalid_credentials' }, 401)

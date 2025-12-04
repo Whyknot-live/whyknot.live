@@ -14,11 +14,13 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   TRUST_PROXY_FORWARDED: z.enum(['0', '1']).optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).optional(),
-  ADMIN_PASSWORD: z.string()
-    .min(12, 'Password must be at least 12 characters')
+  // Store a bcrypt hash instead of plain password for security
+  // Generate with: bun run src/scripts/hash-password.ts "your-password"
+  ADMIN_PASSWORD_HASH: z.string()
+    .min(60, 'ADMIN_PASSWORD_HASH must be a valid bcrypt hash (60 characters)')
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]/,
-      'Password must contain uppercase, lowercase, number, and special character (@$!%*#?&)'
+      /^\$2[aby]\$\d{1,2}\$[./A-Za-z0-9]{53}$/,
+      'ADMIN_PASSWORD_HASH must be a valid bcrypt hash (e.g., $2b$12$...)'
     ),
   ADMIN_JWT_SECRET: z.string().min(32, 'JWT secret must be at least 32 characters')
 })

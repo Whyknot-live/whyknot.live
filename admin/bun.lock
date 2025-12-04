@@ -5,10 +5,10 @@
     "": {
       "name": "whyknot-admin",
       "dependencies": {
-        "astro": "^5.0.5",
+        "astro": "^5.16.4",
       },
       "devDependencies": {
-        "@types/node": "^24.9.1",
+        "@types/node": "^24.10.1",
         "typescript": "^5.9.3",
       },
     },

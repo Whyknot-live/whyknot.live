@@ -37,16 +37,24 @@ PUBLIC_API_URL=https://your-backend.onrender.com/api
 
 ### 3. Configure Backend
 
+Generate a bcrypt hash for your admin password:
+
+```bash
+cd backend
+bun run src/scripts/hash-password.ts "YourSecureP@ssw0rd123!"
+```
+
 Add these environment variables to your backend `.env`:
 
 ```env
-# Admin credentials
-ADMIN_PASSWORD=your-secure-password-min-8-chars
+# Admin credentials (use bcrypt hash, NOT plain text password)
+ADMIN_PASSWORD_HASH=$2b$12$...your-generated-hash...
 ADMIN_JWT_SECRET=your-secret-key-min-32-chars-random-string
 ```
 
 **Important Security Notes:**
-- Use a strong password (minimum 8 characters)
+- Use a strong password (minimum 12 characters with uppercase, lowercase, numbers, and special characters)
+- Store the bcrypt HASH in the environment, never the plain text password
 - Use a random, secure JWT secret (minimum 32 characters)
 - Never commit these values to version control
 - Use different values for development and production
@@ -73,7 +81,7 @@ The admin dashboard will be available at `http://localhost:4322`
 ### Login
 
 1. Navigate to `http://localhost:4322`
-2. Enter your admin password (set in `ADMIN_PASSWORD` env variable)
+2. Enter your admin password (the plain text password you used to generate the hash)
 3. Click "Sign In"
 
 ### Dashboard
@@ -185,7 +193,7 @@ Get paginated waitlist users.
 
 1. User enters password on login page
 2. Frontend sends password to `/api/admin/login`
-3. Backend verifies password against `ADMIN_PASSWORD` env variable
+3. Backend verifies password against `ADMIN_PASSWORD_HASH` using bcrypt (secure comparison)
 4. Backend generates JWT token with 24-hour expiration
 5. Frontend stores token in localStorage
 6. All subsequent requests include token in Authorization header
@@ -259,7 +267,9 @@ The admin panel is designed to be extensible. Consider adding:
 ## Troubleshooting
 
 ### Login fails with "invalid_credentials"
-- Check `ADMIN_PASSWORD` in backend `.env`
+- Check `ADMIN_PASSWORD_HASH` in backend `.env` is a valid bcrypt hash
+- Ensure you're using the correct plain text password that was hashed
+- Regenerate hash: `bun run src/scripts/hash-password.ts "your-password"`
 - Ensure backend is running
 - Verify `PUBLIC_API_URL` is correct
 

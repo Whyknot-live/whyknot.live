@@ -217,27 +217,33 @@ docker-compose up --build
 
 To access the admin panel for managing waitlist users:
 
-1. **Configure Backend** - Add to `backend/.env`:
+1. **Configure Backend** - Generate a bcrypt hash for your password:
+```bash
+cd backend
+bun run src/scripts/hash-password.ts "YourSecureP@ssw0rd123!"
+```
+
+2. **Add to `backend/.env`**:
 ```env
-ADMIN_PASSWORD=YourSecurePassword123!
+ADMIN_PASSWORD_HASH=$2b$12$...your-generated-hash...
 ADMIN_JWT_SECRET=generate-with-openssl-rand-hex-32
 ```
 
-2. **Setup Admin Frontend**:
+3. **Setup Admin Frontend**:
 ```bash
 cd admin
 bun install
 cp .env.example .env
 ```
 
-3. **Run Admin** (in separate terminal):
+4. **Run Admin** (in separate terminal):
 ```bash
 cd admin
 bun run dev
 ```
 Admin panel runs on `http://localhost:4322`
 
-4. **Access Dashboard**: Open browser and login with your `ADMIN_PASSWORD`
+5. **Access Dashboard**: Open browser and login with your password
 
 📖 **Full documentation**: See [ADMIN.md](./ADMIN.md) and [admin/README.md](./admin/README.md)
 
