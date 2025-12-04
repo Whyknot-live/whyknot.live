@@ -1,108 +1,23 @@
 ---
 export interface Props {
- width?: number;
- height?: number;
- className?: string;
- title?: string;
+    width?: number;
+    height?: number;
+    className?: string;
+    title?: string;
 }
 
-const { 
- width = 42, 
- height = 42, 
- className = '', 
- title = 'WhyKnot Y Knot Logo' 
+const {
+    width = 42,
+    height = 42,
+    className = "",
+    title = "WhyKnot Y Knot Logo",
 } = Astro.props;
-
-// Generate unique ID for this instance to avoid conflicts
-const uniqueId = Math.random().toString(36).substring(2, 11);
 ---
 
-<svg 
- width={width} 
- height={height} 
- viewBox="0 0 100 100" 
- fill="none" 
- class={className}
- aria-label={title}
->
- <defs>
- <linearGradient id={`threadGradient-${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="100%">
- <stop offset="0%" stop-color="#20C5B5" />
- <stop offset="30%" stop-color="#2FDDCC" />
- <stop offset="70%" stop-color="#40E0D0" />
- <stop offset="100%" stop-color="#20C5B5" />
- </linearGradient>
- 
- <!-- Thread texture pattern -->
- <pattern id={`threadTexture-${uniqueId}`} x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
- <circle cx="2" cy="2" r="0.8" fill="rgba(255,255,255,0.15)"/>
- <circle cx="6" cy="6" r="0.8" fill="rgba(255,255,255,0.10)"/>
- </pattern>
- </defs>
- 
- <!-- Left branch of Y - twisted thread -->
- <path d="M50 50 Q35 35 25 20 Q23 18 25 16 Q27 18 30 22 Q40 30 50 45" 
- stroke={`url(#threadGradient-${uniqueId})`}
- stroke-width="5" 
- fill="none" 
- stroke-linecap="round" 
- stroke-linejoin="round"/>
- 
- <!-- Right branch of Y - twisted thread --> 
- <path d="M50 50 Q65 35 75 20 Q77 18 75 16 Q73 18 70 22 Q60 30 50 45" 
- stroke={`url(#threadGradient-${uniqueId})`}
- stroke-width="5" 
- fill="none" 
- stroke-linecap="round" 
- stroke-linejoin="round"/>
- 
- <!-- Bottom stem of Y - main thread -->
- <path d="M50 50 Q48 65 50 80 Q52 82 54 80 Q52 75 50 65" 
- stroke={`url(#threadGradient-${uniqueId})`}
- stroke-width="6" 
- fill="none" 
- stroke-linecap="round" 
- stroke-linejoin="round"/>
- 
- <!-- Thread crossing knot at center -->
- <ellipse cx="50" cy="50" rx="4" ry="3" 
- fill={`url(#threadGradient-${uniqueId})`}
- opacity="0.9"/>
- 
- <!-- Subtle thread fiber details -->
- <path d="M28 24 Q30 26 32 24" 
- stroke="rgba(255,255,255,0.3)" 
- stroke-width="1" 
- fill="none" 
- stroke-linecap="round"/>
- <path d="M68 24 Q70 26 72 24" 
- stroke="rgba(255,255,255,0.3)" 
- stroke-width="1" 
- fill="none" 
- stroke-linecap="round"/>
- <path d="M48 72 Q50 74 52 72" 
- stroke="rgba(255,255,255,0.3)" 
- stroke-width="1" 
- fill="none" 
- stroke-linecap="round"/>
- 
- <!-- Soft highlight on threads -->
- <path d="M50 50 Q35 35 25 20" 
- stroke="rgba(255,255,255,0.25)" 
- stroke-width="1.5" 
- fill="none" 
- stroke-linecap="round" 
- opacity="0.7"/>
- <path d="M50 50 Q65 35 75 20" 
- stroke="rgba(255,255,255,0.25)" 
- stroke-width="1.5" 
- fill="none" 
- stroke-linecap="round" 
- opacity="0.7"/>
- <path d="M50 50 Q48 65 50 80" 
- stroke="rgba(255,255,255,0.25)" 
- stroke-width="2" 
- fill="none" 
- stroke-linecap="round" 
- opacity="0.7"/>
-</svg>
+<img
+    src="/images/logo-y-knot-transparent.png"
+    alt={title}
+    width={width}
+    height={height}
+    class={className}
+/>
