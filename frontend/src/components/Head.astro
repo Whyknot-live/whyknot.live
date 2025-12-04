@@ -1,65 +1,66 @@
 ---
 export interface Props {
- title?: string;
- description?: string;
- keywords?: string;
- image?: string;
- type?: 'website' | 'article' | 'product';
- publishedTime?: string;
- modifiedTime?: string;
- author?: string;
- canonical?: string;
- noindex?: boolean;
- schema?: Record<string, any>;
+  title?: string;
+  description?: string;
+  keywords?: string;
+  image?: string;
+  type?: "website" | "article" | "product";
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  canonical?: string;
+  noindex?: boolean;
+  schema?: Record<string, any>;
 }
 
 const {
- title = "WhyKnot? - Discover Amazing Websites & Tools",
- description = "Discover the web's most innovative websites and tools. Join thousands discovering what's next in digital innovation.",
- keywords = "innovative websites, web tools, design inspiration, productivity tools, digital innovation, web discovery",
- image = "/images/og-image.jpg",
- type = "website",
- publishedTime,
- modifiedTime,
- author = "WhyKnot Team",
- canonical,
- noindex = false,
- schema
+  title = "WhyKnot? - Discover Amazing Websites & Tools",
+  description = "Discover the web's most innovative websites and tools. Join thousands discovering what's next in digital innovation.",
+  keywords = "innovative websites, web tools, design inspiration, productivity tools, digital innovation, web discovery",
+  image = "/images/og-image.jpg",
+  type = "website",
+  publishedTime,
+  modifiedTime,
+  author = "WhyKnot Team",
+  canonical,
+  noindex = false,
+  schema,
 } = Astro.props;
 
 // Derive site from Astro.site when available to avoid hardcoding
-const site = Astro.site?.origin ?? 'https://whyknot.live';
+const site = Astro.site?.origin ?? "https://whyknot.live";
 const currentUrl = canonical || new URL(Astro.url.pathname, site).href;
 const imageUrl = new URL(image, site).href;
 
 // Default structured data for Organization
 const defaultSchema = {
- "@context": "https://schema.org",
- "@type": "Organization",
- "name": "WhyKnot",
- "description": "Discover innovative websites and tools",
- "url": site,
- "logo": {
- "@type": "ImageObject",
- "url": `${site}/images/logo-y-knot.svg`,
- "width": 100,
- "height": 100
- },
- "sameAs": [
- "https://twitter.com/whyknot_live",
- "https://linkedin.com/company/whyknot-live"
- ],
- "contactPoint": {
- "@type": "ContactPoint",
- "contactType": "customer service",
- "email": "hello@whyknot.live"
- }
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "WhyKnot",
+  description: "Discover innovative websites and tools",
+  url: site,
+  logo: {
+    "@type": "ImageObject",
+    url: `${site}/images/logo-y-knot.png`,
+    width: 1024,
+    height: 1024,
+  },
+  sameAs: [
+    "https://twitter.com/whyknot_live",
+    "https://linkedin.com/company/whyknot-live",
+  ],
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    email: "hello@whyknot.live",
+  },
 };
 
 const finalSchema = schema || defaultSchema;
 
 // Google AdSense ID from environment or default
-const adsenseId = import.meta.env.PUBLIC_GOOGLE_ADSENSE_ID || 'pub-1034433596436259';
+const adsenseId =
+  import.meta.env.PUBLIC_GOOGLE_ADSENSE_ID || "pub-1034433596436259";
 ---
 
 <!-- Essential Meta Tags -->
@@ -88,9 +89,21 @@ const adsenseId = import.meta.env.PUBLIC_GOOGLE_ADSENSE_ID || 'pub-1034433596436
 <meta property="og:image:height" content="630" />
 <meta property="og:site_name" content="WhyKnot" />
 <meta property="og:locale" content="en_US" />
-{publishedTime && <meta property="article:published_time" content={publishedTime} />}
-{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
-{author && type === 'article' && <meta property="article:author" content={author} />}
+{
+  publishedTime && (
+    <meta property="article:published_time" content={publishedTime} />
+  )
+}
+{
+  modifiedTime && (
+    <meta property="article:modified_time" content={modifiedTime} />
+  )
+}
+{
+  author && type === "article" && (
+    <meta property="article:author" content={author} />
+  )
+}
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
@@ -102,10 +115,8 @@ const adsenseId = import.meta.env.PUBLIC_GOOGLE_ADSENSE_ID || 'pub-1034433596436
 <meta name="twitter:site" content="@whyknot_live" />
 
 <!-- Favicon and Icons -->
-<link rel="icon" href="/images/logo-y-knot.svg" type="image/svg+xml" />
-<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
-<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
-<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+<link rel="icon" href="/images/logo-y-knot.png" type="image/png" />
+<link rel="apple-touch-icon" href="/images/logo-y-knot.png" />
 <link rel="manifest" href="/manifest.json" />
 <meta name="theme-color" content="#20c5b5" />
 <meta name="msapplication-TileColor" content="#20c5b5" />
@@ -117,7 +128,11 @@ const adsenseId = import.meta.env.PUBLIC_GOOGLE_ADSENSE_ID || 'pub-1034433596436
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
 <!-- JSON-LD Structured Data -->
-<script type="application/ld+json" is:inline set:html={JSON.stringify(finalSchema)} />
+<script
+  type="application/ld+json"
+  is:inline
+  set:html={JSON.stringify(finalSchema)}
+/>
 
 <!-- Additional Meta for Search Engines -->
 <meta name="revisit-after" content="7 days" />
@@ -133,12 +148,22 @@ const adsenseId = import.meta.env.PUBLIC_GOOGLE_ADSENSE_ID || 'pub-1034433596436
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 
 <!-- Performance Hints -->
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" as="style" id="font-preload" />
-<noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" /></noscript>
+<link
+  rel="preload"
+  href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+  as="style"
+  id="font-preload"
+/>
+<noscript
+  ><link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+    rel="stylesheet"
+  /></noscript
+>
 <script is:inline>
-  const fontLink = document.getElementById('font-preload');
+  const fontLink = document.getElementById("font-preload");
   if (fontLink) {
-    fontLink.rel = 'stylesheet';
+    fontLink.rel = "stylesheet";
   }
 </script>
 
