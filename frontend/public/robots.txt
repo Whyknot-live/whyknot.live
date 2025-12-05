@@ -1,0 +1,63 @@
+# robots.txt for WhyKnot.live
+# This file tells search engines which pages to crawl and which to avoid
+
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow crawling of admin or private directories
+# (Add these if you have admin panels or private sections)
+# Disallow: /admin/
+# Disallow: /api/
+# Disallow: /private/
+
+# Disallow crawling of development or testing files
+Disallow: /*.json$
+# Note: Do NOT disallow XML globally to allow sitemap and potential feeds
+# Disallow: /*.xml$
+Disallow: /test/
+Disallow: /.env
+Disallow: /node_modules/
+
+# Allow access to CSS, JS, and image files for better rendering
+Allow: /css/
+Allow: /js/
+Allow: /images/
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Specify the sitemap location
+Sitemap: https://whyknot.live/sitemap.xml
+
+# Crawl delay (optional - be respectful to server resources)
+# Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Block unwanted bots (optional)
+# User-agent: BadBot
+# Disallow: /
+
+# Allow social media crawlers for better sharing
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /

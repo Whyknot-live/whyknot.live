@@ -48,9 +48,11 @@ astro.db
 .next/
 # Nuxt.js
 .nuxt/
-# Gatsby
+# Gatsby (Note: Astro uses public/ for static assets, so we exclude them)
 .cache/
 public/
+!frontend/public/
+!admin/public/
 # Vuepress
 .vuepress/dist
 # Parcel
