@@ -1,181 +1,188 @@
 ---
-import Logo from './Logo.astro';
+import Logo from "./Logo.astro";
 
 export interface Props {
- transparent?: boolean;
+    transparent?: boolean;
 }
 
 const { transparent = false } = Astro.props;
 ---
 
-<nav class={`minimal-nav ${transparent ? 'nav-transparent' : ''}`} role="navigation" aria-label="Main navigation">
- <div class="nav-container">
- <button 
- class="nav-logo theme-toggle-logo" 
- aria-label="Toggle theme (Click to switch between light and dark mode)"
- data-theme-toggle-logo
- >
- <Logo width={42} height={42} />
- </button>
- </div>
+<nav
+    class={`minimal-nav ${transparent ? "nav-transparent" : ""}`}
+    role="navigation"
+    aria-label="Main navigation"
+>
+    <div class="nav-container">
+        <button
+            class="nav-logo theme-toggle-logo"
+            aria-label="Toggle theme (Click to switch between light and dark mode)"
+            data-theme-toggle-logo
+        >
+            <Logo width={42} height={42} />
+        </button>
+    </div>
 </nav>
 
 <style>
-.minimal-nav {
- position: fixed;
- bottom: 2rem;
- left: 50%;
- transform: translateX(-50%);
- background: rgba(255, 255, 255, 0.12);
- backdrop-filter: blur(32px) saturate(180%);
- -webkit-backdrop-filter: blur(32px) saturate(180%);
- border: 1px solid rgba(255, 255, 255, 0.15);
- border-radius: 1.5rem;
- z-index: 100;
- transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
- box-shadow: 
- 0 8px 32px -8px rgba(49, 67, 72, 0.1),
- 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
- }
+    .minimal-nav {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(32px) saturate(180%);
+        -webkit-backdrop-filter: blur(32px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 1.5rem;
+        z-index: 100;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow:
+            0 8px 32px -8px rgba(49, 67, 72, 0.1),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    }
 
-.minimal-nav:hover {
- background: rgba(255, 255, 255, 0.15);
- transform: translateX(-50%) translateY(-2px);
- box-shadow: 
- 0 12px 48px -12px rgba(32, 197, 181, 0.15),
- 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
- }
+    .minimal-nav:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateX(-50%) translateY(-2px);
+        box-shadow:
+            0 12px 48px -12px rgba(32, 197, 181, 0.15),
+            0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    }
 
-.nav-container {
- padding: 1rem 1.5rem;
- display: flex;
- align-items: center;
- justify-content: center;
- }
+    .nav-container {
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.nav-logo {
- display: flex;
- align-items: center;
- justify-content: center;
- text-decoration: none;
- transition: transform 0.3s ease;
- background: none;
- border: none;
- cursor: pointer;
- padding: 0;
- border-radius: 50%;
- }
+    .nav-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        border-radius: 50%;
+    }
 
-.theme-toggle-logo {
- display: flex;
- align-items: center;
- justify-content: center;
- background: none;
- border: none;
- cursor: pointer;
- padding: 0;
- border-radius: 50%;
- transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
- position: relative;
- }
+    .theme-toggle-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        border-radius: 50%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
 
-.theme-toggle-logo::before {
- content: '';
- position: absolute;
- inset: -8px;
- border-radius: 50%;
- background: transparent;
- transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
- opacity: 0;
- scale: 0.8;
- }
+    .theme-toggle-logo::before {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        background: transparent;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0;
+        scale: 0.8;
+    }
 
-.nav-logo:hover,
-.theme-toggle-logo:hover {
- transform: scale(1.1);
- }
+    .nav-logo:hover,
+    .theme-toggle-logo:hover {
+        transform: scale(1.1);
+    }
 
-.theme-toggle-logo:hover::before {
- background: rgba(32, 197, 181, 0.1);
- backdrop-filter: blur(12px);
- opacity: 1;
- scale: 1;
- }
+    .theme-toggle-logo:hover::before {
+        background: rgba(32, 197, 181, 0.1);
+        backdrop-filter: blur(12px);
+        opacity: 1;
+        scale: 1;
+    }
 
-.theme-toggle-logo:active {
- transform: scale(1.05);
- }
+    .theme-toggle-logo:active {
+        transform: scale(1.05);
+    }
 
-.theme-toggle-logo:focus-visible {
- outline: 2px solid var(--color-accent-300);
- outline-offset: 4px;
- }
+    .theme-toggle-logo:focus-visible {
+        outline: 2px solid var(--color-accent-300);
+        outline-offset: 4px;
+    }
 
-.nav-logo :global(svg) {
- filter: drop-shadow(0 4px 8px rgba(32, 197, 181, 0.3));
- transition: filter 0.3s ease;
- }
+    .nav-logo :global(img) {
+        filter: drop-shadow(0 4px 8px rgba(32, 197, 181, 0.3));
+        transition: filter 0.3s ease;
+    }
 
-.nav-logo:hover :global(svg) {
- filter: drop-shadow(0 6px 12px rgba(32, 197, 181, 0.5));
- }
+    .nav-logo:hover :global(img) {
+        filter: drop-shadow(0 6px 12px rgba(32, 197, 181, 0.5));
+    }
 
-.nav-transparent {
- background: rgba(255, 255, 255, 0.08);
- border: 1px solid rgba(255, 255, 255, 0.1);
- }
+    .nav-transparent {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
- @media (max-width: 768px) {
-.minimal-nav {
- bottom: 1rem;
- left: 1rem;
- right: 1rem;
- transform: none;
- }
+    @media (max-width: 768px) {
+        .minimal-nav {
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            transform: none;
+        }
 
-.minimal-nav:hover {
- transform: translateY(-2px);
- }
+        .minimal-nav:hover {
+            transform: translateY(-2px);
+        }
 
-.nav-container {
- padding: 0.8rem 1rem;
- }
+        .nav-container {
+            padding: 0.8rem 1rem;
+        }
 
-.nav-logo :global(svg) {
- width: 36px;
- height: 36px;
- }
- }
+        .nav-logo :global(img) {
+            width: 36px;
+            height: 36px;
+        }
+    }
 </style>
 
 <script>
- // Theme toggle functionality for logo click
- function initLogoThemeToggle() {
- const themeToggleLogo = document.querySelector('[data-theme-toggle-logo]');
- 
- if (themeToggleLogo) {
- themeToggleLogo.addEventListener('click', (e) => {
- e.preventDefault();
- e.stopPropagation();
- 
- // Get current theme
- const currentTheme = document.documentElement.getAttribute('data-theme');
- const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
- 
- // Apply new theme
- document.documentElement.setAttribute('data-theme', newTheme);
- localStorage.setItem('theme', newTheme);
- });
- }
- }
+    // Theme toggle functionality for logo click
+    function initLogoThemeToggle() {
+        const themeToggleLogo = document.querySelector(
+            "[data-theme-toggle-logo]",
+        );
 
- // Initialize on DOM ready
- if (document.readyState === 'loading') {
- document.addEventListener('DOMContentLoaded', initLogoThemeToggle);
- } else {
- initLogoThemeToggle();
- }
+        if (themeToggleLogo) {
+            themeToggleLogo.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
 
- // Re-initialize on Astro page transitions
- document.addEventListener('astro:page-load', initLogoThemeToggle);
+                // Get current theme
+                const currentTheme =
+                    document.documentElement.getAttribute("data-theme");
+                const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+                // Apply new theme
+                document.documentElement.setAttribute("data-theme", newTheme);
+                localStorage.setItem("theme", newTheme);
+            });
+        }
+    }
+
+    // Initialize on DOM ready
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initLogoThemeToggle);
+    } else {
+        initLogoThemeToggle();
+    }
+
+    // Re-initialize on Astro page transitions
+    document.addEventListener("astro:page-load", initLogoThemeToggle);
 </script>
