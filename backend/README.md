@@ -75,18 +75,70 @@ curl -X POST http://localhost:10000/api/waitlist \
 
 ### Admin Endpoints (Protected with JWT)
 
-These routes require a valid admin token obtained from `POST /api/admin/login`. Set `ADMIN_PASSWORD_HASH` (bcrypt hash) and `ADMIN_JWT_SECRET` in the backend `.env` file.
+These routes require authentication. Set up the admin credentials in your `.env` file.
 
-Generate a password hash:
+#### Setup Admin Password
+
+1. **Generate a password hash:**
+
 ```bash
-bun run src/scripts/hash-password.ts "YourSecureP@ssw0rd123!"
+bun run src/scripts/hash-password.ts "YourSecureP@ssw0rd!"
 ```
 
-- `POST /api/admin/login` – exchange the env-based password for a 24-hour JWT token
+2. **Copy the escaped hash to `.env`:**
+
+The script outputs a hash with escaped `$` characters. Copy it directly:
+
+```
+ADMIN_PASSWORD_HASH=\$2b\$12\$abc123...
+```
+
+> ⚠️ **Important:** The `$` characters MUST be escaped with backslashes (`\$`) to prevent dotenv interpolation errors. The script outputs the correct format automatically.
+
+3. **Generate JWT secret:**
+
+```bash
+openssl rand -hex 32
+```
+
+Add to `.env`:
+```
+ADMIN_JWT_SECRET=your-64-character-hex-string
+```
+
+#### Optional: Environment Pepper
+
+For extra security, use different peppers per environment (dev/staging/prod). The same password will produce different hashes with different peppers.
+
+1. **Generate a pepper:**
+
+```bash
+openssl rand -hex 16
+```
+
+2. **Use pepper when generating hash:**
+
+```bash
+ADMIN_PASSWORD_PEPPER="your-pepper" bun run src/scripts/hash-password.ts "YourPassword!"
+```
+
+3. **Add both to `.env`:**
+
+```
+ADMIN_PASSWORD_HASH=\$2b\$12\$abc123...
+ADMIN_PASSWORD_PEPPER=your-pepper
+```
+
+> **Note:** If you use a pepper when generating the hash, you MUST also set `ADMIN_PASSWORD_PEPPER` in the environment when running the server.
+
+#### Admin API Routes
+
+- `POST /api/admin/login` – exchange password for a 24-hour JWT token
 - `GET /api/admin/verify` – validate an existing token
-- `GET /api/admin/stats` – aggregate waitlist totals, recency metrics, and interest distribution
-- `GET /api/admin/waitlist` – paginated waitlist data with optional `search`, `interest`, `page`, `limit`, `sort`, and `order` query parameters
-- `GET /api/admin/waitlist?format=csv` – download the filtered waitlist as a CSV export (max 5,000 rows per request)
+- `POST /api/admin/logout` – invalidate session
+- `GET /api/admin/stats` – aggregate waitlist totals and interest distribution
+- `GET /api/admin/waitlist` – paginated waitlist with optional `search`, `interest`, `page`, `limit`, `sort`, `order`
+- `GET /api/admin/waitlist?format=csv` – download filtered waitlist as CSV (max 5,000 rows)
 
 ## Docker
 

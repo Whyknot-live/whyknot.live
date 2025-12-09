@@ -16,6 +16,12 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
     <meta name="description" content={description} />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title} | WhyKnot Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="icon"
       type="image/png"
@@ -46,106 +52,110 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
       })();
     </script>
 
-    <slot />
-
-    <script>
-      function isLocalhostOrigin(origin: string): boolean {
-        try {
-          const url = new URL(origin);
-          if (url.hostname === "localhost") {
-            return true;
-          }
-          return url.hostname.startsWith("127.") || url.hostname === "[::1]";
-        } catch {
-          return false;
-        }
-      }
-
-      function resolveApiBaseUrl(): string {
-        const fromEnv = (import.meta.env.PUBLIC_API_URL ?? "").trim();
-        if (fromEnv) {
-          return fromEnv;
-        }
-        if (isLocalhostOrigin(window.location.origin)) {
-          console.warn(
-            "PUBLIC_API_URL not set, defaulting to local API for development",
-          );
-          return "http://localhost:10000/api";
-        }
-        throw new Error(
-          "PUBLIC_API_URL is not configured for the admin client.",
-        );
-      }
-
-      let adminBaseURL: string;
-      try {
-        adminBaseURL = resolveApiBaseUrl();
-      } catch (error) {
-        console.error(error);
-        document.body.innerHTML =
-          '<main class="config-error"><h1>Configuration error</h1><p>Admin API URL is not configured. Please set PUBLIC_API_URL.</p></main>';
-        throw error;
-      }
-
-      // Global admin utilities
-      window.adminAPI = {
-        baseURL: adminBaseURL,
-
-        getToken() {
-          return null; // Cookie-based auth, no token
-        },
-
-        setToken() {
-          // No-op for cookie-based auth
-        },
-
-        clearToken() {
-          // No-op for cookie-based auth
-        },
-
-        // Check if authenticated by verifying with backend
-        async isAuthenticated() {
+    <!-- Admin API initialization - must run before page scripts -->
+    <script is:inline>
+      (function() {
+        function isLocalhostOrigin(origin) {
           try {
-            const response = await fetch(`${this.baseURL}/admin/verify`, {
-              method: "GET",
-              credentials: "include", // Include cookies
-            });
-            return response.ok;
-          } catch {
+            var url = new URL(origin);
+            if (url.hostname === "localhost") {
+              return true;
+            }
+            return url.hostname.startsWith("127.") || url.hostname === "[::1]";
+          } catch (e) {
             return false;
           }
-        },
+        }
 
-        async fetch(endpoint: string, options: RequestInit = {}) {
-          const headers = {
-            "Content-Type": "application/json",
-            ...options.headers,
-          };
-
-          const response = await fetch(`${this.baseURL}${endpoint}`, {
-            ...options,
-            headers,
-            credentials: "include", // Always include cookies
-          });
-
-          if (response.status === 401) {
-            // Token expired or invalid - redirect to login
-            window.location.href = "/";
-            throw new Error("Unauthorized");
+        function resolveApiBaseUrl() {
+          // Check for PUBLIC_API_URL in Astro's import.meta.env (injected at build time)
+          // For development, fallback to localhost
+          if (isLocalhostOrigin(window.location.origin)) {
+            return "http://localhost:9000/api";
           }
+          // In production, use the same origin with /api path or configure via env
+          return window.location.origin.replace(/:\d+$/, '') + ':9000/api';
+        }
 
-          return response;
-        },
+        var adminBaseURL;
+        try {
+          adminBaseURL = resolveApiBaseUrl();
+        } catch (error) {
+          console.error(error);
+          document.body.innerHTML =
+            '<main class="config-error"><h1>Configuration error</h1><p>Admin API URL is not configured.</p></main>';
+          throw error;
+        }
 
-        async logout() {
-          try {
-            await this.fetch("/admin/logout", { method: "POST" });
-          } catch {
-            // Ignore errors, just redirect
+        // Global admin utilities
+        window.adminAPI = {
+          baseURL: adminBaseURL,
+
+          getToken: function() {
+            return null; // Cookie-based auth, no token
+          },
+
+          setToken: function() {
+            // No-op for cookie-based auth
+          },
+
+          clearToken: function() {
+            // No-op for cookie-based auth
+          },
+
+          // Check if authenticated by verifying with backend (graceful - no 401 errors)
+          isAuthenticated: function() {
+            var self = this;
+            return fetch(self.baseURL + "/admin/check", {
+              method: "GET",
+              credentials: "include"
+            })
+              .then(function(response) {
+                if (!response.ok) return false;
+                return response.json();
+              })
+              .then(function(data) {
+                return data && data.authenticated === true;
+              })
+              .catch(function() {
+                return false;
+              });
+          },
+
+          fetch: function(endpoint, options) {
+            var self = this;
+            options = options || {};
+            var headers = Object.assign(
+              { "Content-Type": "application/json" },
+              options.headers || {}
+            );
+
+            return fetch(self.baseURL + endpoint, Object.assign({}, options, {
+              headers: headers,
+              credentials: "include"
+            })).then(function(response) {
+              if (response.status === 401) {
+                window.location.href = "/";
+                throw new Error("Unauthorized");
+              }
+              return response;
+            });
+          },
+
+          logout: function() {
+            var self = this;
+            return self.fetch("/admin/logout", { method: "POST" })
+              .catch(function() {
+                // Ignore errors
+              })
+              .then(function() {
+                window.location.href = "/";
+              });
           }
-          window.location.href = "/";
-        },
-      };
+        };
+      })();
     </script>
+
+    <slot />
   </body>
 </html>

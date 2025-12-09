@@ -83,8 +83,12 @@ router.post('/admin/login',
 
     const env = validateEnv()
 
+    // Combine password with optional pepper for verification
+    const pepper = env.ADMIN_PASSWORD_PEPPER ?? ''
+    const passwordWithPepper = pepper ? `${parsed.data.password}${pepper}` : parsed.data.password
+
     // Use bcrypt for secure password comparison (constant-time comparison built-in)
-    const isValidPassword = await bcrypt.compare(parsed.data.password, env.ADMIN_PASSWORD_HASH)
+    const isValidPassword = await bcrypt.compare(passwordWithPepper, env.ADMIN_PASSWORD_HASH)
 
     if (!isValidPassword) {
       const ip = getClientAddress(c)
@@ -312,6 +316,36 @@ router.get('/admin/stats', verifyAdminToken, async (c) => {
       error: err instanceof Error ? err.message : 'Unknown error'
     })
     return c.json({ error: 'server_error' }, 500)
+  }
+})
+
+// Check auth status gracefully (returns 200 with authenticated boolean, not 401)
+// Use this on login page to avoid console errors
+router.get('/admin/check', async (c) => {
+  const token = getCookie(c, 'adminToken')
+  
+  if (!token) {
+    return c.json({ ok: true, authenticated: false })
+  }
+
+  const env = validateEnv()
+
+  try {
+    const payload = await verify(token, env.ADMIN_JWT_SECRET)
+
+    // Validate expiration
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      return c.json({ ok: true, authenticated: false })
+    }
+
+    if (payload.sub !== 'admin') {
+      return c.json({ ok: true, authenticated: false })
+    }
+
+    authLogger.debug('Admin auth check: authenticated')
+    return c.json({ ok: true, authenticated: true })
+  } catch (err) {
+    return c.json({ ok: true, authenticated: false })
   }
 })
 

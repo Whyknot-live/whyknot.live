@@ -4,8 +4,22 @@ import AdminLayout from '../layouts/AdminLayout.astro';
 
 <AdminLayout title="Login">
   <div class="login-container">
+    <!-- Floating Orbs Background -->
+    <div class="floating-orbs" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
     <div class="login-card">
-      <h1>Admin Login</h1>
+      <!-- Logo/Brand -->
+      <div class="login-logo">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+        </svg>
+      </div>
+      
+      <h1><span class="gradient-text">Admin</span> Login</h1>
       <p>Enter your admin password to access the dashboard</p>
 
       <div id="error" class="error-message" style="display: none;"></div>
@@ -25,7 +39,13 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         </div>
 
         <button type="submit" class="btn-primary" id="submitBtn">
-          Sign In
+          <span class="btn-text">Sign In</span>
+          <span class="btn-loader" style="display: none;">
+            <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/>
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </span>
         </button>
       </form>
     </div>
@@ -35,6 +55,8 @@ import AdminLayout from '../layouts/AdminLayout.astro';
     const form = document.getElementById('loginForm') as HTMLFormElement;
     const errorDiv = document.getElementById('error') as HTMLDivElement;
     const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+    const btnText = submitBtn.querySelector('.btn-text') as HTMLSpanElement;
+    const btnLoader = submitBtn.querySelector('.btn-loader') as HTMLSpanElement;
     const passwordInput = document.getElementById('password') as HTMLInputElement;
 
     // Check if already logged in
@@ -53,6 +75,12 @@ import AdminLayout from '../layouts/AdminLayout.astro';
       errorDiv.style.display = 'none';
     }
 
+    function setLoading(loading: boolean) {
+      submitBtn.disabled = loading;
+      btnText.style.display = loading ? 'none' : 'inline';
+      btnLoader.style.display = loading ? 'inline-flex' : 'none';
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       hideError();
@@ -64,9 +92,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
         return;
       }
 
-      // Disable button
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Signing in...';
+      setLoading(true);
 
       try {
         const response = await fetch(`${window.adminAPI.baseURL}/admin/login`, {
@@ -98,9 +124,7 @@ import AdminLayout from '../layouts/AdminLayout.astro';
           showError('An unexpected error occurred.');
         }
         
-        // Re-enable button
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign In';
+        setLoading(false);
         passwordInput.value = '';
         passwordInput.focus();
       }

@@ -22,6 +22,9 @@ const envSchema = z.object({
       /^\$2[aby]\$\d{1,2}\$[./A-Za-z0-9]{53}$/,
       'ADMIN_PASSWORD_HASH must be a valid bcrypt hash (e.g., $2b$12$...)'
     ),
+  // Optional pepper for environment-specific password hashing
+  // Use different peppers for dev, staging, and production
+  ADMIN_PASSWORD_PEPPER: z.string().optional(),
   ADMIN_JWT_SECRET: z.string().min(32, 'JWT secret must be at least 32 characters')
 })
 

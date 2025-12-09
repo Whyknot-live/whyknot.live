@@ -5,6 +5,9 @@
  * Usage:
  *   bun run src/scripts/hash-password.ts "your-secure-password"
  * 
+ * With environment pepper (optional, for environment-specific hashes):
+ *   ADMIN_PASSWORD_PEPPER="your-env-pepper" bun run src/scripts/hash-password.ts "your-password"
+ * 
  * The generated hash should be stored in the ADMIN_PASSWORD_HASH environment variable.
  * 
  * Security notes:
@@ -12,6 +15,7 @@
  * - The cost factor (12) provides good security while keeping login reasonable (~250ms)
  * - Never commit the actual password or hash to version control
  * - Store the hash in environment variables or a secrets manager
+ * - Use different peppers for different environments (dev, staging, prod)
  */
 
 import bcrypt from 'bcrypt'
@@ -23,12 +27,16 @@ const BCRYPT_ROUNDS = 12
 
 async function main() {
     const password = process.argv[2]
+    const pepper = process.env.ADMIN_PASSWORD_PEPPER ?? ''
 
     if (!password) {
         console.error('Usage: bun run src/scripts/hash-password.ts "your-password"')
         console.error('')
         console.error('Example:')
         console.error('  bun run src/scripts/hash-password.ts "MySecureP@ssw0rd!"')
+        console.error('')
+        console.error('With environment pepper (optional):')
+        console.error('  ADMIN_PASSWORD_PEPPER="my-secret-pepper" bun run src/scripts/hash-password.ts "MySecureP@ssw0rd!"')
         console.error('')
         console.error('The generated hash should be stored in ADMIN_PASSWORD_HASH env variable.')
         process.exit(1)
@@ -50,10 +58,15 @@ async function main() {
     }
 
     console.log(`Generating bcrypt hash with ${BCRYPT_ROUNDS} rounds...`)
+    if (pepper) {
+        console.log('🔐 Using environment pepper (ADMIN_PASSWORD_PEPPER)')
+    }
     console.log('')
 
     const startTime = Date.now()
-    const hash = await bcrypt.hash(password, BCRYPT_ROUNDS)
+    // Combine password with pepper for additional security
+    const passwordWithPepper = pepper ? `${password}${pepper}` : password
+    const hash = await bcrypt.hash(passwordWithPepper, BCRYPT_ROUNDS)
     const duration = Date.now() - startTime
 
     console.log('Generated hash:')
@@ -62,9 +75,13 @@ async function main() {
     console.log('')
     console.log(`Hash generated in ${duration}ms`)
     console.log('')
-    console.log('Add this to your environment:')
+
+    // Escape $ characters for .env file (dotenv interprets $ as variable reference)
+    const escapedHash = hash.replace(/\$/g, '\\$')
+
+    console.log('📋 Copy this line to your .env file:')
     console.log('')
-    console.log(`  ADMIN_PASSWORD_HASH="${hash}"`)
+    console.log(`  ADMIN_PASSWORD_HASH=${escapedHash}`)
     console.log('')
     console.log('⚠️  Security reminders:')
     console.log('  - Never commit the password or hash to version control')
