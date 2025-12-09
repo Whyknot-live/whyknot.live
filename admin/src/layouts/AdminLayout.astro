@@ -72,23 +72,11 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
           if (isLocalhostOrigin(window.location.origin)) {
             return "http://localhost:9000/api";
           }
-          // In production on Render, the API is on a different subdomain (no port)
-          var hostname = window.location.hostname;
           
-          // Custom domain: admin.whyknot.live -> api.whyknot.live
-          if (hostname.startsWith('admin.')) {
-            var apiHostname = hostname.replace(/^admin\./, 'api.');
-            return window.location.protocol + '//' + apiHostname + '/api';
-          }
-          
-          // Render subdomain: admin-whyknot-live.onrender.com -> api-whyknot-live.onrender.com
-          if (hostname.startsWith('admin-')) {
-            var apiHostname = hostname.replace(/^admin-/, 'api-');
-            return window.location.protocol + '//' + apiHostname + '/api';
-          }
-          
-          // Fallback: same origin /api (for proxied setups)
-          return window.location.origin + '/api';
+          // In production, always use the custom API domain
+          // The Render subdomain (api-whyknot-live.onrender.com) redirects to the custom domain,
+          // which breaks CORS. So we always use the custom domain directly.
+          return "https://api.whyknot.live/api";
         }
 
         var adminBaseURL;
