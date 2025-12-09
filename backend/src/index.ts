@@ -49,6 +49,8 @@ const corsOrigins = process.env.CORS_ORIGIN?.split(',').map(o => o.trim()) ?? ['
 if (process.env.NODE_ENV === 'development') {
     corsOrigins.push('http://localhost:4321', 'http://127.0.0.1:4321', 'http://localhost:4322', 'http://127.0.0.1:4322');
 }
+// Log CORS origins at startup for debugging
+logger.info('CORS origins configured', { origins: corsOrigins });
 
 app.use('/api/*', cors({
     origin: corsOrigins,
