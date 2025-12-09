@@ -106,10 +106,13 @@ router.post('/admin/login',
     )
 
     // Set token as HttpOnly cookie for security
+    // Use sameSite: 'None' for cross-origin (admin.whyknot.live -> api.whyknot.live)
+    // Use sameSite: 'Strict' for localhost (same origin)
+    const isProduction = process.env.NODE_ENV === 'production'
     setCookie(c, 'adminToken', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      secure: isProduction, // Required when sameSite is 'None'
+      sameSite: isProduction ? 'None' : 'Strict', // 'None' for cross-origin in prod
       maxAge: 60 * 60 * 24, // 24 hours
       path: '/',
     })
@@ -323,7 +326,7 @@ router.get('/admin/stats', verifyAdminToken, async (c) => {
 // Use this on login page to avoid console errors
 router.get('/admin/check', async (c) => {
   const token = getCookie(c, 'adminToken')
-  
+
   if (!token) {
     return c.json({ ok: true, authenticated: false })
   }
