@@ -1,6 +1,7 @@
 ---
 import Head from '../components/Head.astro';
 import Navigation from '../components/Navigation.astro';
+import CookieConsent from '../components/CookieConsent.astro';
 import '../styles/global.css';
 
 export interface Props {
@@ -161,7 +162,7 @@ const currentYear = new Date().getFullYear();
  <nav aria-label="Legal links">
  <a href="/privacy-policy" class="footer-link" data-astro-prefetch>Privacy Policy</a>
  <a href="/terms-of-service" class="footer-link" data-astro-prefetch>Terms of Service</a>
- <a href="/privacy-policy#cookies" class="footer-link">Cookie Policy</a>
+ <a href="/cookie-policy" class="footer-link">Cookie Policy</a>
  <a href="/sitemap.xml" class="footer-link">Sitemap</a>
  </nav>
  </div>
@@ -192,9 +193,11 @@ const currentYear = new Date().getFullYear();
  <a href="/rss.xml" class="footer-meta-link">RSS Feed</a>
  </div>
  </div>
- </div>
  </footer>
  )}
+
+ <!-- Cookie Consent Banner -->
+ <CookieConsent />
 
  <!-- Scripts -->
  <script is:inline>
@@ -328,12 +331,119 @@ const currentYear = new Date().getFullYear();
  }
  }
 
+ // Cookie consent system
+ function initCookieConsent() {
+ const CONSENT_KEY = 'whyknot_cookie_consent';
+ const banner = document.getElementById('cookie-consent-banner');
+ 
+ if (!banner) return;
+ 
+ const analyticsCheckbox = document.getElementById('cookie-analytics');
+ const preferencesCheckbox = document.getElementById('cookie-preferences');
+ const marketingCheckbox = document.getElementById('cookie-marketing');
+ const acceptAllBtn = document.getElementById('cookie-accept-all');
+ const rejectAllBtn = document.getElementById('cookie-reject-all');
+ const saveBtn = document.getElementById('cookie-save');
+ 
+ // Check existing consent
+ function hasConsent() {
+ try {
+ const consent = localStorage.getItem(CONSENT_KEY);
+ return consent !== null;
+ } catch {
+ return false;
+ }
+ }
+ 
+ // Get saved consent state
+ function getConsent() {
+ try {
+ const consent = localStorage.getItem(CONSENT_KEY);
+ return consent ? JSON.parse(consent) : null;
+ } catch {
+ return null;
+ }
+ }
+ 
+ // Save consent and dispatch event
+ function saveConsent(consent) {
+ try {
+ consent.timestamp = Date.now();
+ localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
+ window.dispatchEvent(new CustomEvent('cookie-consent-update', { detail: consent }));
+ } catch {
+ // Ignore localStorage errors
+ }
+ }
+ 
+ // Show/hide banner
+ function showBanner() {
+ banner.setAttribute('aria-hidden', 'false');
+ }
+ 
+ function hideBanner() {
+ banner.setAttribute('aria-hidden', 'true');
+ }
+ 
+ // Load saved preferences into checkboxes
+ function loadPreferences() {
+ const consent = getConsent();
+ if (consent) {
+ if (analyticsCheckbox) analyticsCheckbox.checked = consent.analytics || false;
+ if (preferencesCheckbox) preferencesCheckbox.checked = consent.preferences || false;
+ if (marketingCheckbox) marketingCheckbox.checked = consent.marketing || false;
+ }
+ }
+ 
+ // Accept all
+ if (acceptAllBtn) {
+ acceptAllBtn.addEventListener('click', () => {
+ saveConsent({ essential: true, analytics: true, preferences: true, marketing: true });
+ hideBanner();
+ });
+ }
+ 
+ // Reject all (except essential)
+ if (rejectAllBtn) {
+ rejectAllBtn.addEventListener('click', () => {
+ saveConsent({ essential: true, analytics: false, preferences: false, marketing: false });
+ hideBanner();
+ });
+ }
+ 
+ // Save preferences
+ if (saveBtn) {
+ saveBtn.addEventListener('click', () => {
+ saveConsent({
+ essential: true,
+ analytics: analyticsCheckbox ? analyticsCheckbox.checked : false,
+ preferences: preferencesCheckbox ? preferencesCheckbox.checked : false,
+ marketing: marketingCheckbox ? marketingCheckbox.checked : false
+ });
+ hideBanner();
+ });
+ }
+ 
+ // Global function to open cookie settings
+ window.openCookieSettings = function() {
+ loadPreferences();
+ showBanner();
+ };
+ 
+ // Initial check - show banner if no consent
+ if (!hasConsent()) {
+ // Small delay to allow page to render
+ setTimeout(showBanner, 500);
+ }
+ }
+
  // Initialize all systems
  function init() {
  initThemeSystem();
  initSmoothScroll();
  initExternalLinks();
  initPerformanceMonitoring();
+ initCookieConsent();
  }
 
  // Run immediately if DOM is ready, otherwise wait for DOM load
@@ -348,6 +458,7 @@ const currentYear = new Date().getFullYear();
  initThemeSystem();
  initSmoothScroll();
  initExternalLinks();
+ initCookieConsent();
  });
  </script>
  </body>

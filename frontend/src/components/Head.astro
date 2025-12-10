@@ -58,18 +58,77 @@ const defaultSchema = {
 
 const finalSchema = schema || defaultSchema;
 
-// Google AdSense ID from environment or default
-const adsenseId =
-  import.meta.env.PUBLIC_GOOGLE_ADSENSE_ID || "pub-1034433596436259";
+// Google Analytics ID from environment
+const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID || "G-6YR39XYML4";
+
+// Only load Google Analytics in production
+const isProduction = import.meta.env.PROD;
 ---
+
+{isProduction && (
+  <>
+    <!-- Google Analytics with Consent Mode v2 -->
+    <script is:inline define:vars={{ gaId }}>
+      // Initialize dataLayer and gtag function
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Set default consent state (denied for GDPR compliance)
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_personalization': 'denied',
+        'ad_user_data': 'denied',
+        'functionality_storage': 'denied',
+        'personalization_storage': 'denied',
+        'security_storage': 'granted'
+      });
+      
+      // Initialize GA4
+      gtag('js', new Date());
+      gtag('config', gaId, {
+        'anonymize_ip': true,
+        'send_page_view': true
+      });
+      
+      // Listen for consent updates from the cookie consent banner
+      window.addEventListener('cookie-consent-update', function(e) {
+        const consent = e.detail;
+        gtag('consent', 'update', {
+          'analytics_storage': consent.analytics ? 'granted' : 'denied',
+          'ad_storage': consent.marketing ? 'granted' : 'denied',
+          'ad_personalization': consent.marketing ? 'granted' : 'denied',
+          'ad_user_data': consent.marketing ? 'granted' : 'denied',
+          'functionality_storage': consent.preferences ? 'granted' : 'denied',
+          'personalization_storage': consent.preferences ? 'granted' : 'denied'
+        });
+      });
+      
+      // Check for existing consent on page load
+      (function() {
+        try {
+          const savedConsent = localStorage.getItem('whyknot_cookie_consent');
+          if (savedConsent) {
+            const consent = JSON.parse(savedConsent);
+            window.dispatchEvent(new CustomEvent('cookie-consent-update', { detail: consent }));
+          }
+        } catch (e) {
+          // Ignore localStorage errors
+        }
+      })();
+    </script>
+
+    <!-- Preconnect for Google Analytics -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="preconnect" href="https://www.google-analytics.com" />
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+  </>
+)}
 
 <!-- Essential Meta Tags -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
-
-<!-- Google AdSense Verification -->
-<meta name="google-adsense-account" content={`ca-${adsenseId}`} />
 
 <!-- SEO Meta Tags -->
 <title>{title}</title>

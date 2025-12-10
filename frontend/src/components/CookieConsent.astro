@@ -1,0 +1,89 @@
+---
+/**
+ * Cookie Consent Banner Component
+ * GDPR/CCPA compliant cookie consent with granular controls
+ */
+---
+
+<div id="cookie-consent-banner" class="cookie-consent" role="dialog" aria-labelledby="cookie-consent-title" aria-modal="true" aria-hidden="true">
+  <div class="cookie-consent-container">
+    <div class="cookie-consent-header">
+      <h2 id="cookie-consent-title" class="cookie-consent-title">🍪 Cookie Preferences</h2>
+      <p class="cookie-consent-description">
+        We use cookies to enhance your experience. 
+        <a href="/cookie-policy" class="cookie-link">Cookie Policy</a> · 
+        <a href="/privacy-policy" class="cookie-link">Privacy Policy</a>
+      </p>
+    </div>
+
+    <div class="cookie-consent-options">
+      <!-- Essential Cookies -->
+      <div class="cookie-option">
+        <div class="cookie-option-info">
+          <span class="cookie-option-label">Essential</span>
+          <span class="cookie-option-desc">Required for site functionality</span>
+        </div>
+        <div class="cookie-toggle cookie-toggle--disabled">
+          <input type="checkbox" id="cookie-essential" checked disabled />
+          <label for="cookie-essential" class="toggle-slider">
+            <span class="sr-only">Essential cookies (always on)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Analytics Cookies -->
+      <div class="cookie-option">
+        <div class="cookie-option-info">
+          <span class="cookie-option-label">Analytics</span>
+          <span class="cookie-option-desc">Usage statistics</span>
+        </div>
+        <div class="cookie-toggle">
+          <input type="checkbox" id="cookie-analytics" />
+          <label for="cookie-analytics" class="toggle-slider">
+            <span class="sr-only">Analytics cookies</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Preference Cookies -->
+      <div class="cookie-option">
+        <div class="cookie-option-info">
+          <span class="cookie-option-label">Preferences</span>
+          <span class="cookie-option-desc">Theme & settings</span>
+        </div>
+        <div class="cookie-toggle">
+          <input type="checkbox" id="cookie-preferences" />
+          <label for="cookie-preferences" class="toggle-slider">
+            <span class="sr-only">Preference cookies</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Marketing Cookies -->
+      <div class="cookie-option">
+        <div class="cookie-option-info">
+          <span class="cookie-option-label">Marketing</span>
+          <span class="cookie-option-desc">Personalized ads</span>
+        </div>
+        <div class="cookie-toggle">
+          <input type="checkbox" id="cookie-marketing" />
+          <label for="cookie-marketing" class="toggle-slider">
+            <span class="sr-only">Marketing cookies</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="cookie-consent-actions">
+      <button type="button" id="cookie-reject-all" class="btn btn-ghost btn-sm">
+        Reject All
+      </button>
+      <button type="button" id="cookie-save" class="btn btn-outline btn-sm">
+        Save
+      </button>
+      <button type="button" id="cookie-accept-all" class="btn btn-primary btn-sm">
+        Accept All
+      </button>
+    </div>
+  </div>
+</div>
