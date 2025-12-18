@@ -360,8 +360,11 @@ router.get('/admin/verify', verifyAdminToken, async (c) => {
 
 // Logout endpoint - clear the HttpOnly cookie
 router.post('/admin/logout', verifyAdminToken, async (c) => {
+  const isProduction = process.env.NODE_ENV === 'production'
   deleteCookie(c, 'adminToken', {
     path: '/',
+    secure: isProduction,
+    sameSite: isProduction ? 'None' : 'Strict',
   })
   authLogger.info('Admin logout successful')
   return c.json({ ok: true })

@@ -771,7 +771,10 @@
  if (!response.ok) {
  // Handle specific error cases
  if (response.status === 409) {
- showError('This email is already on our waitlist.');
+ // Already on waitlist - show positive feedback instead of error
+ showSuccess("You're already on the list! We'll be in touch soon.");
+ emailInput.value = '';
+ return;
  } else if (response.status === 429) {
  showError('Too many requests. Please try again later.');
  } else if (response.status === 400) {
@@ -817,9 +820,13 @@
  }
  }
 
- function showSuccess() {
+ function showSuccess(message?: string) {
  hideMessages();
  if (formSuccess) {
+ const successSpan = formSuccess.querySelector('span');
+ if (successSpan) {
+  successSpan.textContent = message || "Welcome to the alpha! You'll hear from us soon.";
+ }
  formSuccess.classList.add('show');
  setTimeout(() => formSuccess.classList.remove('show'), 6000);
  }

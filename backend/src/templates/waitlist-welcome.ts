@@ -9,8 +9,19 @@ export interface WaitlistEmailProps {
   position?: number
 }
 
+// Sanitize email for safe HTML display (prevent XSS)
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
 export function generateWaitlistWelcomeEmail(props: WaitlistEmailProps): string {
   const { email, position } = props
+  const safeEmail = escapeHtml(email)
   
   // Brand colors from design tokens
   const colors = {
@@ -161,7 +172,7 @@ export function generateWaitlistWelcomeEmail(props: WaitlistEmailProps): string 
             <tr>
               <td style="padding: 32px 48px;" class="sm-px-4">
                 <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: ${colors.onSurfaceVariant};">
-                  This email was sent to <strong style="color: ${colors.onSurface};">${email}</strong>
+                  This email was sent to <strong style="color: ${colors.onSurface};">${safeEmail}</strong>
                 </p>
                 <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: ${colors.onSurfaceVariant};">
                   You received this because you signed up for our waitlist.
