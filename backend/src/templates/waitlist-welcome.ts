@@ -141,7 +141,7 @@ export function generateWaitlistWelcomeEmail(props: WaitlistEmailProps): string 
                 <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                   <tr>
                     <td align="center" style="padding-top: 8px;">
-                      <a href="https://whyknot.live" style="display: inline-block; padding: 16px 40px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; font-weight: 400; letter-spacing: 0.02em; text-transform: uppercase; color: ${colors.primaryDark}; background-color: ${colors.primary}; text-decoration: none; border-radius: 8px;">
+                      <a href="https://www.whyknot.live" style="display: inline-block; padding: 16px 40px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; font-weight: 400; letter-spacing: 0.02em; text-transform: uppercase; color: ${colors.primaryDark}; background-color: ${colors.primary}; text-decoration: none; border-radius: 8px;">
                         Visit Website
                       </a>
                     </td>
@@ -167,9 +167,9 @@ export function generateWaitlistWelcomeEmail(props: WaitlistEmailProps): string 
                   You received this because you signed up for our waitlist.
                 </p>
                 <p style="margin: 0; font-size: 12px; line-height: 1.6; color: ${colors.onSurfaceVariant};">
-                  <a href="https://whyknot.live/privacy-policy" style="color: ${colors.primary}; text-decoration: none;">Privacy Policy</a>
+                  <a href="https://www.whyknot.live/privacy-policy" style="color: ${colors.primary}; text-decoration: none;">Privacy Policy</a>
                   &nbsp;&nbsp;|&nbsp;&nbsp;
-                  <a href="https://whyknot.live/terms-of-service" style="color: ${colors.primary}; text-decoration: none;">Terms of Service</a>
+                  <a href="https://www.whyknot.live/terms-of-service" style="color: ${colors.primary}; text-decoration: none;">Terms of Service</a>
                 </p>
                 <p style="margin: 16px 0 0; font-size: 12px; color: ${colors.onSurfaceVariant};">
                   © ${new Date().getFullYear()} whyknot.live. All rights reserved.
@@ -202,15 +202,15 @@ We're excited to have you on board. You'll be among the first to know when we la
 
 In the meantime, stay tuned for updates and exclusive previews.
 
-Visit our website: https://whyknot.live
+Visit our website: https://www.whyknot.live
 
 ---
 
 This email was sent to ${email}
 You received this because you signed up for our waitlist.
 
-Privacy Policy: https://whyknot.live/privacy-policy
-Terms of Service: https://whyknot.live/terms-of-service
+Privacy Policy: https://www.whyknot.live/privacy-policy
+Terms of Service: https://www.whyknot.live/terms-of-service
 
 © ${new Date().getFullYear()} whyknot.live. All rights reserved.
   `.trim()

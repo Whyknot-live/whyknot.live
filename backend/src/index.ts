@@ -67,6 +67,18 @@ app.use('/api/*', rateLimitMiddleware())
 app.route('/api', waitlistRouter)
 app.route('/api', adminRouter)
 
+// robots.txt - block all search engine indexing of API
+app.get('/robots.txt', (c) => {
+    return c.text(`User-agent: *
+Disallow: /
+
+# This is an API server, not a website.
+# No pages should be indexed.`, 200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=86400'
+    })
+})
+
 // Root health check
 app.get('/', (c) => c.json({
     ok: true,

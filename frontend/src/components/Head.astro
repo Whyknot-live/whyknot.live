@@ -28,7 +28,7 @@ const {
 } = Astro.props;
 
 // Derive site from Astro.site when available to avoid hardcoding
-const site = Astro.site?.origin ?? "https://whyknot.live";
+const site = Astro.site?.origin ?? "https://www.whyknot.live";
 const currentUrl = canonical || new URL(Astro.url.pathname, site).href;
 const imageUrl = new URL(image, site).href;
 

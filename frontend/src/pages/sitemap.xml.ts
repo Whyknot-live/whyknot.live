@@ -46,7 +46,7 @@ const pages = [
 
 // Set proper headers for XML response
 export async function GET({ site }: { site?: URL }) {
- const origin = site?.origin || (import.meta.env.SITE as string) || 'https://whyknot.live';
+ const origin = site?.origin || (import.meta.env.SITE as string) || 'https://www.whyknot.live';
  // Generate XML sitemap
  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">

@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 
 // https://docs.astro.build/en/guides/configuring-astro/
 export default defineConfig({
-    site: 'https://whyknot.live',
+    site: 'https://www.whyknot.live',
     output: 'static',
     server: {
         port: 4321,

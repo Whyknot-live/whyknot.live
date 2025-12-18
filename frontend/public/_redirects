@@ -1,8 +1,10 @@
 # Redirect rules for Render static site
 # See https://docs.render.com/redirects-rewrites
 
-# Redirect www to non-www
-https://www.whyknot.live/* https://whyknot.live/:splat 301!
+# Redirect non-www to www (canonical domain)
+https://whyknot.live/* https://www.whyknot.live/:splat 301!
+http://whyknot.live/* https://www.whyknot.live/:splat 301!
+http://www.whyknot.live/* https://www.whyknot.live/:splat 301!
 
 # SPA fallback - serve index.html for all non-file routes
 /*    /index.html   200
