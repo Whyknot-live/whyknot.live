@@ -6,5 +6,5 @@ https://whyknot.live/* https://www.whyknot.live/:splat 301!
 http://whyknot.live/* https://www.whyknot.live/:splat 301!
 http://www.whyknot.live/* https://www.whyknot.live/:splat 301!
 
-# SPA fallback - serve index.html for all non-file routes
-/*    /index.html   200
+# 404 fallback - serve the custom 404 page for unknown routes
+/*    /404.html   404
