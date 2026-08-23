@@ -152,3 +152,8 @@ build/Release
 # === PROJECT SPECIFIC ===
 agent.md
 frontend/bun.lock
+whyknot-backend
+backend/whyknot-backend
+*.map
+.sixth/
+.sixthrules/

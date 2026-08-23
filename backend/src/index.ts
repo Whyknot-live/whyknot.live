@@ -90,13 +90,17 @@ app.get('/', (c) => c.json({
 // Detailed health check endpoint for Render
 app.get('/health', async (c) => {
     try {
+        const isRedisEnabled = env.USE_REDIS_RATE_LIMIT === '1' && Boolean(env.REDIS_URL)
+        const mongoHealthy = await checkMongoHealth()
+        const redisHealthy = isRedisEnabled ? await checkRedisHealth() : true
+
         const checks = {
-            mongodb: await checkMongoHealth(),
-            redis: await checkRedisHealth(),
+            mongodb: mongoHealthy,
+            redis: isRedisEnabled ? (redisHealthy ? 'healthy' : 'unhealthy') : 'disabled (in-memory rate limiting)',
             timestamp: new Date().toISOString()
         }
 
-        const allHealthy = checks.mongodb && checks.redis
+        const allHealthy = mongoHealthy && redisHealthy
 
         return c.json({
             ok: allHealthy,
