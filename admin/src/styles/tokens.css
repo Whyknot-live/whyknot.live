@@ -89,11 +89,12 @@
     /* Surface & on-surface tiers */
     --color-on-surface: var(--color-text);
     --color-on-surface-variant: var(--color-text-muted);
+    --color-on-surface-emphasis: #051f1e;
     --color-surface-container-lowest: var(--color-bg);
-    --color-surface-container-low: var(--color-bg-alt);
+    --color-surface-container-low: #f8fdfc;
     --color-surface-container: var(--color-surface);
     --color-surface-container-high: var(--color-surface-alt);
-    --color-surface-container-highest: #ffffff;
+    --color-surface-container-highest: #e5f7f5;
     /* Outline */
     --color-outline: color-mix(in srgb, var(--color-neutral-700) 28%, transparent);
     --color-outline-variant: var(--color-border);
@@ -137,8 +138,8 @@
     --gradient-radial-hero: radial-gradient(circle at 28% 22%, rgba(32, 197, 181, .30), rgba(5, 15, 21, 0.9) 75%);
 
     /* On-accent text tokens */
-    --color-on-accent: #ffffff;
-    --color-on-accent-muted: color-mix(in srgb, var(--color-on-accent) 70%, var(--color-accent-200));
+    --color-on-accent: var(--color-accent-contrast);
+    --color-on-accent-muted: color-mix(in srgb, var(--color-on-accent) 70%, var(--color-accent-600));
 
     /* Motion & elevation */
     --transition-fast: 120ms cubic-bezier(.4, 0, .2, 1);
@@ -287,6 +288,7 @@
     --color-on-tertiary-container: var(--color-secondary-100);
     --color-on-surface: var(--color-text);
     --color-on-surface-variant: var(--color-text-muted);
+    --color-on-surface-emphasis: #ffffff;
     --color-surface-container-lowest: #0a1918;
     --color-surface-container-low: #122928;
     --color-surface-container: var(--color-surface);
@@ -295,7 +297,7 @@
     --color-outline: color-mix(in srgb, var(--color-neutral-600) 55%, transparent);
     --color-outline-variant: #1e4e4b;
     --color-inverse-surface: var(--color-neutral-50);
-    --color-inverse-on-surface: #092a28;
+    --color-inverse-on-surface: var(--color-text-inverse);
     --color-inverse-primary: var(--color-primary);
     --color-error: var(--color-danger);
     --color-on-error: #2d0b09;

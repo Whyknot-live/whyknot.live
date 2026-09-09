@@ -14,23 +14,23 @@
 
     <div class="waitlist-container">
         <div class="waitlist-content">
-            <!-- Alpha Clearance Badge -->
+            <!-- Early Access Badge -->
             <div class="alpha-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <span>Alpha Access // Genesis Cohort</span>
+                <span>Early Access · Knot #1</span>
             </div>
 
-            <!-- Main Title (Nolan Register) -->
+            <!-- Main Title -->
             <h2 class="waitlist-title" id="waitlist-title">
-                Secure the <span class="gradient-text">Signal</span>
+                Get in the <span class="gradient-text">loop</span>
             </h2>
 
             <!-- Description -->
             <p class="waitlist-description">
-                Gain priority clearance to autonomous technical audits, uncompromised discovery, and verified registry deployments before public rotation.
+                Join makers and designers getting weekly curated drops, early Screener access, and launch priority. No spam, no CEO essays.
             </p>
 
             <!-- Waitlist Form -->
@@ -48,7 +48,7 @@
 
                 <div class="form-main">
                     <div class="form-group">
-                        <label for="email-input" class="sr-only">Work email address</label>
+                        <label for="email-input" class="sr-only">Email address</label>
                         <input 
                             type="email" 
                             placeholder="Enter your email address" 
@@ -61,7 +61,7 @@
                         />
                         <button type="submit" class="btn btn-primary" id="submit-btn" data-magnet="0.1">
                             <span class="btn-content">
-                                <span class="btn-text">Request Access →</span>
+                                <span class="btn-text">Get Early Access →</span>
                                 <span class="btn-loader is-hidden" aria-hidden="true">
                                     <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none">
                                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/>
@@ -76,25 +76,25 @@
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-inline" aria-hidden="true">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
-                        Zero telemetry leaks. Uncompromising privacy protocol.
+                        Zero spam. One-click unsubscribe. We hate marketing sludge as much as you do.
                     </p>
                 </div>
 
                 <!-- Interest Matrix -->
                 <div class="form-interests" role="group" aria-labelledby="interests-label">
-                    <h3 id="interests-label" class="interests-title">Priority Interests</h3>
+                    <h3 id="interests-label" class="interests-title">What are you curious about?</h3>
                     <div class="interests-grid">
                         <button type="button" class="chip interest-chip" data-variant="choice" data-interest="screener" aria-pressed="false" data-selected="false">
-                            Autonomous Screener
+                            Site Screener
                         </button>
                         <button type="button" class="chip interest-chip" data-variant="choice" data-interest="discovery" aria-pressed="false" data-selected="false">
-                            Curated Discovery
+                            Weekly Curations
                         </button>
                         <button type="button" class="chip interest-chip" data-variant="choice" data-interest="launches" aria-pressed="false" data-selected="false">
-                            Verified Launches
+                            Maker Launches
                         </button>
                         <button type="button" class="chip interest-chip" data-variant="choice" data-interest="api" aria-pressed="false" data-selected="false">
-                            Developer API
+                            Public API
                         </button>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-inline" aria-hidden="true">
                         <path d="M20 6L9 17l-5-5"/>
                     </svg>
-                    <span>Clearance recorded. Verification dispatched to your inbox.</span>
+                    <span>You're in the loop! Check your inbox to confirm your spot.</span>
                 </div>
                 
                 <div class="form-error" id="form-error" role="alert">
@@ -113,7 +113,7 @@
                         <line x1="12" y1="8" x2="12" y2="12"/>
                         <line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
-                    <span id="error-text">Submission failed. Please verify credentials.</span>
+                    <span id="error-text">That email looks tangled. Double-check and try again.</span>
                 </div>
             </form>
         </div>
@@ -153,15 +153,20 @@
         });
     });
 
-    function isValidEmail(email: string): boolean {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    function isValidEmail(val: string): boolean {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
     }
 
-    function setLoading(loading: boolean) {
+    function setLoading(isLoading: boolean) {
         if (!submitBtn) return;
-        submitBtn.disabled = loading;
-        btnText?.classList.toggle('is-hidden', loading);
-        btnLoader?.classList.toggle('is-hidden', !loading);
+        submitBtn.disabled = isLoading;
+        if (isLoading) {
+            btnText?.classList.add('is-hidden');
+            btnLoader?.classList.remove('is-hidden');
+        } else {
+            btnText?.classList.remove('is-hidden');
+            btnLoader?.classList.add('is-hidden');
+        }
     }
 
     function showSuccess(msg?: string) {
@@ -185,13 +190,13 @@
 
             // Honeypot check
             if (trapInput && trapInput.value.trim().length > 0) {
-                showSuccess('Clearance recorded. Verification dispatched to your inbox.');
+                showSuccess("You're in the loop! Check your inbox to confirm your spot.");
                 return;
             }
 
             const email = emailInput?.value.trim() ?? '';
             if (!isValidEmail(email)) {
-                showError('Please supply a valid corporate or engineering address.');
+                showError('Please enter a valid email address.');
                 return;
             }
 
@@ -211,23 +216,23 @@
                 });
 
                 if (res.status === 409) {
-                    showSuccess('Address already logged in registry. Priority position retained.');
+                    showSuccess("You're already on the list! We haven't forgotten you.");
                     if (emailInput) emailInput.value = '';
                     return;
                 }
 
                 if (!res.ok) {
                     const data = await res.json().catch(() => ({}));
-                    showError((data as { error?: string })?.error || 'Registration rejected by host gateway.');
+                    showError((data as { error?: string })?.error || 'Could not save your spot. Please try again.');
                     return;
                 }
 
-                showSuccess('Clearance recorded. Verification dispatched to your inbox.');
+                showSuccess("You're in the loop! Check your inbox to confirm your spot.");
                 if (emailInput) emailInput.value = '';
                 interestChips.forEach((chip) => chip.setAttribute('aria-pressed', 'false'));
                 selectedInterests.clear();
             } catch (err) {
-                showError('Network disconnection. Re-verifying route.');
+                showError('Connection snag. Check your network and try again.');
             } finally {
                 setLoading(false);
             }

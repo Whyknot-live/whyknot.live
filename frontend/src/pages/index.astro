@@ -15,9 +15,9 @@ import { SpotlightCard } from "../components/react/SpotlightCard";
 import { CountUp } from "../components/react/CountUp";
 import { getFlatSites, getFlatCollections, getFlatTopics, facetTerms, stackTerms } from "../lib/content";
 
-const title = "WhyKnot | Discover websites worth your time";
+const title = "WhyKnot | Discover websites worth a click";
 const description =
-    "WhyKnot is a curated library of exceptional websites. Every entry is scored for quality and performance, verified for ownership, and traceable to its evidence.";
+    "WhyKnot is a hand-picked library of exceptional websites. Scored on real performance, verified by actual humans, free of AI slop.";
 
 const schema = {
     "@context": "https://schema.org",
@@ -49,19 +49,19 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
     <section class="hero-cover-section" aria-labelledby="gateway-title">
         <HeroConstellation sites={sites} />
         <div class="hero-cover-scrim" aria-hidden="true"></div>
-        <p class="hand-note tape-note hero-tape" data-reveal="fade">every claim pinned to its proof ↓</p>
+        <p class="hand-note tape-note hero-tape" data-reveal="fade">no paid rankings. knot now, knot ever ↓</p>
         <div class="container hero-cover-content">
-            <p class="eyebrow-mono" data-reveal="fade">A curated library · scored · verified</p>
+            <p class="eyebrow-mono" data-reveal="fade">Curated library · Scored · Verified</p>
             <h1 id="gateway-title" class="gateway-title" data-reveal="fade">
-                Discover websites <em>worth your <span class="gradient-text">time.</span></em>
+                Discover websites <em>worth a <span class="gradient-text">click.</span></em>
             </h1>
             <p class="gateway-sub" data-reveal data-blur style="--reveal-delay: 120ms">
-                A curated library of exceptional websites. Every entry scored for quality
-                and performance, verified for ownership, traceable to its evidence.
+                A hand-picked library of exceptional websites. Scored on real performance,
+                verified by actual humans, and untangled from the noise.
             </p>
             <form class="scan-bar" action="/search" method="get" role="search" data-reveal style="--reveal-delay: 220ms">
                 <label class="sr-only" for="gateway-search">Search the library</label>
-                <input id="gateway-search" type="search" name="q" placeholder="Try “portfolio”, “AI”, “Astro”…" autocomplete="off" required />
+                <input id="gateway-search" type="search" name="q" placeholder="Try “portfolio”, “minimal”, “Astro”…" autocomplete="off" required />
                 <kbd class="scan-kbd" aria-hidden="true">/</kbd>
                 <button type="submit" class="btn" data-magnet="0.12">Search</button>
             </form>
@@ -137,10 +137,9 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                     <SectionHeader
                         index="01"
                         knot
-                        eyebrow="Exceptional"
-                        title="The top of the shelf"
-                        description="Every week our editors inspect the web for work that makes people stop. High-scoring, verified, and impossible to forget."
-                        aside="The bar is non-negotiable. Only the top percentile survives."
+                        eyebrow="Curated"
+                        title="The top shelf"
+                        aside="Picked by editors who still remember when the web was fun."
                         href="/editors-picks"
                         linkLabel="All picks"
                     />
@@ -187,9 +186,8 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                     index="02"
                     knot
                     eyebrow="Feed"
-                    title="Trending now"
-                    description="Highest WhyKnot scores across the library. Drag or scroll sideways."
-                    aside="Rank determined by execution. Capital buys zero velocity."
+                    title="Trending right now"
+                    aside="No sponsored boost buttons. Your VC check can't buy taste."
                     href="/trending"
                     linkLabel="Full ranking"
                 />
@@ -211,8 +209,7 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                     knot
                     eyebrow="Screener"
                     title="Inspect before you admire"
-                    description="Paste any public URL and WhyKnot reports performance, accessibility, SEO, technology, and security, with evidence attached to every claim."
-                    aside="Synthetic audits reveal what marketing conceals."
+                    aside="Because a 40MB hero video is a cry for help."
                 />
             </div>
             <div class="sticky-split">
@@ -233,10 +230,10 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                     </div>
                 </div>
                 <div class="scan-steps">
-                    <div class="scan-step" data-reveal><span class="step-index">Step 01</span><h3>Paste a URL</h3><p>Any public website. Validation, normalization, and clear privacy expectations up front.</p></div>
-                    <div class="scan-step" data-reveal><span class="step-index">Step 02</span><h3>Evidence attached</h3><p>Screenshots, Core Web Vitals, stack fingerprints, headers, and metadata, each labeled by source and confidence.</p></div>
-                    <div class="scan-step" data-reveal><span class="step-index">Step 03</span><h3>Scores that show work</h3><p>Findings carry severity, explanation, and fixes: never a bare number.</p></div>
-                    <div class="scan-step" data-reveal><span class="step-index">Step 04</span><h3>History and sharing</h3><p>Score timelines plus machine-readable reports you can link anywhere.</p></div>
+                    <div class="scan-step" data-reveal><span class="step-index">Step 01</span><h3>Drop a URL</h3><p>Any public website. We fetch it like a real visitor: no cookies, no tracking.</p></div>
+                    <div class="scan-step" data-reveal><span class="step-index">Step 02</span><h3>Get the receipts</h3><p>Core Web Vitals, security headers, and stack detection. Real telemetry, zero guesswork.</p></div>
+                    <div class="scan-step" data-reveal><span class="step-index">Step 03</span><h3>No mystery grades</h3><p>Every score explains exactly what broke and how to fix it. No vague letter grades.</p></div>
+                    <div class="scan-step" data-reveal><span class="step-index">Step 04</span><h3>Shareable proof</h3><p>Permanent audit links so you can share (or file bug tickets) with receipts.</p></div>
                 </div>
             </div>
         </div>
@@ -250,8 +247,8 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                     index="04"
                     knot
                     eyebrow="Curated"
-                    title="Collections with a point of view"
-                    aside="Curated under strict editorial tension."
+                    title="Collections with an opinion"
+                    aside="Organized threads. Because algorithms have terrible taste."
                     href="/collections"
                     linkLabel="All collections"
                 />
@@ -278,9 +275,9 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                 <SectionHeader
                     index="05"
                     knot
-                    eyebrow="Trust"
-                    title="Beauty you can check"
-                    description="Four rules govern every fact on WhyKnot. Money never buys a score."
+                    eyebrow="Honest Rules"
+                    title="Trust you don't have to take on faith"
+                    aside="Zero pay-to-win. We don't sell scores, and we cite our receipts."
                     href="/legal/methodology"
                     linkLabel="Methodology"
                 />
@@ -288,22 +285,22 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
             <div class="card-grid" data-cols="3" data-reveal style="--reveal-delay: 100ms">
                 <div class="card spot-card">
                     <VerifyBadge state="verified" date="2026-09-01" />
-                    <h3>Ownership, proven</h3>
-                    <p class="card-tagline">Domain verification by DNS, file, or meta tag, with timestamps, expiry, and audit history.</p>
+                    <h3>DNS-verified ownership</h3>
+                    <p class="card-tagline">We confirm makers control the domain via DNS. (We don't audit their taxes—just proof of control).</p>
                 </div>
                 <div class="card spot-card">
-                    <h3>Every claim has a source</h3>
+                    <h3>Every fact cited</h3>
                     <div class="cluster">
                         <SourceLine source="detected" timestamp="2026-09-09" confidence="high" />
                         <SourceLine source="owner" timestamp="2026-09-02" confidence="high" />
                         <SourceLine source="editor" timestamp="2026-09-01" />
                     </div>
-                    <p class="card-tagline">Automated detection, owner confirmation, editorial judgment, and community input are never blurred together.</p>
+                    <p class="card-tagline">Bot detections, owner claims, and editorial notes are labeled separately. If a bot found it, we say so.</p>
                 </div>
                 <div class="card spot-card">
-                    <h3>Scores show their work</h3>
+                    <h3>Zero pay-to-win</h3>
                     <ScoreRing score={94} label="Example" size="sm" />
-                    <p class="card-tagline">Category breakdowns, findings with severity and evidence, and scan history on every profile.</p>
+                    <p class="card-tagline">Sponsored slots are labeled with neon clarity. Paying gets an ad slot; it buys 0 points on a score.</p>
                 </div>
             </div>
         </div>
@@ -317,9 +314,8 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                     index="06"
                     knot
                     eyebrow="Makers"
-                    title="Built something exceptional?"
-                    description="Claim your site, verify ownership, and launch to a community that reads the evidence. Submissions open with the launch feed."
-                    aside="Launch to a community that inspects the evidence."
+                    title="Built something with actual craft?"
+                    aside="Tired of paywalled upvote cartels? Launch clean."
                 />
                 <div class="cluster">
                     <a class="btn btn-primary" href="/submit" data-magnet="0.12">Submit a Launch →</a>

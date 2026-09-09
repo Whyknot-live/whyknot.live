@@ -1,22 +1,19 @@
-/* WhyKnot Principles & Maxims.
-   A blend of tactile knot craft, human curiosity, and cinematic architectural discipline.
-   Sentences avoid em-dashes to maintain clean, direct phrasing. */
+/* WhyKnot Principles & Puns.
+   Tactile knot craft, human curiosity, and healthy sarcasm about modern web bloat. */
 
 export const KNOT_PUNS = [
-    "Every thread counts when you build under tension.",
-    "Friction holds what intention creates.",
-    "A clean knot holds without ceremony.",
-    "Tied by hand, inspected by machine, verified by humans.",
-    "Noise is cheap. Signal requires discipline.",
-    "You cannot fake a tight knot under load.",
-    "The web was built by curious hands. Keep the weave tight.",
-    "Precision under tension: craft is what withstands the load.",
-    "A single loose thread compromises the whole rig.",
-    "Structure endures when execution meets intention.",
-    "Gravity pulls downward. Good design pulls back.",
-    "Pull the thread gently. Sound work never unravels.",
-    "Four metrics, one verdict, zero shortcuts.",
-    "Curiosity untangles what certainty leaves locked."
+    "Why knot? Because the web is already tangled enough.",
+    "Untangling the web, one clean site at a time.",
+    "No strings attached. Well, maybe just this one.",
+    "Knot another generic AI wrapper directory.",
+    "Tied with care. (Unlike that DNS record you set at 2 AM).",
+    "Fewer 40MB hero videos, more actual craft.",
+    "If you can't tie a good knot, at least write clean HTML.",
+    "A tight knot holds better than a pitch deck.",
+    "Curiosity untangles what certainty leaves locked.",
+    "Built by humans who still remember when the web was fun.",
+    "Zero sponsored score boosts. Knot on our watch.",
+    "Tied by hand, inspected by machine, verified by humans."
 ] as const;
 
 export type KnotPun = (typeof KNOT_PUNS)[number];

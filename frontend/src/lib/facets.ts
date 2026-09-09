@@ -51,7 +51,7 @@ export const FACETS: Record<'categories' | 'intent' | 'industries' | 'styles' | 
         parentLabel: 'Discover',
         parentHref: '/discover',
         heading: (v) => `${v} websites`,
-        pageTitle: (v) => `${v} websites worth your time | WhyKnot`,
+        pageTitle: (v) => `${v} websites worth exploring | WhyKnot`,
         description: (v) => `Exceptional ${v.toLowerCase()} websites, tools, and digital experiences: curated, scored, and verified by WhyKnot.`,
         crumb: (v) => v,
         emptyTitle: (v) => `No ${v.toLowerCase()} sites yet`,

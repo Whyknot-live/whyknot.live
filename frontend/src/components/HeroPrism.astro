@@ -12,7 +12,7 @@ export interface Props {
 
 const {
     headlineA = "Discover websites",
-    headlineB = "worth your time.",
+    headlineB = "worth a click.",
 } = Astro.props;
 ---
 
@@ -89,7 +89,7 @@ const {
         scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
         // Back plane: canvas-texture copy of the italic line: this is what the glass bends.
-        const line = stage.getAttribute("data-line") || "worth your time.";
+        const line = stage.getAttribute("data-line") || "worth a click.";
         const typeTex = makeTypeTexture(line);
         const typeMap = new THREE.CanvasTexture(typeTex.canvas);
         typeMap.colorSpace = THREE.SRGBColorSpace;
