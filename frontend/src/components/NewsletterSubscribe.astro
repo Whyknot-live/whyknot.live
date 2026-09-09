@@ -1,0 +1,179 @@
+---
+/* NewsletterSubscribe — compact 5-3-1 signup. Uses the orphaned
+   .newsletter-* classes from styles/components/forms.css (no style blocks here).
+   Variants: footer (compact) | search-zero (section with context + live query).
+   POSTs to /api/newsletter/subscribe with honeypot `company` left empty. */
+export interface Props {
+    variant?: 'footer' | 'search-zero';
+    query?: string;
+    heading?: string;
+    description?: string;
+}
+
+const { variant = 'footer', query = '', heading, description } = Astro.props;
+const isSearchZero = variant === 'search-zero';
+const source = isSearchZero ? 'search-zero' : 'footer';
+const title = heading ?? (isSearchZero ? 'No matches. Get the Sunday roundup instead' : 'The 5-3-1 Sunday roundup');
+const body =
+    description ??
+    (isSearchZero
+        ? '5 fastest-rising · 3 editor deals · 1 underdog. Every Sunday, from our data.'
+        : '5 rising · 3 deals · 1 underdog. Weekly, no spam.');
+const emailId = `newsletter-email-${variant}`;
+---
+
+{
+    isSearchZero ? (
+        <section class="newsletter-section" aria-labelledby={`${emailId}-title`}>
+            <h3 class="newsletter-title" id={`${emailId}-title`}>{title}</h3>
+            <p class="newsletter-description">{body}</p>
+            <form class="newsletter-form" data-newsletter-form data-source={source} data-query={query} novalidate>
+                <label class="is-hidden" for={emailId}>Email address</label>
+                <input
+                    class="newsletter-input"
+                    type="email"
+                    id={emailId}
+                    name="email"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                    maxlength="254"
+                    data-nl-email
+                />
+                <input
+                    class="is-hidden"
+                    type="text"
+                    name="company"
+                    tabindex="-1"
+                    autocomplete="off"
+                    aria-hidden="true"
+                    data-nl-honeypot
+                />
+                <button class="newsletter-button" type="submit" data-nl-submit>Subscribe</button>
+            </form>
+            <p class="form-success" hidden data-nl-success role="status" style="margin-top: 1rem">Check your inbox to confirm. See you Sunday.</p>
+            <p class="form-error" hidden data-nl-error role="alert" style="margin-top: 1rem">Something went wrong. Please try again.</p>
+        </section>
+    ) : (
+        <div>
+            <p class="newsletter-description" style="margin-bottom: 1rem">{body}</p>
+            <form class="newsletter-form" style="margin: 0" data-newsletter-form data-source={source} data-query={query} novalidate>
+                <label class="is-hidden" for={emailId}>Email address</label>
+                <input
+                    class="newsletter-input"
+                    type="email"
+                    id={emailId}
+                    name="email"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                    maxlength="254"
+                    data-nl-email
+                />
+                <input
+                    class="is-hidden"
+                    type="text"
+                    name="company"
+                    tabindex="-1"
+                    autocomplete="off"
+                    aria-hidden="true"
+                    data-nl-honeypot
+                />
+                <button class="newsletter-button" type="submit" data-nl-submit>Subscribe</button>
+            </form>
+            <p class="form-success" hidden data-nl-success role="status" style="margin-top: 0.75rem">Check your inbox to confirm. See you Sunday.</p>
+            <p class="form-error" hidden data-nl-error role="alert" style="margin-top: 0.75rem">Something went wrong. Please try again.</p>
+        </div>
+    )
+}
+
+<script>
+    function initNewsletterForms() {
+        const forms = document.querySelectorAll('[data-newsletter-form]');
+        forms.forEach((form) => {
+            if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-nl-ready')) return;
+            form.setAttribute('data-nl-ready', 'true');
+            const email = form.querySelector('[data-nl-email]');
+            const honeypot = form.querySelector('[data-nl-honeypot]');
+            const submit = form.querySelector('[data-nl-submit]');
+            const success = form.parentElement?.querySelector('[data-nl-success]') ?? form.querySelector('[data-nl-success]');
+            const error = form.parentElement?.querySelector('[data-nl-error]') ?? form.querySelector('[data-nl-error]');
+            if (!(email instanceof HTMLInputElement)) return;
+
+            const show = (el: unknown, message?: string) => {
+                if (el instanceof HTMLElement) {
+                    if (message) el.textContent = message;
+                    el.hidden = false;
+                }
+            };
+            const hide = (el: unknown) => {
+                if (el instanceof HTMLElement) el.hidden = true;
+            };
+            const setBusy = (busy: boolean) => {
+                if (submit instanceof HTMLButtonElement) submit.disabled = busy;
+                email.disabled = busy;
+            };
+            const resolveUrl = () => {
+                const base = ((import.meta as unknown as { env?: Record<string, string> }).env?.PUBLIC_API_BASE_URL ?? '').trim();
+                return base ? `${base.replace(/\/$/, '')}/api/newsletter/subscribe` : '/api/newsletter/subscribe';
+            };
+            const readQuery = () => {
+                const preset = (form.getAttribute('data-query') ?? '').trim();
+                if (preset) return preset;
+                const live = document.querySelector('[data-search-input]');
+                if (live instanceof HTMLInputElement && live.value.trim()) return live.value.trim().slice(0, 200);
+                const params = new URLSearchParams(window.location.search);
+                return (params.get('q') ?? '').trim().slice(0, 200);
+            };
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                hide(success);
+                hide(error);
+                const value = email.value.trim();
+                if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    show(error, 'Please enter a valid email address.');
+                    email.focus();
+                    return;
+                }
+                setBusy(true);
+                const source = form.getAttribute('data-source') === 'search-zero' ? 'search-zero' : 'footer';
+                const payload: Record<string, string> = {
+                    email: value,
+                    source,
+                    company: honeypot instanceof HTMLInputElement ? honeypot.value : '',
+                };
+                const q = readQuery();
+                if (source === 'search-zero' && q) payload.query = q;
+                fetch(resolveUrl(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                })
+                    .then(async (res) => {
+                        if (res.ok) {
+                            show(success, 'Check your inbox to confirm. See you Sunday.');
+                            form.reset();
+                            return;
+                        }
+                        if (res.status === 409) {
+                            show(success, "You're already on the list. See you Sunday.");
+                            return;
+                        }
+                        if (res.status === 429) show(error, 'Too many tries. Please wait a minute and retry.');
+                        else if (res.status === 400) show(error, 'Please enter a valid email address.');
+                        else show(error, 'Something went wrong. Please try again.');
+                    })
+                    .catch(() => show(error, 'Network error. Check your connection and try again.'))
+                    .finally(() => setBusy(false));
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNewsletterForms);
+    } else {
+        initNewsletterForms();
+    }
+    document.addEventListener('astro:page-load', initNewsletterForms);
+</script>

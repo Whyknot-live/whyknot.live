@@ -1,0 +1,19 @@
+---
+/* CollectionCard — curated-set unit for directory + homepage rails. */
+export interface Props {
+    slug: string;
+    name: string;
+    description: string;
+    count: number;
+}
+
+const { slug, name, description, count } = Astro.props;
+---
+
+<article class="card collection-card spot-card">
+    <a class="collection-card-link" href={`/collections/${slug}`} aria-label={`${name} collection (${count} sites)`}>
+        <span class="collection-count">{count} sites</span>
+        <h3>{name}</h3>
+        <p class="card-tagline">{description}</p>
+    </a>
+</article>

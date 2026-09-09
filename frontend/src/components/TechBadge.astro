@@ -1,0 +1,15 @@
+---
+/* TechBadge — one detected stack item. Confidence is optional and always
+   shown when known (Wappalyzer-style pattern matching is heuristic). */
+export interface Props {
+    name: string;
+    confidence?: number | null;
+}
+
+const { name, confidence = null } = Astro.props;
+---
+
+<span class="tech-badge" title={confidence !== null ? `${name} (${confidence}% pattern confidence)` : name}>
+    {name}
+    {confidence !== null && <span class="tech-conf">{confidence}%</span>}
+</span>

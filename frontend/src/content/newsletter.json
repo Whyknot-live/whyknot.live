@@ -1,0 +1,375 @@
+{
+  "issues": [
+    {
+      "number": 4,
+      "slug": "issue-4-context-canvas-surge",
+      "subject": "Context Canvas surges, Good Form holds its line",
+      "date": "2026-09-06",
+      "intro": "Five fastest-rising from launch velocity and library scores, three editor deals worth your click, and one underdog with a high score and too few votes.",
+      "rising": [
+        {
+          "name": "Context Canvas",
+          "tagline": "Turn messy research into a clear working brief.",
+          "url": "https://www.whyknot.live/launches/context-canvas",
+          "slug": "context-canvas",
+          "score": 92,
+          "votes": 182,
+          "blurb": "182 votes with 24 comments in two days: the fastest velocity we have seen this month."
+        },
+        {
+          "name": "Arcade Atlas",
+          "tagline": "A playful field guide to places worth getting lost in.",
+          "url": "https://www.whyknot.live/sites/arcade-atlas",
+          "slug": "arcade-atlas",
+          "score": 96,
+          "blurb": "Still the highest-scored site in the library, and discovery traffic keeps climbing."
+        },
+        {
+          "name": "Tiny Infra",
+          "tagline": "Small, opinionated building blocks for independent teams.",
+          "url": "https://www.whyknot.live/launches/tiny-infra",
+          "slug": "tiny-infra",
+          "score": 88,
+          "votes": 146,
+          "blurb": "146 votes and steady comment depth: indie teams are passing this one around."
+        },
+        {
+          "name": "Northstar Studio",
+          "tagline": "A quiet portfolio for work with a point of view.",
+          "url": "https://www.whyknot.live/sites/northstar-studio",
+          "slug": "northstar-studio",
+          "score": 94,
+          "blurb": "Portfolio of the week by a mile. Restraint, type, and pace."
+        },
+        {
+          "name": "Lumen Mail",
+          "tagline": "A calmer inbox for people who do deep work.",
+          "url": "https://www.whyknot.live/launches/lumen-mail",
+          "slug": "lumen-mail",
+          "score": 85,
+          "votes": 119,
+          "blurb": "A calmer inbox pitch landing well with deep-work readers."
+        }
+      ],
+      "deals": [
+        {
+          "name": "Field Notes",
+          "tagline": "Research, references, and tools for better digital work.",
+          "url": "https://www.whyknot.live/sites/field-notes",
+          "slug": "field-notes",
+          "score": 91,
+          "blurb": "The research library behind Context Canvas: start here before the brief."
+        },
+        {
+          "name": "Good Form",
+          "tagline": "Forms that make the next step feel obvious.",
+          "url": "https://www.whyknot.live/sites/good-form",
+          "slug": "good-form",
+          "score": 88,
+          "blurb": "Verified and fast. If your signup leaks, study this form flow."
+        },
+        {
+          "name": "Open Almanac",
+          "tagline": "A hand-built index of curious open-source projects.",
+          "url": "https://www.whyknot.live/sites/open-almanac",
+          "slug": "open-almanac",
+          "score": 87,
+          "sponsored": false,
+          "blurb": "Editor deal: the weekend rabbit hole, no account required."
+        }
+      ],
+      "underdog": {
+        "name": "Signal Garden",
+        "tagline": "A tiny observatory for the ideas shaping the web.",
+        "url": "https://www.whyknot.live/sites/signal-garden",
+        "slug": "signal-garden",
+        "score": 89,
+        "blurb": "Score 89 with quiet traffic. Low votes, high judgment: our voice this week."
+      },
+      "sponsor": {
+        "name": "Your product in front of makers",
+        "tagline": "The 5-3-1 roundup reaches builders every Sunday. Claim this slot.",
+        "url": "https://www.whyknot.live/pricing",
+        "sponsored": false
+      }
+    },
+    {
+      "number": 3,
+      "slug": "issue-3-northstar-climbs",
+      "subject": "Northstar climbs, Tiny Infra ships small",
+      "date": "2026-08-30",
+      "intro": "Design restraint is rising, small infrastructure is winning, and one research library deserves a bigger audience.",
+      "rising": [
+        {
+          "name": "Northstar Studio",
+          "tagline": "A quiet portfolio for work with a point of view.",
+          "url": "https://www.whyknot.live/sites/northstar-studio",
+          "slug": "northstar-studio",
+          "score": 94,
+          "blurb": "Design-category leader three weeks running."
+        },
+        {
+          "name": "Tiny Infra",
+          "tagline": "Small, opinionated building blocks for independent teams.",
+          "url": "https://www.whyknot.live/launches/tiny-infra",
+          "slug": "tiny-infra",
+          "score": 88,
+          "votes": 146,
+          "blurb": "Screened and climbing: small blocks, clear docs."
+        },
+        {
+          "name": "Field Notes",
+          "tagline": "Research, references, and tools for better digital work.",
+          "url": "https://www.whyknot.live/sites/field-notes",
+          "slug": "field-notes",
+          "score": 91,
+          "blurb": "The library more launches should cite."
+        },
+        {
+          "name": "Arcade Atlas",
+          "tagline": "A playful field guide to places worth getting lost in.",
+          "url": "https://www.whyknot.live/sites/arcade-atlas",
+          "slug": "arcade-atlas",
+          "score": 96,
+          "blurb": "Culture pick holding at the top of the board."
+        },
+        {
+          "name": "Context Canvas",
+          "tagline": "Turn messy research into a clear working brief.",
+          "url": "https://www.whyknot.live/launches/context-canvas",
+          "slug": "context-canvas",
+          "score": 92,
+          "votes": 182,
+          "blurb": "Early velocity suggests staying power, not a spike."
+        }
+      ],
+      "deals": [
+        {
+          "name": "Good Form",
+          "tagline": "Forms that make the next step feel obvious.",
+          "url": "https://www.whyknot.live/sites/good-form",
+          "slug": "good-form",
+          "score": 88,
+          "blurb": "Verified form patterns worth stealing this week."
+        },
+        {
+          "name": "Lumen Mail",
+          "tagline": "A calmer inbox for people who do deep work.",
+          "url": "https://www.whyknot.live/launches/lumen-mail",
+          "slug": "lumen-mail",
+          "score": 85,
+          "votes": 119,
+          "blurb": "New launch with a calm, opinionated take on email."
+        },
+        {
+          "name": "Open Almanac",
+          "tagline": "A hand-built index of curious open-source projects.",
+          "url": "https://www.whyknot.live/sites/open-almanac",
+          "slug": "open-almanac",
+          "score": 87,
+          "sponsored": true,
+          "blurb": "Sponsored: support the roundup and keep your Sunday reading free."
+        }
+      ],
+      "underdog": {
+        "name": "Signal Garden",
+        "tagline": "A tiny observatory for the ideas shaping the web.",
+        "url": "https://www.whyknot.live/sites/signal-garden",
+        "slug": "signal-garden",
+        "score": 89,
+        "blurb": "Unverified, unhurried, and better than its traffic suggests."
+      },
+      "sponsor": {
+        "name": "Your product in front of makers",
+        "tagline": "One labeled slot every Sunday. Makers actually read this one.",
+        "url": "https://www.whyknot.live/pricing",
+        "sponsored": false
+      }
+    },
+    {
+      "number": 2,
+      "slug": "issue-2-signal-garden-blooms",
+      "subject": "Signal Garden blooms, Lumen Mail calms the inbox",
+      "date": "2026-08-23",
+      "intro": "AI observatories, calm inboxes, and the portfolio that keeps getting bookmarked.",
+      "rising": [
+        {
+          "name": "Signal Garden",
+          "tagline": "A tiny observatory for the ideas shaping the web.",
+          "url": "https://www.whyknot.live/sites/signal-garden",
+          "slug": "signal-garden",
+          "score": 89,
+          "blurb": "AI-category riser with the most saves per visit this week."
+        },
+        {
+          "name": "Lumen Mail",
+          "tagline": "A calmer inbox for people who do deep work.",
+          "url": "https://www.whyknot.live/launches/lumen-mail",
+          "slug": "lumen-mail",
+          "score": 85,
+          "votes": 119,
+          "blurb": "New badge, warm comments, clear promise."
+        },
+        {
+          "name": "Good Form",
+          "tagline": "Forms that make the next step feel obvious.",
+          "url": "https://www.whyknot.live/sites/good-form",
+          "slug": "good-form",
+          "score": 88,
+          "blurb": "Productivity staple with verified performance."
+        },
+        {
+          "name": "Open Almanac",
+          "tagline": "A hand-built index of curious open-source projects.",
+          "url": "https://www.whyknot.live/sites/open-almanac",
+          "slug": "open-almanac",
+          "score": 87,
+          "blurb": "Developer favorite for Sunday browsing."
+        },
+        {
+          "name": "Field Notes",
+          "tagline": "Research, references, and tools for better digital work.",
+          "url": "https://www.whyknot.live/sites/field-notes",
+          "slug": "field-notes",
+          "score": 91,
+          "blurb": "Research pick with the best performance score in class."
+        }
+      ],
+      "deals": [
+        {
+          "name": "Northstar Studio",
+          "tagline": "A quiet portfolio for work with a point of view.",
+          "url": "https://www.whyknot.live/sites/northstar-studio",
+          "slug": "northstar-studio",
+          "score": 94,
+          "blurb": "Study this before your next portfolio refresh."
+        },
+        {
+          "name": "Arcade Atlas",
+          "tagline": "A playful field guide to places worth getting lost in.",
+          "url": "https://www.whyknot.live/sites/arcade-atlas",
+          "slug": "arcade-atlas",
+          "score": 96,
+          "blurb": "The experience to beat this month."
+        },
+        {
+          "name": "Tiny Infra",
+          "tagline": "Small, opinionated building blocks for independent teams.",
+          "url": "https://www.whyknot.live/launches/tiny-infra",
+          "slug": "tiny-infra",
+          "score": 88,
+          "votes": 146,
+          "sponsored": false,
+          "blurb": "Editor deal for indie teams shipping this weekend."
+        }
+      ],
+      "underdog": {
+        "name": "Open Almanac",
+        "tagline": "A hand-built index of curious open-source projects.",
+        "url": "https://www.whyknot.live/sites/open-almanac",
+        "slug": "open-almanac",
+        "score": 87,
+        "blurb": "Doubling as this week's underdog: high score, too little love."
+      },
+      "sponsor": {
+        "name": "Your product in front of makers",
+        "tagline": "Sponsor the Sunday roundup: always labeled, never sneaky.",
+        "url": "https://www.whyknot.live/pricing",
+        "sponsored": false
+      }
+    },
+    {
+      "number": 1,
+      "slug": "issue-1-first-signals",
+      "subject": "First signals: Arcade Atlas leads the board",
+      "date": "2026-08-16",
+      "intro": "Our first Sunday roundup. Five rising from the seed library, three deals, and one underdog we would vouch for.",
+      "rising": [
+        {
+          "name": "Arcade Atlas",
+          "tagline": "A playful field guide to places worth getting lost in.",
+          "url": "https://www.whyknot.live/sites/arcade-atlas",
+          "slug": "arcade-atlas",
+          "score": 96,
+          "blurb": "Issue one, top of the board. Sets the bar for playfulness."
+        },
+        {
+          "name": "Northstar Studio",
+          "tagline": "A quiet portfolio for work with a point of view.",
+          "url": "https://www.whyknot.live/sites/northstar-studio",
+          "slug": "northstar-studio",
+          "score": 94,
+          "blurb": "Quiet, confident, and verified."
+        },
+        {
+          "name": "Field Notes",
+          "tagline": "Research, references, and tools for better digital work.",
+          "url": "https://www.whyknot.live/sites/field-notes",
+          "slug": "field-notes",
+          "score": 91,
+          "blurb": "The research backbone of the early library."
+        },
+        {
+          "name": "Signal Garden",
+          "tagline": "A tiny observatory for the ideas shaping the web.",
+          "url": "https://www.whyknot.live/sites/signal-garden",
+          "slug": "signal-garden",
+          "score": 89,
+          "blurb": "Small observatory, sharp point of view."
+        },
+        {
+          "name": "Good Form",
+          "tagline": "Forms that make the next step feel obvious.",
+          "url": "https://www.whyknot.live/sites/good-form",
+          "slug": "good-form",
+          "score": 88,
+          "blurb": "Verified forms done right."
+        }
+      ],
+      "deals": [
+        {
+          "name": "Open Almanac",
+          "tagline": "A hand-built index of curious open-source projects.",
+          "url": "https://www.whyknot.live/sites/open-almanac",
+          "slug": "open-almanac",
+          "score": 87,
+          "blurb": "First-issue rabbit hole, editor's choice."
+        },
+        {
+          "name": "Context Canvas",
+          "tagline": "Turn messy research into a clear working brief.",
+          "url": "https://www.whyknot.live/launches/context-canvas",
+          "slug": "context-canvas",
+          "score": 92,
+          "votes": 182,
+          "blurb": "The launch to watch: research into brief, fast."
+        },
+        {
+          "name": "Tiny Infra",
+          "tagline": "Small, opinionated building blocks for independent teams.",
+          "url": "https://www.whyknot.live/launches/tiny-infra",
+          "slug": "tiny-infra",
+          "score": 88,
+          "votes": 146,
+          "sponsored": false,
+          "blurb": "Small blocks for independent teams."
+        }
+      ],
+      "underdog": {
+        "name": "Lumen Mail",
+        "tagline": "A calmer inbox for people who do deep work.",
+        "url": "https://www.whyknot.live/launches/lumen-mail",
+        "slug": "lumen-mail",
+        "score": 85,
+        "votes": 119,
+        "blurb": "Newest launch, fewest votes, calmest promise. Our first underdog."
+      },
+      "sponsor": {
+        "name": "Your product in front of makers",
+        "tagline": "Issue one is house-sponsored. Yours could be next.",
+        "url": "https://www.whyknot.live/pricing",
+        "sponsored": false
+      }
+    }
+  ]
+}

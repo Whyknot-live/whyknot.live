@@ -1,0 +1,35 @@
+---
+/* Pagination — SSG-friendly page links. Page 1 is the base URL (no /page/1). */
+export interface Props {
+    page: number;
+    totalPages: number;
+    base: string;
+}
+
+const { page, totalPages, base } = Astro.props;
+if (totalPages < 1) throw new Error('Pagination requires totalPages >= 1');
+
+function hrefFor(p: number): string {
+    return p === 1 ? base : `${base}/page/${p}`;
+}
+
+const window_: (number | '…')[] = [];
+for (let p = 1; p <= totalPages; p++) {
+    if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) window_.push(p);
+    else if (window_[window_.length - 1] !== '…') window_.push('…');
+}
+---
+
+{totalPages > 1 && (
+    <nav class="pagination" aria-label="Pagination">
+        {page > 1 && <a class="page-link" href={hrefFor(page - 1)} rel="prev" aria-label="Previous page">←</a>}
+        {window_.map((p) =>
+            p === '…' ? (
+                <span class="page-ellipsis" aria-hidden="true">…</span>
+            ) : (
+                <a class="page-link" href={hrefFor(p)} aria-current={p === page ? 'page' : undefined} aria-label={`Page ${p}`}>{p}</a>
+            ),
+        )}
+        {page < totalPages && <a class="page-link" href={hrefFor(page + 1)} rel="next" aria-label="Next page">→</a>}
+    </nav>
+)}

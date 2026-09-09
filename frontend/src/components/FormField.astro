@@ -1,0 +1,26 @@
+---
+/* FormField — labeled control wrapper with hint + error slots contract.
+   Input is provided via the default slot; wire aria via inputId. */
+export interface Props {
+    label: string;
+    inputId: string;
+    hint?: string;
+    error?: string;
+    required?: boolean;
+}
+
+const { label, inputId, hint, error, required = false } = Astro.props;
+const hintId = hint ? `${inputId}-hint` : undefined;
+const errorId = error ? `${inputId}-error` : undefined;
+const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
+---
+
+<div class="field" data-field>
+    <label class="field-label" for={inputId}>
+        {label}
+        {required && <span class="field-required" aria-hidden="true"> *</span>}
+    </label>
+    {hint && <p class="field-hint" id={hintId}>{hint}</p>}
+    <slot data-describedby={describedBy} />
+    {error && <p class="field-error" id={errorId} role="alert">{error}</p>}
+</div>

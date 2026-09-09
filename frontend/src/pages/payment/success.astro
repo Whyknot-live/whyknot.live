@@ -1,0 +1,27 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+
+const plan = Astro.url.searchParams.get('plan') ?? 'Verified';
+---
+<Layout title="Payment successful | WhyKnot" description="Your WhyKnot payment succeeded. Receipt sent by email.">
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Pricing', href: '/pricing' }, { label: 'Success' }]} />
+        <SectionHeader
+            eyebrow="Payment successful"
+            title="You're in."
+            description={`Plan: ${plan}. Receipt sent by email with GST invoice. Entitlement is active. Claim your profile or submit your launch.`}
+        />
+        <div class="card-grid" data-cols="2">
+            <a class="card spot-card" href="/submit">
+                <h3>Submit a launch</h3>
+                <p class="card-tagline">Pick a slot, add your maker story.</p>
+            </a>
+            <a class="card spot-card" href="/maker/claim">
+                <h3>Claim your profile</h3>
+                <p class="card-tagline">DNS, file, or meta verification.</p>
+            </a>
+        </div>
+    </div>
+</Layout>

@@ -1,0 +1,124 @@
+---
+/* ClaimStatus — live claim state for a maker handle.
+   C4-safe: renders ONLY the existing 6 VerifyBadge states, never a new badge.
+   Claim -> badge mapping: approved => verified, rejected => failed,
+   pending/verified (auto-check passed, awaiting manual review) => pending,
+   failed (token not resolving) => failed, no claim => unverified.
+   Polls GET /api/claim/status?makerHandle= (PUBLIC_API_BASE_URL pattern). */
+import VerifyBadge from './VerifyBadge.astro';
+
+export interface Props {
+    makerHandle: string;
+    pollMs?: number;
+}
+
+const { makerHandle, pollMs = 15000 } = Astro.props;
+---
+
+<div class="cluster" data-claim-status={makerHandle} data-poll-ms={pollMs}>
+    <span data-claim-badge>
+        <VerifyBadge state="unverified" />
+    </span>
+    <span class="method-note" data-claim-label>Checking claim status…</span>
+</div>
+
+<script>
+    // Mirror of VerifyBadge META (6 states only — no new badge states per C4).
+    const CLAIM_BADGES: Record<string, { glyph: string; label: string }> = {
+        verified: { glyph: '✓', label: 'Verified' },
+        pending: { glyph: '◷', label: 'Pending' },
+        unverified: { glyph: '○', label: 'Unverified' },
+        expired: { glyph: '!', label: 'Expired' },
+        stale: { glyph: '!', label: 'Stale' },
+        failed: { glyph: '✕', label: 'Failed' },
+    };
+
+    function claimToBadge(status: string | null): string {
+        if (status === 'approved') return 'verified';
+        if (status === 'rejected') return 'failed';
+        if (status === 'pending' || status === 'verified') return 'pending';
+        if (status === 'failed') return 'failed';
+        return 'unverified';
+    }
+
+    function claimLabel(status: string | null): string {
+        if (status === 'approved') return 'Maker-owned: claim approved.';
+        if (status === 'rejected') return 'Claim not approved.';
+        if (status === 'verified') return 'Token verified: in manual review (within 48 hours).';
+        if (status === 'pending') return 'Claim pending: place the token, then verify.';
+        if (status === 'failed') return 'Token not resolving: re-check after placing it.';
+        return 'Unclaimed: editor-maintained.';
+    }
+
+    function isLocalhostOrigin(origin: string): boolean {
+        try {
+            const url = new URL(origin);
+            if (url.hostname === 'localhost') return true;
+            return url.hostname.startsWith('127.') || url.hostname === '[::1]';
+        } catch {
+            return false;
+        }
+    }
+
+    function resolveApiBaseUrl(): string | null {
+        const fromEnv = (import.meta.env.PUBLIC_API_BASE_URL ?? '').trim();
+        if (fromEnv) return fromEnv;
+        if (isLocalhostOrigin(window.location.origin)) return 'http://localhost:10000';
+        return null;
+    }
+
+    async function initClaimStatus() {
+        const apiBase = resolveApiBaseUrl();
+        const nodes = document.querySelectorAll('[data-claim-status]');
+        for (const node of nodes) {
+            const el = node as HTMLElement;
+            if (el.hasAttribute('data-claim-done')) continue;
+            el.setAttribute('data-claim-done', 'true');
+            const handle = el.getAttribute('data-claim-status') ?? '';
+            const pollMs = Number(el.getAttribute('data-poll-ms') ?? '15000') || 15000;
+            const badgeSlot = el.querySelector('[data-claim-badge]');
+            const label = el.querySelector('[data-claim-label]');
+
+            const render = (status: string | null) => {
+                const state = claimToBadge(status);
+                const meta = CLAIM_BADGES[state] ?? CLAIM_BADGES.unverified;
+                if (badgeSlot) {
+                    badgeSlot.innerHTML = '';
+                    const badge = document.createElement('span');
+                    badge.className = 'verify-badge';
+                    badge.setAttribute('data-state', state);
+                    badge.title = `Claim status: ${meta.label}`;
+                    const dot = document.createElement('span');
+                    dot.className = 'verify-dot';
+                    dot.setAttribute('aria-hidden', 'true');
+                    dot.textContent = meta.glyph;
+                    badge.appendChild(dot);
+                    badge.appendChild(document.createTextNode(meta.label));
+                    badgeSlot.appendChild(badge);
+                }
+                if (label) label.textContent = claimLabel(status);
+            };
+
+            const load = async () => {
+                if (!apiBase || !handle) { render(null); return; }
+                try {
+                    const response = await fetch(`${apiBase}/api/claim/status?makerHandle=${encodeURIComponent(handle)}`);
+                    const data = await response.json().catch(() => ({}));
+                    render(response.ok ? (data.claim?.status ?? null) : null);
+                } catch {
+                    render(null);
+                }
+            };
+
+            await load();
+            window.setInterval(() => { void load(); }, pollMs);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => { void initClaimStatus(); });
+    } else {
+        void initClaimStatus();
+    }
+    document.addEventListener('astro:page-load', () => { void initClaimStatus(); });
+</script>

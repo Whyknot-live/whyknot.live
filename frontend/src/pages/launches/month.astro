@@ -1,0 +1,54 @@
+---
+/* /launches/month — the last thirty days of launches, newest first.
+   Mirrors week.astro: same tabs + card-grid + LaunchCard + EmptyState,
+   window widened to the 30-day rolling board via isIn30dWindow(). */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import LaunchCard from '../../components/LaunchCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { getFlatLaunches } from '../../lib/content';
+import { isIn30dWindow } from '../../lib/launch-events';
+
+const title = "This month's launches | WhyKnot";
+const description = 'Every launch from the last thirty days, newest first. The rolling board, not a 24-hour sprint.';
+
+const launches = await getFlatLaunches();
+const now = launches.reduce((max, launch) => Math.max(max, launch.publishedAt.valueOf()), 0);
+const board = launches
+    .filter((launch) => isIn30dWindow(launch.publishedAt, now))
+    .sort((a, b) => b.publishedAt.valueOf() - a.publishedAt.valueOf());
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Launches', href: '/launches' }, { label: 'This month' }]} />
+        <SectionHeader eyebrow="Launch board" title="This month" description={description} />
+        <div class="tabs" role="navigation" aria-label="Launch boards">
+            <a class="tab" href="/launches">Today</a>
+            <a class="tab" href="/launches/week">This week</a>
+            <a class="tab" href="/launches/month" aria-current="page">Month</a>
+            <a class="tab" href="/launches/rising">Rising</a>
+        </div>
+        <div style="margin-top: var(--space-5)">
+            {board.length > 0 ? (
+                <div class="card-grid" data-cols="2">
+                    {board.map((launch) => <LaunchCard launch={launch} />)}
+                </div>
+            ) : (
+                <EmptyState
+                    title="Quiet month"
+                    body="No launches in the last thirty days. Check today's board or submit your own."
+                    actionHref="/submit"
+                    actionLabel="How launching works"
+                    note="quiet months make loud launches."
+                    punSeed="month-empty"
+                />
+            )}
+        </div>
+        <p class="method-note" style="margin-top: var(--space-8)">
+            The rolling 30-day board: everything from the last thirty days, newest first.
+            Weekly winners are archived separately. <a href="/launches/winners">Past winners</a>
+        </p>
+    </div>
+</Layout>

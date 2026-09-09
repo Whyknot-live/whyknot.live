@@ -1,0 +1,310 @@
+---
+/* HeroConstellation: the library, mapped. No glass, no paper.
+   Real site data becomes a slow constellation: node size/orbit from score,
+   teal nodes for verified sites, faint edges to nearest neighbours, and the
+   wireframe torus-knot (the WhyKnot mark) turning at the heart of it.
+   Poster-first: a CSS dot-grid stands in under reduced motion, data-saver,
+   or no WebGL. Decorative: headline stays in the DOM. */
+export interface MapSite {
+    slug: string;
+    name: string;
+    score: number;
+    verified: boolean;
+}
+
+export interface Props {
+    sites?: MapSite[];
+}
+
+const { sites = [] } = Astro.props;
+const nodes = sites.slice(0, 48);
+const verifiedCount = nodes.filter((s) => s.verified).length;
+const payload = JSON.stringify(
+    nodes.map((s) => [s.slug, Math.round(s.score), s.verified ? 1 : 0])
+);
+---
+
+<div class="cover-bg constellation-bg" data-constellation data-sites={payload} aria-hidden="true">
+    <div class="cover-poster constellation-poster" aria-hidden="true"></div>
+    <!-- canvas mounted here lazily -->
+    <span class="constellation-hud" aria-hidden="true">live map · {nodes.length} sites · {verifiedCount} verified</span>
+</div>
+
+<script>
+    function siteTheme() {
+        const saved = document.documentElement.getAttribute("data-theme");
+        if (saved === "light" || saved === "dark") return saved;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    async function mountConstellation(mount) {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const conn = navigator.connection;
+        if (conn && conn.saveData === true) return;
+        if (!("WebGLRenderingContext" in window)) return;
+
+        let raw = [];
+        try {
+            raw = JSON.parse(mount.getAttribute("data-sites") || "[]");
+        } catch {
+            raw = [];
+        }
+        if (!raw.length) return;
+
+        let THREE = null;
+        try {
+            THREE = await import("three");
+        } catch {
+            return;
+        }
+        if (!THREE) return;
+
+        const canvas = document.createElement("canvas");
+        canvas.setAttribute("aria-hidden", "true");
+        mount.appendChild(canvas);
+
+        let renderer = null;
+        try {
+            renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        } catch {
+            canvas.remove();
+            return;
+        }
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 80);
+        camera.position.set(0, 0, 9.5);
+
+        const world = new THREE.Group();
+        scene.add(world);
+
+        // Deterministic layout: Fibonacci sphere, shell radius from score band.
+        const rand = (() => {
+            let s = 42;
+            return () => {
+                s = (s * 1664525 + 1013904223) >>> 0;
+                return s / 4294967296;
+            };
+        })();
+        const pts = raw.map(([slug, score, verified], i) => {
+            const n = raw.length;
+            const golden = Math.PI * (3 - Math.sqrt(5));
+            const y = 1 - (i / (n - 1)) * 2;
+            const rad = Math.sqrt(Math.max(0, 1 - y * y));
+            const theta = golden * i + rand() * 0.35;
+            const shell = score >= 90 ? 4.1 : score >= 70 ? 3.3 : 2.6;
+            return {
+                slug,
+                score,
+                verified: verified === 1,
+                pos: new THREE.Vector3(Math.cos(theta) * rad * shell, y * shell * 0.72, Math.sin(theta) * rad * shell),
+            };
+        });
+
+        // Edges: each node to its nearest neighbour + a faint tether to center.
+        const edgeVerts = [];
+        const edgeSeen = new Set();
+        pts.forEach((p, i) => {
+            let best = -1;
+            let bestD = Infinity;
+            pts.forEach((q, j) => {
+                if (i === j) return;
+                const d = p.pos.distanceToSquared(q.pos);
+                if (d < bestD) { bestD = d; best = j; }
+            });
+            const key = [Math.min(i, best), Math.max(i, best)].join("-");
+            if (!edgeSeen.has(key)) {
+                edgeSeen.add(key);
+                edgeVerts.push(p.pos.x, p.pos.y, p.pos.z, pts[best].pos.x, pts[best].pos.y, pts[best].pos.z);
+            }
+            edgeVerts.push(p.pos.x, p.pos.y, p.pos.z, 0, 0, 0);
+        });
+        const edgeGeo = new THREE.BufferGeometry();
+        edgeGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(edgeVerts), 3));
+        const edgeMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.2 });
+        world.add(new THREE.LineSegments(edgeGeo, edgeMat));
+
+        // Nodes: verified teal vs unverified grey, two draw calls.
+        const mkNodes = (list, color, size, opacity) => {
+            const g = new THREE.BufferGeometry();
+            g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(list.flatMap((p) => [p.pos.x, p.pos.y, p.pos.z])), 3));
+            const m = new THREE.PointsMaterial({ color, size, transparent: true, opacity, depthWrite: false, sizeAttenuation: true });
+            const obj = new THREE.Points(g, m);
+            world.add(obj);
+            return m;
+        };
+        const verifiedMat = mkNodes(pts.filter((p) => p.verified), 0x2dd4bf, 0.11, 0.95);
+        const plainMat = mkNodes(pts.filter((p) => !p.verified), 0x8fa3a8, 0.075, 0.7);
+
+        // Ambient far shell: depth so the field never reads empty.
+        const shellGeo = new THREE.BufferGeometry();
+        {
+            const SN = 320;
+            const sp = new Float32Array(SN * 3);
+            for (let i = 0; i < SN; i++) {
+                const u = Math.random() * 2 - 1;
+                const ph = Math.random() * Math.PI * 2;
+                const r = 7.5 + Math.random() * 3;
+                const s = Math.sqrt(Math.max(0, 1 - u * u));
+                sp[i * 3] = Math.cos(ph) * s * r;
+                sp[i * 3 + 1] = u * r * 0.7;
+                sp[i * 3 + 2] = Math.sin(ph) * s * r - 2;
+            }
+            shellGeo.setAttribute("position", new THREE.BufferAttribute(sp, 3));
+        }
+        const shellMat = new THREE.PointsMaterial({ size: 0.05, transparent: true, opacity: 0.35, depthWrite: false });
+        const shell = new THREE.Points(shellGeo, shellMat);
+        scene.add(shell);
+
+        // Verification pulses: evidence flowing from the knot out to nodes.
+        const PULSES = 22;
+        const pulseState = [];
+        for (let i = 0; i < PULSES; i++) {
+            pulseState.push({ node: Math.floor(Math.random() * pts.length), t: Math.random() });
+        }
+        const pulseGeo = new THREE.BufferGeometry();
+        pulseGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(PULSES * 3), 3));
+        const pulseMat = new THREE.PointsMaterial({ color: 0x5eead4, size: 0.14, transparent: true, opacity: 0.9, depthWrite: false });
+        const pulses = new THREE.Points(pulseGeo, pulseMat);
+        world.add(pulses);
+        const pulsePos = pulseGeo.getAttribute("position");
+
+        // The knot at the heart: wireframe mark + dust.
+        const knotGeo = new THREE.TorusKnotGeometry(1.05, 0.3, 200, 28);
+        const knot = new THREE.LineSegments(
+            new THREE.WireframeGeometry(knotGeo),
+            new THREE.LineBasicMaterial({ transparent: true, opacity: 0.75 })
+        );
+        const dust = new THREE.Points(
+            new THREE.TorusKnotGeometry(1.05, 0.3, 90, 14),
+            new THREE.PointsMaterial({ size: 0.045, transparent: true, opacity: 0.7, depthWrite: false })
+        );
+        const knotGroup = new THREE.Group();
+        knotGroup.add(knot);
+        knotGroup.add(dust);
+        world.add(knotGroup);
+
+        const knotMat = knot.material;
+        const dustMat = dust.material;
+        const applyTheme = () => {
+            const dark = siteTheme() === "dark";
+            knotMat.color.set(dark ? 0x2dd4bf : 0x0d9488);
+            dustMat.color.set(dark ? 0x4dafe6 : 0x1a6994);
+            edgeMat.color.set(dark ? 0x7bd2c6 : 0x486664);
+            edgeMat.opacity = dark ? 0.2 : 0.26;
+            verifiedMat.opacity = dark ? 0.95 : 1;
+            plainMat.opacity = dark ? 0.7 : 0.85;
+        };
+        applyTheme();
+        const themeObs = new MutationObserver(applyTheme);
+        themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+        const section = mount.closest("section");
+        // Knot sits at the constellation's exact center (aligned with the
+        // node field); the camera frames the whole composition right of the
+        // type on desktop, above it on narrow screens, never behind text.
+        const frame = { x: 0, y: 0 };
+        const updateFraming = () => {
+            const w = Math.max(1, (section || mount).clientWidth);
+            const h = Math.max(1, (section || mount).clientHeight);
+            const wide = w / h > 1.05;
+            frame.x = wide ? -2.3 : 0;
+            frame.y = wide ? 0 : -1.0;
+        };
+        const resize = () => {
+            const host = section || mount;
+            const w = Math.max(1, host.clientWidth);
+            const h = Math.max(1, host.clientHeight);
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            updateFraming();
+        };
+        resize();
+        updateFraming();
+        const ro = new ResizeObserver(resize);
+        ro.observe(section || mount);
+
+        const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+        if (window.matchMedia("(pointer: fine)").matches) {
+            window.addEventListener("pointermove", (e) => {
+                pointer.tx = (e.clientX / window.innerWidth - 0.5) * 2;
+                pointer.ty = (e.clientY / window.innerHeight - 0.5) * 2;
+            });
+        }
+        let lastY = window.scrollY;
+        let vel = 0;
+
+        let visible = true;
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((en) => { visible = en.isIntersecting; });
+        });
+        io.observe(section || mount);
+
+        const clock = new THREE.Clock();
+        renderer.setAnimationLoop(() => {
+            if (!visible || document.hidden) return;
+            const t = clock.getElapsedTime();
+            pointer.x += (pointer.tx - pointer.x) * 0.04;
+            pointer.y += (pointer.ty - pointer.y) * 0.04;
+            vel += (Math.min(Math.abs(window.scrollY - lastY) / window.innerHeight, 1) - vel) * 0.08;
+            lastY = window.scrollY;
+
+            world.rotation.y = t * 0.05 + pointer.x * 0.22 + (window.scrollY / window.innerHeight) * 0.35;
+            world.rotation.x = pointer.y * -0.12;
+            camera.lookAt(frame.x + pointer.x * 0.5, frame.y - pointer.y * 0.35, 0);
+            knotGroup.rotation.x = t * 0.12;
+            knotGroup.rotation.z = t * 0.07;
+            dust.rotation.y = -t * 0.09;
+            const boost = 1 + Math.min(vel * 2, 1);
+            knotGroup.rotation.y = t * 0.1 * boost;
+            // Gentle twinkle so the field breathes.
+            pulseMat.opacity = 0.75 + Math.sin(t * 2.2) * 0.15;
+            shell.rotation.y = t * 0.008;
+            shellMat.opacity = 0.3 + Math.sin(t * 0.9) * 0.06;
+            // Pulses ride center → node tethers, then hop to a new node.
+            for (let i = 0; i < PULSES; i++) {
+                const st = pulseState[i];
+                st.t += 0.0035 * boost + 0.0012;
+                if (st.t >= 1) {
+                    st.t = 0;
+                    st.node = Math.floor(Math.random() * pts.length);
+                }
+                const target = pts[st.node].pos;
+                const e = st.t * st.t * (3 - 2 * st.t);
+                pulsePos.setXYZ(i, target.x * e, target.y * e, target.z * e);
+            }
+            pulsePos.needsUpdate = true;
+            renderer.render(scene, camera);
+        });
+        mount.setAttribute("data-constellation", "live");
+    }
+
+    function initConstellations() {
+        document.querySelectorAll("[data-constellation]:not([data-constellation-done])").forEach((mount) => {
+            if (!(mount instanceof HTMLElement)) return;
+            mount.setAttribute("data-constellation-done", "true");
+            if (!("IntersectionObserver" in window)) {
+                void mountConstellation(mount);
+                return;
+            }
+            const io = new IntersectionObserver((entries, obs) => {
+                entries.forEach((en) => {
+                    if (en.isIntersecting) {
+                        obs.disconnect();
+                        void mountConstellation(mount);
+                    }
+                });
+            }, { rootMargin: "240px" });
+            io.observe(mount);
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initConstellations);
+    } else {
+        initConstellations();
+    }
+    document.addEventListener("astro:page-load", initConstellations);
+</script>

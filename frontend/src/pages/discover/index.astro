@@ -1,0 +1,137 @@
+---
+/* /discover — the discovery library front door. SSG grid over the curated
+   collection with client-side category filter + sort. Filter/sort state is
+   ephemeral (shareable taxonomy URLs land with /categories/[slug]). */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { getCollection } from 'astro:content';
+
+const title = 'Discover exceptional websites | WhyKnot';
+const description =
+    'Browse a curated library of exceptional websites, tools, and digital experiences: ranked by editorial score, performance, and verification.';
+const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Discover | WhyKnot',
+    description,
+    url: 'https://www.whyknot.live/discover',
+};
+
+const sites = (await getCollection('sites'))
+    .map((entry) => ({ slug: entry.id, ...entry.data }))
+    .sort((a, b) => b.score - a.score);
+const categories = [...new Set(sites.map((site) => site.category))].sort((a, b) => a.localeCompare(b));
+---
+
+<Layout title={title} description={description} schema={schema} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Discover' }]} />
+        <SectionHeader
+            eyebrow="Discovery library"
+            title="Discover exceptional websites"
+            description="Hand-picked sites, tools, and experiences, each scored for quality and performance, labeled by verification state."
+            href="/search"
+            linkLabel="Search"
+        />
+        <div class="filter-bar" role="group" aria-label="Filter and sort sites">
+            <span class="filter-label" id="filter-cat-label">Category</span>
+            <div class="cluster" role="group" aria-labelledby="filter-cat-label" data-category-group>
+                <button type="button" class="chip" data-category="all" data-selected="true" aria-pressed="true">All</button>
+                {categories.map((category) => (
+                    <button type="button" class="chip" data-category={category} data-selected="false" aria-pressed="false">
+                        {category}
+                    </button>
+                ))}
+            </div>
+            <label class="filter-label" for="discover-sort">Sort</label>
+            <select class="filter-select" id="discover-sort" data-sort>
+                <option value="score">WhyKnot score</option>
+                <option value="performance">Performance</option>
+                <option value="newest">Newest</option>
+            </select>
+            <span class="filter-label" aria-live="polite" data-result-count>{sites.length} sites</span>
+        </div>
+        <div class="card-grid" data-cols="3" data-site-grid>
+            {sites.map((site) => (
+                <div
+                    data-site-card
+                    data-category={site.category}
+                    data-score={site.score}
+                    data-performance={site.performance}
+                    data-published={site.publishedAt instanceof Date ? site.publishedAt.toISOString() : String(site.publishedAt)}
+                >
+                    <SiteCard site={site} />
+                </div>
+            ))}
+        </div>
+        <div data-empty hidden>
+            <EmptyState
+                title="No sites in this category yet"
+                body="Curation is ongoing. Try another category or check back soon."
+                actionHref="/collections"
+                actionLabel="Browse collections"
+                note="knot a dead end: try another thread."
+                punSeed="discover-empty"
+            />
+        </div>
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Scores blend editorial judgment with automated screening. <a href="/legal/methodology">How ranking works</a>
+        </p>
+    </div>
+</Layout>
+
+<script>
+    function initDiscover() {
+        const grid = document.querySelector('[data-site-grid]');
+        const group = document.querySelector('[data-category-group]');
+        const sort = document.querySelector('[data-sort]');
+        const empty = document.querySelector('[data-empty]');
+        const count = document.querySelector('[data-result-count]');
+        if (!(grid instanceof HTMLElement) || !(group instanceof HTMLElement)) return;
+
+        const cards = [...grid.querySelectorAll('[data-site-card]')];
+        let active = 'all';
+
+        const apply = () => {
+            const sortKey = sort instanceof HTMLSelectElement ? sort.value : 'score';
+            const visible = cards.filter((card) => {
+                const show = active === 'all' || card.getAttribute('data-category') === active;
+                card.hidden = !show;
+                return show;
+            });
+            visible.sort((a, b) => {
+                if (sortKey === 'performance') return Number(b.getAttribute('data-performance')) - Number(a.getAttribute('data-performance'));
+                if (sortKey === 'newest')
+                    return new Date(b.getAttribute('data-published') ?? '').valueOf() - new Date(a.getAttribute('data-published') ?? '').valueOf();
+                return Number(b.getAttribute('data-score')) - Number(a.getAttribute('data-score'));
+            });
+            visible.forEach((card) => grid.appendChild(card));
+            if (empty instanceof HTMLElement) empty.hidden = visible.length > 0;
+            if (count) count.textContent = `${visible.length} site${visible.length === 1 ? '' : 's'}`;
+        };
+
+        group.querySelectorAll('[data-category]').forEach((chip) => {
+            chip.addEventListener('click', () => {
+                active = chip.getAttribute('data-category') ?? 'all';
+                group.querySelectorAll('[data-category]').forEach((other) => {
+                    const selected = other === chip;
+                    other.setAttribute('data-selected', String(selected));
+                    other.setAttribute('aria-pressed', String(selected));
+                });
+                apply();
+            });
+        });
+        if (sort instanceof HTMLSelectElement) sort.addEventListener('change', apply);
+        apply();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDiscover);
+    } else {
+        initDiscover();
+    }
+    document.addEventListener('astro:page-load', initDiscover);
+</script>

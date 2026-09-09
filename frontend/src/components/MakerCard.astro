@@ -1,0 +1,34 @@
+---
+/* MakerCard — maker identity unit for launch detail, feeds, leaderboards. */
+import Avatar from './Avatar.astro';
+import VerifyBadge, { type VerifyState } from './VerifyBadge.astro';
+
+export interface Props {
+    handle: string;
+    name: string;
+    bio?: string;
+    products?: number;
+    launches?: number;
+    verification?: VerifyState;
+}
+
+const { handle, name, bio, products = 0, launches = 0, verification = 'unverified' } = Astro.props;
+---
+
+<article class="card maker-card spot-card">
+    <div class="maker-top">
+        <Avatar name={name} />
+        <div>
+            <h3><a href={`/maker/${handle}`}>{name}</a></h3>
+            <div class="card-meta-row">
+                <span>@{handle}</span>
+                <VerifyBadge state={verification} />
+            </div>
+        </div>
+    </div>
+    {bio && <p class="maker-bio">{bio}</p>}
+    <div class="card-foot maker-stats">
+        <span><span class="stat-num">{products}</span> <span class="stat-label">products</span></span>
+        <span><span class="stat-num">{launches}</span> <span class="stat-label">launches</span></span>
+    </div>
+</article>

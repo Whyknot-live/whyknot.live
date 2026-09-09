@@ -1,0 +1,22 @@
+---
+/* /new — freshest additions first. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import { getFlatSites } from '../../lib/content';
+
+const title = 'New websites | WhyKnot';
+const description = 'The freshest additions to the WhyKnot discovery library.';
+const sites = (await getFlatSites()).sort((a, b) => b.publishedAt.valueOf() - a.publishedAt.valueOf());
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'New' }]} />
+        <SectionHeader eyebrow="Feed" title="New" description={description} />
+        <div class="card-grid" data-cols="3">
+            {sites.map((site) => <SiteCard site={site} />)}
+        </div>
+    </div>
+</Layout>

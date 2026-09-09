@@ -1,0 +1,28 @@
+---
+/* ErrorState — load failures, scan failures, rate limits. Cautious language,
+   machine code for support, retry affordance. A small static knot keeps the
+   tone human; `note` adds a handwritten aside (never the error itself). */
+import HeroKnot from "./HeroKnot.astro";
+
+export interface Props {
+    title: string;
+    body?: string;
+    code?: string;
+    retryHref?: string;
+    retryLabel?: string;
+    knot?: boolean;
+    note?: string;
+    punSeed?: string;
+}
+
+const { title, body, code, retryHref, retryLabel = "Try again", knot = true, note, punSeed = code ?? title } = Astro.props;
+---
+
+<div class="error-state state-card" role="alert">
+    {knot && <HeroKnot size="sm" static tone="ghost" caption={null} punSeed={punSeed} />}
+    <h3>{title}</h3>
+    {body && <p>{body}</p>}
+    {note && <p class="hand-note">{note}</p>}
+    {code && <span class="state-code">{code}</span>}
+    {retryHref && <a class="btn btn-secondary" href={retryHref}>{retryLabel}</a>}
+</div>

@@ -1,0 +1,42 @@
+---
+/* ScoreRing — 0-100 ring with Good (90+) / Needs work (50-89) / Poor (<50) bands.
+   Bands follow PSI/Lighthouse thresholds so Screener + Discovery agree. */
+export interface Props {
+    score: number | null;
+    label?: string;
+    size?: 'sm' | 'md' | 'lg';
+}
+
+const { score, label, size = 'md' } = Astro.props;
+
+function band(value: number | null): 'good' | 'soso' | 'poor' | 'stale' {
+    if (value === null || Number.isNaN(value)) return 'stale';
+    if (value >= 90) return 'good';
+    if (value >= 50) return 'soso';
+    return 'poor';
+}
+
+const current = band(score);
+const display = score === null ? '—' : String(Math.round(score));
+// 18px radius circle geometry
+const C = 2 * Math.PI * 18;
+const offset = score === null ? C : C - (C * Math.min(100, Math.max(0, score))) / 100;
+const description = score === null ? `${label ?? 'Score'} unavailable` : `${label ?? 'Score'}: ${Math.round(score)} of 100`;
+---
+
+<span class="score-ring" data-band={current} data-size={size} role="img" aria-label={description}>
+    <svg viewBox="0 0 44 44" aria-hidden="true">
+        <circle class="ring-track" cx="22" cy="22" r="18" fill="none" stroke-width="5"></circle>
+        <circle
+            class="ring-value"
+            cx="22"
+            cy="22"
+            r="18"
+            fill="none"
+            stroke-width="5"
+            stroke-dasharray={C.toFixed(2)}
+            stroke-dashoffset={offset.toFixed(2)}></circle>
+        <text class="ring-center ring-num" x="22" y="22" text-anchor="middle" dominant-baseline="central">{display}</text>
+    </svg>
+    {label && <span class="ring-label">{label}</span>}
+</span>

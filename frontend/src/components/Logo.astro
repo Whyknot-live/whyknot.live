@@ -4,22 +4,55 @@ export interface Props {
     height?: number;
     className?: string;
     title?: string;
+    useImage?: boolean;
 }
 
 const {
-    width = 42,
-    height = 42,
+    width = 36,
+    height = 36,
     className = "",
-    title = "WhyKnot Y Knot Logo",
+    title = "WhyKnot",
+    useImage = true,
 } = Astro.props;
 ---
 
-<img
-    src="/images/logo-y-knot-transparent.png"
-    alt={title}
-    width={width}
-    height={height}
-    class={className}
-    loading="eager"
-    decoding="async"
-/>
+{useImage ? (
+    <img
+        src="/images/logo-y-knot-transparent.png"
+        alt={title}
+        width={width}
+        height={height}
+        class={`whyknot-logo-img ${className}`.trim()}
+        loading="eager"
+        decoding="async"
+    />
+) : (
+    <svg
+        class={`whyknot-logo-svg ${className}`}
+        width={width}
+        height={height}
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-label={title}
+        role="img"
+    >
+        <title>{title}</title>
+        <!-- Primary Knot Loop -->
+        <path
+            d="M9 23 C 5 17 6 9 13 8 C 20 7 25 11 24 16 C 23 20 17 21 15 19 C 13 16 15 13 17 13 C 21 13 24 16 25 20"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        />
+        <!-- Interlocking Tension Strand -->
+        <path
+            d="M13 10 C 10 12 8 16 10 19 C 12 22 17 22 20 18"
+            stroke="var(--color-accent-400, #20c5b5)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            opacity="0.85"
+        />
+    </svg>
+)}

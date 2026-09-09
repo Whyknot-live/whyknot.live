@@ -1,0 +1,17 @@
+---
+/* Avatar — initials monogram in brand gradient. Decorative by default. */
+export interface Props {
+    name: string;
+    size?: 'sm' | 'md' | 'lg';
+}
+
+const { name, size = 'md' } = Astro.props;
+const initials = name
+    .split(/\s+/)
+    .map((part) => part.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+---
+
+<span class="avatar" data-size={size} aria-hidden="true">{initials}</span>

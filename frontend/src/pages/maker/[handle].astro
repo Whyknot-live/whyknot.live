@@ -1,0 +1,79 @@
+---
+/* /maker/[handle] — public maker identity: bio, links, launches, products,
+   verification. Analytics and settings live behind accounts (later phase). */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Avatar from '../../components/Avatar.astro';
+import VerifyBadge from '../../components/VerifyBadge.astro';
+import LaunchCard from '../../components/LaunchCard.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import TimeStamp from '../../components/TimeStamp.astro';
+import { getFlatMakers, getFlatLaunches, getFlatSites, launchesForMaker } from '../../lib/content';
+
+export async function getStaticPaths() {
+    const makers = await getFlatMakers();
+    return makers.map((maker) => ({ params: { handle: maker.slug }, props: { maker } }));
+}
+
+const { maker } = Astro.props;
+const [launches, sites] = await Promise.all([getFlatLaunches(), getFlatSites()]);
+const mine = launchesForMaker(launches, maker.slug);
+const siteSlugs = new Set(mine.map((launch) => launch.siteSlug).filter((slug) => slug !== undefined));
+const products = sites.filter((site) => siteSlugs.has(site.slug));
+
+const title = `${maker.name} (@${maker.slug}) | WhyKnot Maker`;
+const description = `${maker.name}: ${maker.bio}`;
+const linkEntries = Object.entries(maker.links);
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Launches', href: '/launches' }, { label: maker.name }]} />
+        <div class="maker-top">
+            <Avatar name={maker.name} size="lg" />
+            <div>
+                <h1 style="margin: 0">{maker.name}</h1>
+                <div class="card-meta-row">
+                    <span>@{maker.slug}</span>
+                    <VerifyBadge state={maker.verified ? 'verified' : 'unverified'} />
+                    {(maker as unknown as { editorMaintained?: boolean }).editorMaintained !== false && (
+                        <span class="card-tagline">Editor-maintained · <a href={`/maker/claim?handle=${maker.slug}`}>Claim this profile</a></span>
+                    )}
+                    {maker.location && <span>{maker.location}</span>}
+                    <span>Joined <TimeStamp date={maker.joinedAt} /></span>
+                </div>
+            </div>
+        </div>
+        <p class="profile-tagline" style="margin-top: var(--space-4)">{maker.bio}</p>
+        {linkEntries.length > 0 && (
+            <div class="cluster" style="margin-top: var(--space-3)">
+                {linkEntries.map(([network, href]) => (
+                    <a class="btn btn-ghost" href={href}>{network}</a>
+                ))}
+            </div>
+        )}
+
+        <section aria-labelledby="maker-launches" style="margin-top: var(--space-8)">
+            <h2 id="maker-launches">Launches ({mine.length})</h2>
+            {mine.length > 0 ? (
+                <div class="card-grid" data-cols="2">
+                    {mine.map((launch) => <LaunchCard launch={launch} />)}
+                </div>
+            ) : (
+                <EmptyState title="No launches recorded" body={`${maker.name} has not deployed a public launch on WhyKnot.`} note="Trajectories begin from origin zero." punSeed={`${maker.name}-launches`} />
+            )}
+        </section>
+
+        <section aria-labelledby="maker-products" style="margin-top: var(--space-8)">
+            <h2 id="maker-products">Products ({products.length})</h2>
+            {products.length > 0 ? (
+                <div class="card-grid" data-cols="3">
+                    {products.map((site) => <SiteCard site={site} />)}
+                </div>
+            ) : (
+                <EmptyState title="No linked products" body="Products appear once their domains are verified in the library." note="Awaiting verified domain linking." punSeed={`${maker.name}-products`} />
+            )}
+        </section>
+    </div>
+</Layout>

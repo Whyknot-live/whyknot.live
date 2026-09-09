@@ -1,0 +1,25 @@
+---
+/* /trending — highest WhyKnot scores right now. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import { getFlatSites } from '../../lib/content';
+
+const title = 'Trending websites | WhyKnot';
+const description = 'The highest-scored websites in the WhyKnot library right now.';
+const sites = await getFlatSites();
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Trending' }]} />
+        <SectionHeader eyebrow="Feed" title="Trending" description={description} />
+        <div class="card-grid" data-cols="3">
+            {sites.map((site) => <SiteCard site={site} />)}
+        </div>
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Ranked by WhyKnot score (editorial judgment plus automated screening). <a href="/legal/methodology">How ranking works</a>
+        </p>
+    </div>
+</Layout>

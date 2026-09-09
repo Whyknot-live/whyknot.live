@@ -1,0 +1,49 @@
+---
+/* DistributionBar — Segmented proportional bar with legend.
+   Used for score distributions, stack weight proportions, and browser traffic. */
+export interface DistributionSegment {
+    label: string;
+    percentage: number;
+    color: string;
+}
+
+interface Props {
+    title?: string;
+    segments: DistributionSegment[];
+}
+
+const { title, segments } = Astro.props;
+const total = segments.reduce((sum, seg) => sum + seg.percentage, 0);
+---
+
+<div class="dist-bar-wrapper" role="region" aria-label={title || "Distribution breakdown"}>
+    {title && (
+        <div class="cluster" style="justify-content: space-between; align-items: baseline;">
+            <h4 style="margin: 0; font-size: var(--text-sm); font-weight: 600;">{title}</h4>
+            <span class="field-hint" style="font-family: var(--font-mono)">100% total</span>
+        </div>
+    )}
+
+    <div class="dist-bar-track" aria-hidden="true">
+        {segments.map((seg) => {
+            const normalized = total > 0 ? (seg.percentage / total) * 100 : 0;
+            return (
+                <div
+                    class="dist-bar-segment"
+                    style={`width: ${normalized}%; background-color: ${seg.color};`}
+                    title={`${seg.label}: ${seg.percentage}%`}
+                />
+            );
+        })}
+    </div>
+
+    <div class="dist-legend">
+        {segments.map((seg) => (
+            <span class="dist-legend-item">
+                <span class="dist-legend-dot" style={`background-color: ${seg.color};`} aria-hidden="true" />
+                <span>{seg.label}</span>
+                <span class="review-stars-count">{seg.percentage}%</span>
+            </span>
+        ))}
+    </div>
+</div>

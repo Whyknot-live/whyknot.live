@@ -1,0 +1,6 @@
+{
+  "design": {"name":"Design","description":"Curated websites and tools for people shaping how things feel.","count":42},
+  "development": {"name":"Development","description":"Tools and references for building on the open web.","count":38},
+  "artificial-intelligence": {"name":"Artificial intelligence","description":"Interfaces, tools, and ideas making AI more useful.","count":31},
+  "productivity": {"name":"Productivity","description":"Thoughtful tools for getting the important things done.","count":27}
+}

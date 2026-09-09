@@ -1,0 +1,21 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+
+const reason = Astro.url.searchParams.get('reason') ?? 'cancelled';
+const copy =
+    reason === 'verify'
+        ? 'We could not verify the payment signature. No entitlement was granted. Contact us with your payment ID.'
+        : 'Checkout was closed before completion. No charge was made.';
+---
+<Layout title="Payment not completed | WhyKnot" description="Your WhyKnot payment did not complete.">
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Pricing', href: '/pricing' }, { label: 'Payment issue' }]} />
+        <SectionHeader eyebrow="Payment not completed" title="No charge made." description={copy} />
+        <div class="card-foot">
+            <a class="btn" href="/pricing">Back to pricing</a>
+            <a class="btn" href="/contact" style="margin-left: var(--space-3)">Contact support</a>
+        </div>
+    </div>
+</Layout>

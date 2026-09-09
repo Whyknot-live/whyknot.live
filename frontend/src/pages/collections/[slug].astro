@@ -1,0 +1,46 @@
+---
+/* /collections/[slug] — one curated set; unknown slugs in siteSlugs are skipped. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import SourceLine from '../../components/SourceLine.astro';
+import { getFlatSites, getFlatCollections } from '../../lib/content';
+
+export async function getStaticPaths() {
+    const collections = await getFlatCollections();
+    return collections.map((collection) => ({ params: { slug: collection.slug }, props: { collection } }));
+}
+
+const { collection } = Astro.props;
+const sites = await getFlatSites();
+const bySlug = new Map(sites.map((site) => [site.slug, site]));
+const items = collection.siteSlugs.map((slug) => bySlug.get(slug)).filter((site) => site !== undefined);
+const title = `${collection.name} | WhyKnot Collection`;
+---
+
+<Layout title={title} description={collection.description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Collections', href: '/collections' }, { label: collection.name }]} />
+        <SectionHeader eyebrow="Collection" title={collection.name} description={collection.description} />
+        <div class="card-meta-row" style="margin-bottom: var(--space-5)">
+            <SourceLine source="editor" />
+            <span>{items.length} site{items.length === 1 ? '' : 's'}</span>
+        </div>
+        {items.length > 0 ? (
+            <div class="card-grid" data-cols="3">
+                {items.map((site) => <SiteCard site={site} />)}
+            </div>
+        ) : (
+            <EmptyState
+                title="This collection is being assembled"
+                body="Editors are still reviewing candidates. Check back soon."
+                actionHref="/discover"
+                actionLabel="Browse everything"
+                note="every collection starts as a loose pile of string."
+                punSeed="collection-empty"
+            />
+        )}
+    </div>
+</Layout>

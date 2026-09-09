@@ -1,0 +1,35 @@
+---
+/* Sparkline — tiny trend line for score history and analytics teasers. */
+export interface Props {
+    values: number[];
+    label?: string;
+    width?: number;
+    height?: number;
+}
+
+const { values, label = 'Trend', width = 120, height = 36 } = Astro.props;
+const lo = Math.min(...values);
+const hi = Math.max(...values);
+const span = hi - lo || 1;
+const step = values.length > 1 ? width / (values.length - 1) : 0;
+const points = values
+    .map((value, i) => {
+        const x = (step * i).toFixed(1);
+        const y = (height - 4 - ((value - lo) / span) * (height - 8)).toFixed(1);
+        return `${x},${y}`;
+    })
+    .join(' ');
+const last = points.split(' ').pop()?.split(',') ?? ['0', '0'];
+---
+
+<svg
+    class="spark"
+    viewBox={`0 0 ${width} ${height}`}
+    width={width}
+    height={height}
+    role="img"
+    aria-label={`${label}: ${values.join(', ')}`}
+>
+    <polyline points={points}></polyline>
+    <circle cx={last[0]} cy={last[1]} r="3"></circle>
+</svg>

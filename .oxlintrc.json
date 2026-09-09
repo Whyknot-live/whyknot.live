@@ -1,0 +1,28 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["typescript", "import", "jsx-a11y", "react", "promise", "node"],
+    "categories": {
+        "correctness": "error",
+        "suspicious": "warn",
+        "pedantic": "off",
+        "perf": "off",
+        "nursery": "off",
+        "restriction": "off"
+    },
+    "rules": {
+        "eslint/no-console": ["warn", { "allow": ["warn", "error", "info"] }],
+        "eslint/no-debugger": "error",
+        "eslint/no-var": "error",
+        "eslint/prefer-const": "error",
+        "eslint/no-unused-vars": [
+            "error",
+            { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_" }
+        ],
+        "typescript/no-explicit-any": "warn",
+        "typescript/no-floating-promises": "error",
+        "typescript/no-misused-promises": "error",
+        "typescript/await-thenable": "error",
+        "typescript/no-unnecessary-type-assertion": "warn"
+    },
+    "ignorePatterns": ["dist/**", "node_modules/**", ".astro/**", "**/*.min.js", "public/**"]
+}

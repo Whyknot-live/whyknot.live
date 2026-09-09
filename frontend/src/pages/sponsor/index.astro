@@ -1,0 +1,273 @@
+---
+/* /sponsor: rate card for paid placement. Sells attention, never rank (C3).
+   Razorpay-first, INR-only (C1). Eligibility: listed + screened only.
+   Booking posts to /api/sponsor/order (backend creates the Razorpay order),
+   then opens Razorpay checkout (the CheckoutButton pattern, inline). */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SponsoredTag from '../../components/SponsoredTag.astro';
+
+const title = 'Sponsor: Buy attention, never rank | WhyKnot';
+const description =
+    'Sponsored slots on WhyKnot: launch boost, newsletter, pinned week. Labeled Sponsored, outside the ranked grid, for listed + screened launches only.';
+
+const TIERS = [
+    {
+        name: 'Boost',
+        price: '₹2,500',
+        period: 'per day',
+        slot: 'launch-boost',
+        blurb: 'Your launch, pinned in a labeled slot above the board, outside the ranked grid.',
+        features: ['1 day, 1 slot/day capacity', 'Labeled Sponsored + Why? link', 'Impressions + CTR in metrics'],
+        cta: 'Book Boost',
+    },
+    {
+        name: 'Newsletter',
+        price: '₹15,000',
+        period: 'per issue',
+        slot: 'newsletter',
+        blurb: 'One labeled feature in the WhyKnot newsletter. Same rules: labeled, never ranked.',
+        features: ['1 issue, 1 slot/issue capacity', 'Labeled Sponsored + Why? link', 'Clicks measured per slot'],
+        cta: 'Book Newsletter',
+    },
+    {
+        name: 'Pinned week',
+        price: '₹35,000',
+        period: 'per 7 days',
+        slot: 'pinned-week',
+        blurb: 'Seven days of Boost in one invoice. For launches with a week-long story to tell.',
+        features: ['7 consecutive Boost days', 'Labeled every day, no rank input', 'Weekly occupancy + revenue reported'],
+        cta: 'Ask about a week',
+        href: '/contact',
+    },
+];
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Sponsor' }]} />
+        <SectionHeader
+            eyebrow="Sponsored slots"
+            title="Buy attention. Never rank."
+            description="Paid placement is always labeled, always outside the ranked grid, and only for listed + screened launches. Scores, ranks, and badges have no sponsored field."
+        />
+
+        <div class="cluster" style="margin-bottom: var(--space-5)">
+            <SponsoredTag showWhy />
+            <span class="card-tagline">This is what every paid slot wears. Nothing more, nothing less.</span>
+        </div>
+
+        <div class="card-grid" data-cols="2">
+            {TIERS.map((tier) => (
+                <article class="card spot-card">
+                    <div class="card-meta-row">
+                        <h3 style="margin: 0">{tier.name}</h3>
+                        <SponsoredTag />
+                    </div>
+                    <p><strong style="font-size: var(--text-2xl)">{tier.price}</strong> <span class="card-tagline">{tier.period}</span></p>
+                    <p class="card-tagline">{tier.blurb}</p>
+                    <ul>
+                        {tier.features.map((feature) => <li>{feature}</li>)}
+                    </ul>
+                    <div class="card-foot">
+                        {'href' in tier && tier.href ? (
+                            <a class="btn" href={tier.href}>{tier.cta}</a>
+                        ) : (
+                            <a class="btn" href={`#book-${tier.slot}`}>{tier.cta}</a>
+                        )}
+                    </div>
+                </article>
+            ))}
+        </div>
+
+        <h2 id="book" style="margin-top: var(--space-10)">Book a slot</h2>
+        <p class="card-tagline">
+            Eligibility: <strong>listed + screened only</strong> (never brand-new or unscreened).
+            Sponsorship cannot change a score, a rank, or a badge.
+            <a href="/legal/methodology#sponsored-metrics">How we prove it</a>
+        </p>
+
+        <form id="sponsor-form" class="card spot-card" style="margin-top: var(--space-4); display: grid; gap: var(--space-3);">
+            <div>
+                <label for="sponsor-email"><strong>Receipt email</strong></label>
+                <input id="sponsor-email" name="email" type="email" required autocomplete="email" placeholder="maker@example.com" style="width: 100%" />
+            </div>
+            <div>
+                <label for="sponsor-url"><strong>Launch URL</strong></label>
+                <input id="sponsor-url" name="url" type="url" required placeholder="https://your-launch.whyknot.live/launches/yours" style="width: 100%" />
+            </div>
+            <div style="display: grid; gap: var(--space-3); grid-template-columns: 1fr 1fr;">
+                <div>
+                    <label for="sponsor-slot"><strong>Slot</strong></label>
+                    <select id="sponsor-slot" name="slot" style="width: 100%">
+                        <option value="launch-boost">Boost (₹2,500/day)</option>
+                        <option value="newsletter">Newsletter (₹15,000/issue)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="sponsor-date"><strong>Date</strong></label>
+                    <select id="sponsor-date" name="date" style="width: 100%">
+                        <option value="">Loading availability…</option>
+                    </select>
+                </div>
+            </div>
+            <p class="card-tagline" id="sponsor-availability-note">Next 30 days, 1 slot/day per type. Taken dates are marked paid.</p>
+            <div>
+                <button class="btn" id="sponsor-submit" type="submit">Continue to Razorpay</button>
+            </div>
+            <p class="card-tagline" id="sponsor-error" role="alert" hidden></p>
+        </form>
+
+        <h2 style="margin-top: var(--space-8)">The money rules</h2>
+        <details open>
+            <summary><strong>Does paying improve my score or rank?</strong></summary>
+            <p>No. Ranking inputs have no sponsored field. Label coverage is 100% and rank-input fields containing sponsored is 0, checked live in <a href="/legal/methodology#sponsored-metrics">slot metrics</a>.</p>
+        </details>
+        <details>
+            <summary><strong>Who can buy a slot?</strong></summary>
+            <p>Listed + screened launches only. If your launch is still in the review queue, <a href="/submit">submit it</a> first. Slots open once screening passes.</p>
+        </details>
+        <details>
+            <summary><strong>How do I pay?</strong></summary>
+            <p>Razorpay invoice in INR. The backend creates the order; the frontend never sees secrets. GST receipt by email.</p>
+        </details>
+
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Paid placement is labeled <SponsoredTag /> in a neutral style, visually separate from editorial picks.
+            <a href="/legal/methodology#sponsored-metrics">The money rules + live metrics</a>
+        </p>
+    </div>
+</Layout>
+
+<script>
+    // Minimal sponsor checkout: the CheckoutButton pattern, inline:
+    // backend creates the Razorpay order, frontend only receives keyId + orderId.
+    const form = document.getElementById('sponsor-form');
+    const slotSel = document.getElementById('sponsor-slot');
+    const dateSel = document.getElementById('sponsor-date');
+    const submitBtn = document.getElementById('sponsor-submit');
+    const errEl = document.getElementById('sponsor-error');
+
+    function resolveApiBase() {
+        const fromEnv = (import.meta.env.PUBLIC_API_BASE_URL ?? '').trim();
+        if (fromEnv) return fromEnv;
+        if (window.location.hostname === 'localhost' || window.location.hostname.startsWith('127.')) {
+            return 'http://localhost:10000';
+        }
+        return window.location.origin;
+    }
+
+    function loadRazorpay() {
+        return new Promise((resolve, reject) => {
+            if (window.Razorpay) return resolve(true);
+            const s = document.createElement('script');
+            s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            s.onload = () => resolve(true);
+            s.onerror = () => reject(new Error('Failed to load Razorpay'));
+            document.head.appendChild(s);
+        });
+    }
+
+    function showError(msg) {
+        if (!errEl) return;
+        errEl.hidden = false;
+        errEl.textContent = msg;
+    }
+
+    async function refreshAvailability() {
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetch(`${apiBase}/api/sponsor/availability`);
+            if (!res.ok) throw new Error('availability_failed');
+            const data = await res.json();
+            const slot = slotSel?.value ?? 'launch-boost';
+            if (!dateSel) return;
+            dateSel.textContent = '';
+            for (const day of data.days ?? []) {
+                const opt = document.createElement('option');
+                const info = day.slots?.[slot];
+                opt.value = day.date;
+                opt.textContent = info?.available ? day.date : `${day.date} (taken)`;
+                opt.disabled = !info?.available;
+                dateSel.appendChild(opt);
+            }
+            if (dateSel.options.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'No dates available';
+                dateSel.appendChild(opt);
+            }
+        } catch {
+            if (dateSel) {
+                dateSel.textContent = '';
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Availability unavailable. Pick any date (YYYY-MM-DD)';
+                dateSel.appendChild(opt);
+            }
+        }
+    }
+
+    slotSel?.addEventListener('change', refreshAvailability);
+    refreshAvailability();
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (errEl) errEl.hidden = true;
+        const btn = submitBtn;
+        const orig = btn?.textContent ?? '';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Starting checkout…';
+        }
+        try {
+            const email = (document.getElementById('sponsor-email')?.value ?? '').trim();
+            const url = (document.getElementById('sponsor-url')?.value ?? '').trim();
+            const slot = slotSel?.value ?? 'launch-boost';
+            const date = dateSel?.value ?? '';
+            if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+                throw new Error('A valid email is needed for the receipt.');
+            }
+            if (!url) throw new Error('A launch URL is required.');
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                throw new Error('Pick an available date first.');
+            }
+            const apiBase = resolveApiBase();
+            const res = await fetch(`${apiBase}/api/sponsor/order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, slot, date, url })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                if (data.error === 'slot_taken') throw new Error('That date just sold. Pick another day.');
+                if (data.error === 'invalid_date') throw new Error('That date is outside the 30-day window.');
+                if (data.error === 'payments_not_configured') throw new Error('Checkout opens soon. Join the waitlist and we will notify you.');
+                throw new Error(data.error ?? 'Order failed');
+            }
+            await loadRazorpay();
+            const rzp = new window.Razorpay({
+                key: data.keyId,
+                amount: data.amount,
+                currency: data.currency,
+                order_id: data.orderId,
+                name: 'WhyKnot',
+                description: slot === 'newsletter' ? 'Newsletter slot' : 'Launch Boost slot',
+                prefill: { email },
+                theme: { color: '#1a1a1a' },
+                handler: () => {
+                    window.location.href = '/payment/success?plan=sponsor';
+                },
+                modal: { ondismiss: () => { if (btn) { btn.disabled = false; btn.textContent = orig; } } }
+            });
+            rzp.open();
+        } catch (err) {
+            showError(err instanceof Error ? err.message : 'Checkout failed');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = orig;
+            }
+        }
+    });
+</script>

@@ -1,0 +1,39 @@
+---
+/* /maker/claim — claim a maker profile with zero third-party verification.
+   DNS TXT, HTML file, or meta tag (same 3 methods as /verify) + owner email,
+   then manual review with a published 48h SLA. */
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import SectionHeader from '../../../components/SectionHeader.astro';
+import ClaimForm from '../../../components/ClaimForm.astro';
+
+const title = 'Claim your maker profile | WhyKnot';
+const description = 'Prove you control the domain with DNS, file upload, or meta tag, and take ownership of your maker profile. Manual review within 48 hours.';
+const handle = Astro.url.searchParams.get('handle') ?? '';
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Makers' }, { label: 'Claim a profile' }]} />
+        <SectionHeader
+            eyebrow="Ownership"
+            title="Claim your maker profile"
+            description="Three methods, one meaning: you control the domain. No third-party verification, ever: a human reviews every claim."
+        />
+
+        <ClaimForm initialHandle={handle} />
+
+        <div class="card" data-tone="subtle" style="margin-top: var(--space-6)">
+            <h2>What happens next</h2>
+            <p>
+                Once your token resolves, the claim enters the manual review queue.
+                Reviews complete <strong>within 48 hours</strong>: we check that the
+                domain genuinely belongs to the maker's project before handing over the profile.
+            </p>
+            <p class="method-note">
+                Verification proves domain ownership only, never revenue, quality, or endorsement.
+                <a href="/legal/methodology">Full methodology</a> · <a href="/verify">How verification works</a>
+            </p>
+        </div>
+    </div>
+</Layout>

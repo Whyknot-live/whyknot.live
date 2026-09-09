@@ -1,0 +1,65 @@
+---
+/* Dropdown — button menu for sorts, account actions, overflow menus. */
+export interface DropdownItem {
+    label: string;
+    href: string;
+}
+
+export interface Props {
+    label: string;
+    items: DropdownItem[];
+}
+
+const { label, items } = Astro.props;
+---
+
+<div class="dropdown" data-dropdown>
+    <button type="button" class="btn btn-ghost" aria-expanded="false" aria-haspopup="menu" data-dropdown-button>
+        {label} <span aria-hidden="true">▾</span>
+    </button>
+    <ul class="dropdown-menu" role="menu" data-dropdown-menu>
+        {items.map((item) => (
+            <li role="none">
+                <a role="menuitem" href={item.href}>{item.label}</a>
+            </li>
+        ))}
+    </ul>
+</div>
+
+<script>
+    function initDropdowns() {
+        const closeAll = (except) => {
+            document.querySelectorAll('[data-dropdown].open').forEach((open) => {
+                if (open !== except) {
+                    open.classList.remove('open');
+                    open.querySelector('[data-dropdown-button]')?.setAttribute('aria-expanded', 'false');
+                }
+            });
+        };
+        document.querySelectorAll('[data-dropdown]:not([data-wired])').forEach((root) => {
+            root.setAttribute('data-wired', 'true');
+            const button = root.querySelector('[data-dropdown-button]');
+            button?.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const willOpen = !root.classList.contains('open');
+                closeAll(root);
+                root.classList.toggle('open', willOpen);
+                button.setAttribute('aria-expanded', String(willOpen));
+            });
+            root.querySelectorAll('[data-dropdown-menu] a').forEach((link) => {
+                link.addEventListener('click', () => closeAll(null));
+            });
+        });
+        document.addEventListener('click', () => closeAll(null));
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeAll(null);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDropdowns);
+    } else {
+        initDropdowns();
+    }
+    document.addEventListener('astro:page-load', initDropdowns);
+</script>

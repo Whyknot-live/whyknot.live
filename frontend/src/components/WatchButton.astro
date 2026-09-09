@@ -1,0 +1,82 @@
+---
+/* WatchButton — Watch / Track toggle button for sites, launches, or topics.
+   Features optimistic client-side toggle, localStorage persistence, and count sync. */
+interface Props {
+    targetId: string;
+    initialCount?: number;
+    initialWatching?: boolean;
+    label?: string;
+}
+
+const { targetId, initialCount = 0, initialWatching = false, label = 'Watch' } = Astro.props;
+---
+
+<button
+    type="button"
+    class={`watch-btn ${initialWatching ? 'is-watching' : ''}`}
+    data-watch-btn
+    data-target-id={targetId}
+    data-count={initialCount}
+    aria-pressed={initialWatching ? 'true' : 'false'}
+    aria-label={`${label} updates for this item`}
+>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="watch-icon" aria-hidden="true">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+    </svg>
+    <span class="watch-label">{label}</span>
+    <span class="watch-count" data-watch-count>{initialCount}</span>
+</button>
+
+<script>
+    function initWatchButtons() {
+        document.querySelectorAll('[data-watch-btn]:not([data-watch-wired])').forEach((el) => {
+            el.setAttribute('data-watch-wired', 'true');
+            const btn = el as HTMLButtonElement;
+            const targetId = btn.dataset.targetId;
+            if (!targetId) return;
+
+            const storageKey = `whyknot_watch_${targetId}`;
+            const countEl = btn.querySelector('[data-watch-count]');
+            let count = parseInt(btn.dataset.count || '0', 10);
+
+            // Restore from localStorage if present
+            try {
+                if (localStorage.getItem(storageKey) === 'true') {
+                    btn.classList.add('is-watching');
+                    btn.setAttribute('aria-pressed', 'true');
+                }
+            } catch {
+                // storage disabled
+            }
+
+            btn.addEventListener('click', () => {
+                const wasWatching = btn.classList.contains('is-watching');
+                const isNowWatching = !wasWatching;
+
+                btn.classList.toggle('is-watching', isNowWatching);
+                btn.setAttribute('aria-pressed', isNowWatching ? 'true' : 'false');
+
+                count = Math.max(0, count + (isNowWatching ? 1 : -1));
+                if (countEl) countEl.textContent = String(count);
+
+                try {
+                    if (isNowWatching) {
+                        localStorage.setItem(storageKey, 'true');
+                    } else {
+                        localStorage.removeItem(storageKey);
+                    }
+                } catch {
+                    // storage disabled
+                }
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWatchButtons);
+    } else {
+        initWatchButtons();
+    }
+    document.addEventListener('astro:page-load', initWatchButtons);
+</script>

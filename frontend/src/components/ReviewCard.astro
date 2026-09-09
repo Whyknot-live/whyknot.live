@@ -1,0 +1,50 @@
+---
+/* ReviewCard — User review card for product profiles and discovery testimonials.
+   Displays author credentials, verified badge, rating, timestamp, and review copy. */
+import ReviewStars from './ReviewStars.astro';
+import VerifyBadge from './VerifyBadge.astro';
+import TimeStamp from './TimeStamp.astro';
+
+interface Props {
+    author: string;
+    handle: string;
+    role?: string;
+    avatarUrl?: string;
+    verified?: boolean;
+    rating: number;
+    date: string;
+    content: string;
+}
+
+const { author, handle, role, avatarUrl, verified = false, rating, date, content } = Astro.props;
+---
+
+<article class="review-card">
+    <div class="review-author-row">
+        <div class="review-author-meta">
+            {avatarUrl ? (
+                <img src={avatarUrl} alt={author} width="36" height="36" class="avatar avatar-sm" loading="lazy" />
+            ) : (
+                <div class="avatar avatar-sm avatar-fallback" aria-hidden="true">
+                    {author.charAt(0).toUpperCase()}
+                </div>
+            )}
+            <div>
+                <div class="cluster" style="gap: var(--space-1); align-items: center;">
+                    <span class="review-author-name">{author}</span>
+                    {verified && <VerifyBadge state="verified" date={date} />}
+                </div>
+                <div class="review-author-handle">
+                    @{handle.replace(/^@/, '')} {role && `· ${role}`}
+                </div>
+            </div>
+        </div>
+        <TimeStamp date={date} />
+    </div>
+
+    <ReviewStars rating={rating} size="sm" />
+
+    <p class="review-body">
+        {content}
+    </p>
+</article>

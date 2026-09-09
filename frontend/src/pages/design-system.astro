@@ -1,5 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ScoreRing from '../components/ScoreRing.astro';
+import VerifyBadge from '../components/VerifyBadge.astro';
+import SourceLine from '../components/SourceLine.astro';
+import TechBadge from '../components/TechBadge.astro';
+import BoostButton from '../components/BoostButton.astro';
+import SiteCard from '../components/SiteCard.astro';
+import LaunchCard from '../components/LaunchCard.astro';
+import MakerCard from '../components/MakerCard.astro';
+import CollectionCard from '../components/CollectionCard.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import EmptyState from '../components/EmptyState.astro';
+import ErrorState from '../components/ErrorState.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Pagination from '../components/Pagination.astro';
+import Avatar from '../components/Avatar.astro';
+import SearchInput from '../components/SearchInput.astro';
+import FormField from '../components/FormField.astro';
+import StarRating from '../components/StarRating.astro';
+import TimeStamp from '../components/TimeStamp.astro';
+import Tabs from '../components/Tabs.astro';
+import Modal from '../components/Modal.astro';
+import Drawer from '../components/Drawer.astro';
+import Toast from '../components/Toast.astro';
+import Dropdown from '../components/Dropdown.astro';
+import FilterDrawer from '../components/FilterDrawer.astro';
+import Sparkline from '../components/Sparkline.astro';
+import ScoreBars from '../components/ScoreBars.astro';
+import ScoreCard from '../components/ScoreCard.astro';
+import ScreenshotViewer from '../components/ScreenshotViewer.astro';
+import HeroKnot from '../components/HeroKnot.astro';
+import CommentThread from '../components/CommentThread.astro';
+import CommentForm from '../components/CommentForm.astro';
+import ReviewStars from '../components/ReviewStars.astro';
+import ReviewCard from '../components/ReviewCard.astro';
+import WatchButton from '../components/WatchButton.astro';
+import AlertPrefs from '../components/AlertPrefs.astro';
+import StatTile from '../components/StatTile.astro';
+import DistributionBar from '../components/DistributionBar.astro';
+import AlternativesGraph from '../components/AlternativesGraph.astro';
+import { SplitReveal } from '../components/react/SplitReveal';
+import { SpotlightCard } from '../components/react/SpotlightCard';
+import { CountUp } from '../components/react/CountUp';
+import { getCollection } from 'astro:content';
 
 const title = "Design System - WhyKnot";
 const description = "WhyKnot's comprehensive component library and design tokens";
@@ -11,8 +54,15 @@ const schema = {
  "url": "https://www.whyknot.live/design-system"
 };
 
-// Redirect to main coming soon page during launch phase
-return Astro.redirect('/', 302);
+// Living inventory: every product primitive rendered with real collection data
+const showcaseSites = (await getCollection('sites'))
+ .map((entry) => ({ slug: entry.id, ...entry.data }))
+ .sort((a, b) => b.score - a.score);
+const showcaseLaunches = (await getCollection('launches'))
+ .map((entry) => ({ slug: entry.id, ...entry.data }))
+ .sort((a, b) => a.rank - b.rank);
+const showcaseCollections = (await getCollection('collections'))
+ .map((entry) => ({ slug: entry.id, ...entry.data }));
 --- 
 
 <Layout
@@ -59,6 +109,7 @@ return Astro.redirect('/', 302);
  <a href="#motion" class="toc-item">Animations</a>
  <a href="#tabs" class="toc-item">Tabs</a>
  <a href="#overlays" class="toc-item">Modal</a>
+ <a href="#p2-shells" class="toc-item">P2 UI Shells</a>
  </div>
  </nav>
  </div>
@@ -372,52 +423,61 @@ return Astro.redirect('/', 302);
  </div>
  </section>
 
- <!-- Form Elements -->
- <section id="forms" class="component-section">
- <div class="section-container">
- <h2 class="section-title">Form Elements</h2>
- <p class="section-description">
- Glassmorphic form inputs with smooth focus transitions and proper validation states.
- </p>
+ 	<!-- Form Controls -->
+	<section id="forms" class="component-section">
+		<div class="section-container">
+			<h2 class="section-title">Form Controls</h2>
+			<p class="section-description">
+				Precision inputs with hairline boundaries, tactile focus indicators, and deterministic validation states.
+			</p>
 
- <div class="form-showcase">
- <div class="form-group">
- <label for="demo-text">Text Input</label>
- <input type="text" id="demo-text" placeholder="Enter some text" />
- </div>
- 
- <div class="form-group">
- <label for="demo-email">Email Input</label>
- <input type="email" id="demo-email" placeholder="your@email.com" />
- </div>
- 
- <div class="form-group">
- <label for="demo-password">Password Input</label>
- <input type="password" id="demo-password" placeholder="Your password" />
- </div>
- 
- <div class="form-group">
- <label for="demo-select">Select Dropdown</label>
- <select id="demo-select">
- <option>Choose an option</option>
- <option>Option 1</option>
- <option>Option 2</option>
- <option>Option 3</option>
- </select>
- </div>
- 
- <div class="form-group">
- <label for="demo-textarea">Textarea</label>
- <textarea id="demo-textarea" placeholder="Enter your message"></textarea>
- </div>
- 
- <div class="form-group">
- <label for="demo-search">Search Input</label>
- <input type="search" id="demo-search" placeholder="Search..." />
- </div>
- </div>
- </div>
- </section>
+			<div class="form-showcase">
+				<div class="form-group">
+					<label for="demo-text" class="form-label">Standard Text Field</label>
+					<input type="text" id="demo-text" placeholder="e.g. Acme Systems" />
+				</div>
+				
+				<div class="form-group">
+					<label for="demo-search-ctrl" class="form-label">Search with Shortcut</label>
+					<div class="scan-bar" style="max-width: 100%">
+						<input type="search" id="demo-search-ctrl" placeholder="Search library..." />
+						<kbd class="scan-kbd">⌘K</kbd>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="demo-email" class="form-label">Email Field</label>
+					<input type="email" id="demo-email" placeholder="maker@example.com" autocomplete="email" />
+				</div>
+				
+				<div class="form-group">
+					<label for="demo-select" class="form-label">Select Control</label>
+					<select id="demo-select">
+						<option>Select category...</option>
+						<option>Autonomous Agents</option>
+						<option>Developer Tooling</option>
+						<option>Design Systems</option>
+					</select>
+				</div>
+				
+				<div class="form-group">
+					<label for="demo-invalid" class="form-label">Invalid State</label>
+					<input type="text" id="demo-invalid" value="invalid domain specification" aria-invalid="true" aria-describedby="demo-invalid-hint" />
+					<span class="field-error" id="demo-invalid-hint" style="margin-top: 0.25rem">Domain must follow standard FQDN format.</span>
+				</div>
+				
+				<div class="form-group">
+					<label for="demo-disabled" class="form-label">Disabled State</label>
+					<input type="text" id="demo-disabled" value="Read-only system record" disabled />
+				</div>
+
+				<div class="form-group" style="grid-column: 1 / -1">
+					<label for="demo-textarea" class="form-label">Multi-line Text Area</label>
+					<textarea id="demo-textarea" placeholder="Enter technical description or evidence details..."></textarea>
+				</div>
+			</div>
+		</div>
+	</section>
 
  <!-- Cards -->
  <section id="cards" class="component-section">
@@ -449,42 +509,71 @@ return Astro.redirect('/', 302);
  </div>
  </section>
 
- <!-- Chips & Badges -->
- <section id="chips" class="component-section">
- <div class="section-container">
- <h2 class="section-title">Chips & Badges</h2>
- <p class="section-description">
- Interactive chips for filtering and selection, plus informational badges.
- </p>
+	<!-- Chips & Badges -->
+	<section id="chips" class="component-section">
+		<div class="section-container">
+			<h2 class="section-title">Chips & Badges</h2>
+			<p class="section-description">
+				Evidence tags, filter nodes, and metadata indicators with hairline boundaries.
+			</p>
 
- <!-- Chips -->
- <div class="subsection">
- <h3 class="subsection-title">Chips</h3>
- <div class="component-demo">
- <div class="demo-group" data-gap="sm">
- <button class="chip" aria-pressed="false">Assist</button>
- <button class="chip" data-selected="true">Selected</button>
- <button class="chip" data-variant="tertiary" data-selected="true">Tertiary</button>
- <button class="chip" data-variant="assist">Neutral</button>
- </div>
- </div>
- </div>
+			<!-- Filter Chips -->
+			<div class="subsection">
+				<h3 class="subsection-title">Filter Chips (Interactive Toggles)</h3>
+				<div class="component-demo">
+					<div class="demo-group" data-gap="sm">
+						<button class="chip" data-selected="true" aria-pressed="true">
+							All <span class="chip-count">142</span>
+						</button>
+						<button class="chip" data-selected="false" aria-pressed="false">
+							Developer Tools <span class="chip-count">38</span>
+						</button>
+						<button class="chip" data-selected="false" aria-pressed="false">
+							AI Systems <span class="chip-count">56</span>
+						</button>
+						<button class="chip" data-selected="false" aria-pressed="false">
+							Design <span class="chip-count">24</span>
+						</button>
+					</div>
+				</div>
+			</div>
 
- <!-- Badges -->
- <div class="subsection">
- <h3 class="subsection-title">Badges</h3>
- <div class="component-demo">
- <div class="demo-group">
- <span class="badge">Default</span>
- <span class="badge" data-variant="info">Info</span>
- <span class="badge" data-variant="success">Success</span>
- <span class="badge" data-variant="warning">Warning</span>
- <span class="badge" data-variant="danger">Danger</span>
- </div>
- </div>
- </div>
- </div>
- </section>
+			<!-- Choice & Status Chips -->
+			<div class="subsection">
+				<h3 class="subsection-title">Choice Chips & Status Nodes</h3>
+				<div class="component-demo">
+					<div class="demo-group" data-gap="sm">
+						<button class="chip" data-variant="choice" data-selected="true" aria-pressed="true">
+							<span class="chip-dot"></span> Active Verification
+						</button>
+						<button class="chip" data-variant="choice" data-selected="false" aria-pressed="false">
+							<span class="chip-dot" style="background: var(--color-blue-400)"></span> Technical Audit
+						</button>
+						<button class="chip" data-size="sm" data-selected="false" aria-pressed="false">
+							Compact Node
+						</button>
+						<button class="chip" data-size="sm" data-selected="true" aria-pressed="true">
+							Active Compact
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Informational Badges -->
+			<div class="subsection">
+				<h3 class="subsection-title">Informational Badges</h3>
+				<div class="component-demo">
+					<div class="demo-group">
+						<span class="badge">Standard</span>
+						<span class="badge" data-variant="info">Signal</span>
+						<span class="badge" data-variant="success">Verified</span>
+						<span class="badge" data-variant="warning">Pending</span>
+						<span class="badge" data-variant="danger">Revoked</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
 
  <!-- Callouts -->
  <section id="callouts" class="component-section">
@@ -724,7 +813,7 @@ return Astro.redirect('/', 302);
  <div class="section-container">
  <h2 class="section-title">Modal</h2>
  <p class="section-description">
- Lightweight, accessible modal using a checkbox toggle—no JavaScript required.
+ Lightweight, accessible modal using a checkbox toggle without JavaScript.
  </p>
  <div class="component-demo">
  <label class="btn btn-outline" for="demo-modal-toggle">Open Modal</label>
@@ -780,8 +869,359 @@ return Astro.redirect('/', 302);
  </div>
  </div>
  </div>
+ <!-- Product primitives: living inventory (scores, trust, cards, states) -->
+ <section class="section" id="product-scores">
+ <div class="container">
+ <SectionHeader eyebrow="Primitives" title="Scores" description="Rings follow PSI bands: 90+ good, 50–89 needs work, below 50 poor. Null renders an honest unavailable state." />
+ <div class="cluster">
+ <ScoreRing score={96} label="Performance" />
+ <ScoreRing score={72} label="Accessibility" />
+ <ScoreRing score={34} label="SEO" />
+ <ScoreRing score={null} label="Best practices" />
+ </div>
+ <div class="card-grid" data-cols="2" style="margin-top: var(--space-5)">
+ <div class="card">
+ <div class="score-bar" data-band="good"><div class="score-bar-row"><span class="score-bar-name">Largest Contentful Paint</span><span class="score-bar-val">1.8s</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width: 92%"></div></div></div>
+ </div>
+ <div class="card">
+ <div class="score-bar" data-band="soso"><div class="score-bar-row"><span class="score-bar-name">Interaction to Next Paint</span><span class="score-bar-val">320ms</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width: 64%"></div></div></div>
+ </div>
+ </div>
+ </div>
  </section>
- </article>
+
+ <section class="section" id="product-trust">
+ <div class="container">
+ <SectionHeader eyebrow="Primitives" title="Trust" description="Verification is domain ownership only, never revenue, never merit. Every fact carries provenance." />
+ <div class="cluster">
+ <VerifyBadge state="verified" date="2026-09-01" />
+ <VerifyBadge state="pending" />
+ <VerifyBadge state="unverified" />
+ <VerifyBadge state="expired" date="2026-06-01" />
+ <VerifyBadge state="stale" date="2026-04-12" />
+ <VerifyBadge state="failed" />
+ <span class="sponsored-tag">Sponsored</span>
+ <span class="soon-tag">Soon</span>
+ </div>
+ <div class="cluster" style="margin-top: var(--space-4)">
+ <SourceLine source="detected" timestamp="2026-09-09" confidence="high" />
+ <SourceLine source="owner" timestamp="2026-09-02" confidence="high" />
+ <SourceLine source="editor" timestamp="2026-09-01" />
+ <SourceLine source="community" timestamp="2026-08-28" confidence="low" />
+ <SourceLine source="detected" timestamp="2026-05-30" confidence="med" stale />
+ </div>
+ <div class="cluster" style="margin-top: var(--space-4)">
+ <TechBadge name="Astro" confidence={98} />
+ <TechBadge name="Cloudflare" confidence={87} />
+ <TechBadge name="Stripe" />
+ </div>
+ <p class="method-note" style="margin-top: var(--space-4)">Automated detection is heuristic and labeled as such. <a href="/legal/methodology">How ranking works</a></p>
+ </div>
+ </section>
+
+ <section class="section" id="product-cards">
+ <div class="container">
+ <SectionHeader eyebrow="Primitives" title="Entity cards" description="Discovery, launch, maker, and collection units, composed from the primitives above." href="/discover" linkLabel="Open Discover" />
+ <h3>Site cards</h3>
+ <div class="card-grid" data-cols="3">
+ {showcaseSites.slice(0, 3).map((site) => <SiteCard site={site} />)}
+ </div>
+ <h3 style="margin-top: var(--space-8)">Launch cards</h3>
+ <div class="card-grid" data-cols="2">
+ {showcaseLaunches.map((launch) => <LaunchCard launch={launch} />)}
+ <div class="card"><BoostButton boosts={182} slug="context-canvas" /><p class="card-tagline">Standalone backing control (static in SSG, wires to the backing API with auth).</p></div>
+ </div>
+ <h3 style="margin-top: var(--space-8)">Maker + collections</h3>
+ <div class="card-grid" data-cols="3">
+ <MakerCard handle="maya-chen" name="Maya Chen" bio="Design engineer exploring calm software." products={3} launches={2} verification="verified" />
+ {showcaseCollections.slice(0, 2).map((collection) => <CollectionCard slug={collection.slug} name={collection.name} description={collection.description} count={collection.count} />)}
+ </div>
+ </div>
+ </section>
+
+ <section class="section" id="product-states">
+ <div class="container">
+ <SectionHeader eyebrow="Primitives" title="States" description="Loading, empty, and error treatments shared by every surface, including Screener and verification flows." />
+ <div class="card-grid" data-cols="3">
+ <div class="skeleton-card" aria-hidden="true"><div class="skeleton" style="height: 7rem"></div><div class="skeleton" style="width: 70%"></div><div class="skeleton" style="width: 45%"></div></div>
+ <EmptyState title="No saved sites yet" body="Save sites you love and they will wait for you here." actionHref="/discover" actionLabel="Discover sites" note="this aside is handwritten: the humane touch." punSeed="design-system" />
+  <ErrorState title="Scan timed out" body="The site took too long to respond. Retry the scan or request a human review." code="SCREENER_TIMEOUT" retryHref="/screener" note="even the best knots slip." />
+ </div>
+ <div style="margin-top: var(--space-5)">
+ <Breadcrumbs trail={[{ label: 'Discover', href: '/discover' }, { label: 'Arcade Atlas' }]} />
+ </div>
+ <div style="margin-top: var(--space-4)">
+ <Pagination page={2} totalPages={5} base="/discover" />
+ </div>
+ <div class="table-scroll" style="margin-top: var(--space-5)">
+ <table class="data-table">
+ <thead><tr><th scope="col">Finding</th><th scope="col">Severity</th><th scope="col">Confidence</th><th scope="col" class="num">Impact</th></tr></thead>
+ <tbody>
+ <tr><td><code>render-blocking-js</code></td><td><span class="badge badge-danger">High</span></td><td>High</td><td class="num">−14</td></tr>
+ <tr><td><code>missing-alt-text</code></td><td><span class="badge badge-info">Medium</span></td><td>High</td><td class="num">−6</td></tr>
+ <tr><td><code>oversized-hero</code></td><td><span class="badge">Low</span></td><td>Med</td><td class="num">−2</td></tr>
+ </tbody>
+ </table>
+ </div>
+ <div class="leaderboard" style="margin-top: var(--space-5)">
+ {showcaseSites.slice(0, 3).map((site) => (
+ <a class="leaderboard-row" href={`/sites/${site.slug}`}>
+ <ScoreRing score={site.score} size="sm" />
+ <span class="leaderboard-main"><strong>{site.name}</strong><span>{site.tagline}</span></span>
+ </a>
+ ))}
+ </div>
+ </div>
+ </section>
+ <section class="section" id="product-ui">
+ <div class="container">
+ <SectionHeader eyebrow="Primitives" title="Interface controls" description="Forms, overlays, data-viz, and discussion: one system, every surface." />
+
+ <h3>Identity, search, forms</h3>
+ <div class="cluster">
+ <Avatar name="Maya Chen" size="sm" />
+ <Avatar name="Maya Chen" />
+ <Avatar name="Maya Chen" size="lg" />
+ <StarRating value={4} label="Example rating: 4 out of 5" />
+ <TimeStamp date="2026-09-09" />
+ </div>
+ <div class="card-grid" data-cols="2" style="margin-top: var(--space-5)">
+ <div class="card"><SearchInput placeholder="Search the showcase…" /></div>
+ <div class="card">
+ <FormField label="Product URL" inputId="demo-url" hint="Any public URL. We never scan without asking." required>
+ <input type="url" id="demo-url" name="url" placeholder="https://example.com" required aria-describedby="demo-url-hint" />
+ </FormField>
+ <FormField label="Tagline" inputId="demo-tagline" error="Keep it under 60 characters.">
+ <input type="text" id="demo-tagline" name="tagline" value="An extremely long tagline that will never fit in sixty characters at all" aria-invalid="true" aria-describedby="demo-tagline-error" />
+ </FormField>
+ </div>
+ </div>
+
+ <h3 style="margin-top: var(--space-8)">Tabs, menus, overlays</h3>
+ <Tabs
+ id="demo-tabs"
+ tabs={[{ id: 'overview', label: 'Overview' }, { id: 'scores', label: 'Scores' }, { id: 'history', label: 'History' }]}
+ />
+ <div role="tabpanel" id="demo-tabs-panel-overview" aria-labelledby="demo-tabs-tab-overview">
+ <p>Overview panel: composed per page from the same primitives.</p>
+ </div>
+ <div role="tabpanel" id="demo-tabs-panel-scores" aria-labelledby="demo-tabs-tab-scores" hidden>
+ <p>Scores panel: rings, bars, and sparklines live here.</p>
+ </div>
+ <div role="tabpanel" id="demo-tabs-panel-history" aria-labelledby="demo-tabs-tab-history" hidden>
+ <p>History panel: sparklines and change notes live here.</p>
+ </div>
+ <div class="cluster" style="margin-top: var(--space-4)">
+ <button type="button" class="btn btn-secondary" data-modal-open="demo-modal">Open dialog</button>
+ <button type="button" class="btn btn-secondary" data-drawer-open="demo-drawer">Open drawer</button>
+ <Dropdown label="Sort" items={[{ label: 'WhyKnot score', href: '#product-ui' }, { label: 'Newest', href: '#product-ui' }, { label: 'Most discussed', href: '#product-ui' }]} />
+ <FilterDrawer id="demo-filters" title="Demo filters">
+ <p class="card-tagline">On small screens this opens as a bottom sheet; filter controls slot in here.</p>
+ </FilterDrawer>
+ <button type="button" class="btn btn-ghost" data-toast="Saved to your library." data-toast-tone="success">Fire toast</button>
+ </div>
+ <Modal id="demo-modal" title="Example dialog">
+ <p class="card-tagline">Native dialog: Esc closes, backdrop click closes, focus stays inside.</p>
+ </Modal>
+ <Drawer id="demo-drawer" title="Example drawer">
+ <p class="card-tagline">Side panel on desktop, bottom sheet on mobile.</p>
+ </Drawer>
+ <Toast />
+
+ <h3 style="margin-top: var(--space-8)">Data and previews</h3>
+ <div class="card-grid" data-cols="3">
+ <ScoreCard score={91} label="Example site" detail="Blends editorial judgment with automated screening." size="sm" />
+ <div class="card">
+ <h3>Score trend</h3>
+ <Sparkline values={[82, 84, 83, 87, 89, 91]} label="Example score trend" />
+ </div>
+ <div class="card">
+ <h3>Category bars</h3>
+ <ScoreBars rows={[{ name: 'Performance', value: 94 }, { name: 'Accessibility', value: null }, { name: 'SEO', value: 88 }]} />
+ </div>
+ </div>
+ <div style="margin-top: var(--space-5)">
+ <ScreenshotViewer name="Arcade Atlas" accent="coral" />
+ </div>
+
+ <h3 style="margin-top: var(--space-8)">Discussion</h3>
+ <CommentThread
+ comments={[
+ { id: 'c1', author: 'Rowan Bell', handle: 'rowan', time: '2026-09-08', body: 'How does this handle offline-first? The demo glosses over sync.', replies: [{ id: 'c1r1', author: 'Maya Chen', handle: 'maya', time: '2026-09-08', body: 'Great question. Local-first with CRDT sync, documented in the launch notes.', maker: true }] },
+ { id: 'c2', author: 'Samir Shah', handle: 'samir', time: '2026-09-07', body: 'Switched our studio site to this stack after reading the performance breakdown.' },
+ ]}
+ />
+ <div style="margin-top: var(--space-4)">
+ <CommentForm />
+ </div>
+
+ <h3 style="margin-top: var(--space-8)">Motion utilities</h3>
+ <div class="cluster">
+ <span class="eyebrow-mono" data-scramble>hover-to-scramble</span>
+ <button type="button" class="btn btn-secondary" data-magnet="0.2">Magnetic button</button>
+ </div>
+  <p class="card-tagline" data-blur style="margin-top: var(--space-4)">This line blurs in on scroll: decorative only, content stays readable without motion.</p>
+  </div>
+  </section>
+  <section class="section" id="product-knot">
+  <div class="container">
+  <SectionHeader index="✳" knot eyebrow="Signature" title="The knot is the hero" description="One component, every surface: hero WebGL, static posters in states, ticks in eyebrows. Type 'knot' anywhere to observe latent architectural nodes." aside="Architectural tension governs every surface." />
+  <div class="card-grid" data-cols="3">
+  <div class="card"><HeroKnot size="sm" static tone="default" caption="sm · default" punSeed="ds-sm" /></div>
+  <div class="card"><HeroKnot size="sm" static tone="ghost" caption="sm · ghost" punSeed="ds-ghost" /></div>
+  <div class="card"><HeroKnot size="sm" static tone="ink" caption="sm · ink" punSeed="ds-ink" note="handwritten, always." /></div>
+  </div>
+  <p class="hand-note" style="margin-top: var(--space-5)">Caveat does the talking in the margins: never body copy, both themes, reduced-motion safe.</p>
+  </div>
+  </section>
+
+  <!-- P2 UI Shells: Reviews, Watchers, Notifications, Analytics, Alternatives -->
+  <section class="section" id="p2-shells">
+      <div class="container">
+          <SectionHeader
+              index="P2"
+              knot
+              eyebrow="Platform Extensions"
+              title="P2 Honest UI Shells"
+              description="Living inventory of upcoming interaction primitives with zero fake metrics and honest empty states."
+              aside="Every metric backed by ground truth."
+          />
+
+          <div class="stack" style="gap: var(--space-8); margin-top: var(--space-6);">
+              <!-- ReviewStars & ReviewCard -->
+              <div>
+                  <h3 style="margin-bottom: var(--space-3)">01 · Reviews & Feedback</h3>
+                  <div class="card-grid" data-cols="2">
+                      <ReviewCard
+                          author="Dr. Elena Vance"
+                          handle="elenavance"
+                          role="Security Researcher"
+                          verified={true}
+                          rating={4.8}
+                          date="2026-09-08"
+                          content="The Screener audit detected missing Content Security Policy directives and stale SSL cipher suites that our automated CI pipeline missed. Uncompromising precision."
+                      />
+                      <div class="card" style="display: flex; flex-direction: column; gap: var(--space-4); justify-content: center;">
+                          <span class="field-hint">Inline Fractional Ratings</span>
+                          <div class="cluster" style="gap: var(--space-4)">
+                              <ReviewStars rating={5.0} count={342} size="lg" />
+                              <ReviewStars rating={4.5} count={89} size="md" />
+                              <ReviewStars rating={3.5} count={12} size="sm" />
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- WatchButton & AlertPrefs -->
+              <div>
+                  <h3 style="margin-bottom: var(--space-3)">02 · Watchers & Notification Alerts</h3>
+                  <div class="card-grid" data-cols="2">
+                      <div class="card" style="display: flex; flex-direction: column; gap: var(--space-4); justify-content: center;">
+                          <span class="field-hint">Optimistic Watcher Toggles</span>
+                          <div class="cluster" style="gap: var(--space-3)">
+                              <WatchButton targetId="demo_site_1" initialCount={128} label="Watch Product" />
+                              <WatchButton targetId="demo_site_2" initialCount={42} initialWatching={true} label="Watching" />
+                          </div>
+                      </div>
+                      <AlertPrefs />
+                  </div>
+              </div>
+
+              <!-- StatTiles & DistributionBar -->
+              <div>
+                  <h3 style="margin-bottom: var(--space-3)">03 · Telemetry & Proportional Distributions</h3>
+                  <div class="card-grid" data-cols="3" style="margin-bottom: var(--space-4);">
+                      <StatTile
+                          label="Global P95 TTFB"
+                          value="142ms"
+                          delta="18ms faster"
+                          deltaDirection="positive"
+                          subtext="Across 12 edge probe regions"
+                      />
+                      <StatTile
+                          label="Security Stance"
+                          value="98 / 100"
+                          delta="Zero CVE findings"
+                          deltaDirection="positive"
+                          subtext="Strict CSP + HSTS active"
+                      />
+                      <StatTile
+                          label="Queue Velocity"
+                          value="4.2d"
+                          delta="High demand"
+                          deltaDirection="neutral"
+                          subtext="Current waitlist cycle depth"
+                      />
+                  </div>
+                  <div class="card">
+                      <DistributionBar
+                          title="Audit Finding Severity Breakdown"
+                          segments={[
+                              { label: 'Optimal / Pass', percentage: 72, color: 'var(--score-good)' },
+                              { label: 'Informational', percentage: 18, color: 'var(--score-soso)' },
+                              { label: 'Critical / Action Required', percentage: 10, color: 'var(--score-poor)' }
+                          ]}
+                      />
+                  </div>
+              </div>
+
+              <!-- AlternativesGraph -->
+              <div>
+                  <h3 style="margin-bottom: var(--space-3)">04 · Architectural Alternatives Matrix</h3>
+                  <AlternativesGraph
+                      subjectName="Linear"
+                      alternatives={[
+                          {
+                              name: "Linear",
+                              score: 98,
+                              tagline: "High-velocity issue tracking built for modern engineering teams.",
+                              tags: ["React", "TypeScript", "GraphQL", "WebSockets"],
+                              isSubject: true
+                          },
+                          {
+                              name: "Plane",
+                              score: 94,
+                              tagline: "Open source extensible project tracking with modular views.",
+                              tags: ["Next.js", "Django", "PostgreSQL", "Docker"]
+                          },
+                          {
+                              name: "Height",
+                              score: 89,
+                              tagline: "Autonomous issue tracker featuring AI triage and cross-functional boards.",
+                              tags: ["React", "Node.js", "Tailwind", "Python"]
+                          }
+                      ]}
+                  />
+              </div>
+
+              <!-- React Islands -->
+              <div>
+                  <h3 style="margin-bottom: var(--space-3)">05 · React Interactive Islands (React-Bits)</h3>
+                  <div class="card-grid" data-cols="3">
+                      <SpotlightCard client:visible className="card" spotlightColor="rgba(32, 197, 181, 0.18)">
+                          <span class="field-hint">SpotlightCard</span>
+                          <h4 style="margin: var(--space-2) 0 var(--space-1);">Dynamic Cursor Lattice</h4>
+                          <p class="card-tagline">Tracks cursor coordinates to cast an ambient radial turquoise glow on hover.</p>
+                      </SpotlightCard>
+                      <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+                          <span class="field-hint">CountUp Animation</span>
+                          <div style="font-family: var(--font-mono); font-size: var(--text-3xl); font-weight: 700; color: var(--color-accent); margin-top: var(--space-2);">
+                              <CountUp client:visible to={99.98} decimals={2} suffix="%" />
+                          </div>
+                          <span class="stat-tile-sub">Audit Engine Uptime SLA</span>
+                      </div>
+                      <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+                          <span class="field-hint">SplitReveal</span>
+                          <div style="margin-top: var(--space-2);">
+                              <SplitReveal client:visible text="Architecture reveals what marketing conceals." as="p" className="eyebrow-mono" />
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+  </article>
  </Layout>
 
 <script>
@@ -794,7 +1234,11 @@ return Astro.redirect('/', 302);
  chips.forEach(chip => {
  chip.addEventListener('click', () => {
  const isSelected = chip.getAttribute('data-selected') === 'true';
- chip.setAttribute('data-selected', (!isSelected).toString());
+ const next = !isSelected;
+ chip.setAttribute('data-selected', next.toString());
+ if (chip.hasAttribute('aria-pressed')) {
+ chip.setAttribute('aria-pressed', next.toString());
+ }
  });
  });
 

@@ -1,0 +1,42 @@
+---
+/* /verified — every verified profile in one directory. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { getFlatSites } from '../../lib/content';
+
+const title = 'Verified profiles | WhyKnot';
+const description = 'Every website with proven domain ownership. Verified means controlled by its owner: nothing more, nothing less.';
+
+const sites = (await getFlatSites()).filter((site) => site.verified);
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Verified' }]} />
+        <SectionHeader
+            eyebrow="Trust"
+            title="Verified profiles"
+            description={description}
+        />
+        {sites.length > 0 ? (
+            <div class="card-grid" data-cols="3">
+                {sites.map((site) => <SiteCard site={site} />)}
+            </div>
+        ) : (
+            <EmptyState
+                title="No verified profiles yet"
+                body="Verification opens with maker accounts. This directory fills as owners prove control."
+                actionHref="/verify"
+                actionLabel="How verification works"
+                note="trust takes time; we tie it tight."
+                punSeed="verified-empty"
+            />
+        )}
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Domain verification is not revenue verification. <a href="/legal/methodology">How verification works</a>
+        </p>
+    </div>
+</Layout>

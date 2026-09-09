@@ -1,0 +1,136 @@
+---
+/* /launches/[slug] — one launch: story, maker, Screener evidence, backing,
+   discussion. Comments open with community accounts; until then the thread
+   states its state honestly instead of faking activity. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import BoostButton from '../../components/BoostButton.astro';
+import Avatar from '../../components/Avatar.astro';
+import VerifyBadge from '../../components/VerifyBadge.astro';
+import ScoreRing from '../../components/ScoreRing.astro';
+import LaunchCard from '../../components/LaunchCard.astro';
+import MakerCard from '../../components/MakerCard.astro';
+import SponsoredTag from '../../components/SponsoredTag.astro';
+import CommentThread from '../../components/CommentThread.astro';
+import CommentForm from '../../components/CommentForm.astro';
+import TimeStamp from '../../components/TimeStamp.astro';
+import {
+    getFlatLaunches,
+    getFlatMakers,
+    getFlatSites,
+    launchesForMaker,
+    formatDate,
+} from '../../lib/content';
+
+export async function getStaticPaths() {
+    const launches = await getFlatLaunches();
+    return launches.map((launch) => ({ params: { slug: launch.slug }, props: { launch } }));
+}
+
+const { launch } = Astro.props;
+const [makers, sites, allLaunches] = await Promise.all([getFlatMakers(), getFlatSites(), getFlatLaunches()]);
+const maker = launch.makerHandle ? makers.find((entry) => entry.slug === launch.makerHandle) : undefined;
+const site = launch.siteSlug ? sites.find((entry) => entry.slug === launch.siteSlug) : undefined;
+const makerLaunches = launch.makerHandle ? launchesForMaker(allLaunches, launch.makerHandle).filter((entry) => entry.slug !== launch.slug) : [];
+const related = allLaunches.filter((entry) => entry.slug !== launch.slug && entry.slug !== makerLaunches[0]?.slug).slice(0, 2);
+
+const title = `${launch.name}: ${launch.tagline} | WhyKnot launches`;
+const description = `${launch.name} by ${launch.maker}: ${launch.tagline} Backed ${launch.votes} times with ${launch.comments} comments.`;
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs
+            trail={[
+                { label: 'Launches', href: '/launches' },
+                { label: launch.name },
+            ]}
+        />
+        <article>
+            <div class="card-meta-row">
+                <span class={`badge${launch.badge === "Editor's Pick" ? ' badge-pick' : launch.badge === 'Verified' ? ' badge-success' : launch.badge === 'Screened' ? ' badge-info' : ''}`}>
+                    {launch.badge}
+                </span>
+                {launch.sponsored && <SponsoredTag showWhy />}
+                <TimeStamp date={launch.publishedAt} />
+            </div>
+            <h1 style="margin: var(--space-3) 0 0">{launch.name}</h1>
+            <p class="profile-tagline">{launch.tagline}</p>
+            <div class="cluster" style="margin-top: var(--space-4)">
+                <BoostButton boosts={launch.votes} slug={launch.slug} />
+                <span class="card-tagline">{launch.comments} comments</span>
+                {maker && (
+                    <a href={`/maker/${maker.slug}`} class="cluster" style="gap: 0.5rem">
+                        <Avatar name={maker.name} size="sm" />
+                        <strong>{maker.name}</strong>
+                        <VerifyBadge state={maker.verified ? 'verified' : 'unverified'} />
+                    </a>
+                )}
+            </div>
+
+            <section aria-labelledby="launch-story" style="margin-top: var(--space-8)">
+                <h2 id="launch-story">Maker story</h2>
+                {(launch as unknown as { makerStory?: string }).makerStory ? (
+                    <div class="card"><p>{(launch as unknown as { makerStory?: string }).makerStory}</p></div>
+                ) : (
+                    <p class="card-tagline">The maker hasn't pinned their 80–150 word story yet. Check the discussion below.</p>
+                )}
+            </section>
+
+            {site ? (
+                <section aria-labelledby="launch-evidence" style="margin-top: var(--space-8)">
+                    <h2 id="launch-evidence">Screener evidence</h2>
+                    <div class="card">
+                        <div class="card-meta-row">
+                            <ScoreRing score={site.score} label="WhyKnot" size="sm" />
+                            <ScoreRing score={site.performance} label="Perf" size="sm" />
+                            <a class="btn btn-ghost" href={`/sites/${site.slug}`}>Full profile</a>
+                        </div>
+                        <p class="card-tagline" style="margin-top: var(--space-3)">
+                            Screened {formatDate(site.publishedAt)}. Automated fields carry source and confidence on the profile.
+                        </p>
+                    </div>
+                </section>
+            ) : (
+                <section aria-labelledby="launch-evidence" style="margin-top: var(--space-8)">
+                    <h2 id="launch-evidence">Screener evidence</h2>
+                    <p class="card-tagline">Evidence attaches during editorial review. This launch is still in the queue.</p>
+                </section>
+            )}
+
+            {maker && (
+                <section aria-labelledby="launch-maker" style="margin-top: var(--space-8)">
+                    <h2 id="launch-maker">Maker</h2>
+                    <div class="card-grid" data-cols="2">
+                        <MakerCard
+                            handle={maker.slug}
+                            name={maker.name}
+                            bio={maker.bio}
+                            products={0}
+                            launches={launchesForMaker(allLaunches, maker.slug).length}
+                            verification={maker.verified ? 'verified' : 'unverified'}
+                        />
+                    </div>
+                </section>
+            )}
+
+            <section aria-labelledby="launch-discussion" id="comments" style="margin-top: var(--space-8)">
+                <h2 id="launch-discussion">Discussion</h2>
+                <CommentThread comments={[]} />
+                <div style="margin-top: var(--space-4)">
+                    <CommentForm />
+                </div>
+            </section>
+
+            {(makerLaunches.length > 0 || related.length > 0) && (
+                <section aria-labelledby="launch-more" style="margin-top: var(--space-8)">
+                    <h2 id="launch-more">More launches</h2>
+                    <div class="card-grid" data-cols="2">
+                        {makerLaunches.map((entry) => <LaunchCard launch={entry} />)}
+                        {related.map((entry) => <LaunchCard launch={entry} />)}
+                    </div>
+                </section>
+            )}
+        </article>
+    </div>
+</Layout>

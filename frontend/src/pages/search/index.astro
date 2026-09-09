@@ -1,0 +1,132 @@
+---
+/* /search — full-text search over the built site (Pagefind, post-build index).
+   Noindex: search-result pages never enter the index. gracefully degrades in
+   dev where the index does not exist yet. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import HeroKnot from '../../components/HeroKnot.astro';
+import NewsletterSubscribe from '../../components/NewsletterSubscribe.astro';
+import { knotPun } from '../../data/knot-puns';
+
+const title = 'Search | WhyKnot';
+const description = 'Search the WhyKnot library of exceptional websites, collections, and topics.';
+const emptyNote = knotPun('search-empty');
+---
+
+<Layout title={title} description={description} noindex constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Search' }]} />
+        <SectionHeader eyebrow="Search" title="Search the library" description={description} />
+        <form class="filter-bar" role="search" data-search-form>
+            <label class="filter-label" for="site-search">Query</label>
+            <input
+                type="search"
+                id="site-search"
+                name="q"
+                placeholder="Try “portfolio”, “AI”, “Astro”…"
+                autocomplete="off"
+                data-search-input
+            />
+            <button type="submit" class="btn">Search</button>
+        </form>
+        <p class="card-tagline" aria-live="polite" data-search-status>Type to search across every page.</p>
+        <p class="hand-note" data-search-note hidden>{emptyNote}</p>
+        <div data-search-empty hidden>
+            <HeroKnot size="sm" static tone="ghost" caption={null} punSeed="search-empty" />
+            <div style="margin-top: var(--space-5)">
+                <NewsletterSubscribe variant="search-zero" />
+            </div>
+        </div>
+        <div class="leaderboard" data-search-results></div>
+        <div data-search-fallback hidden>
+            <p class="method-note">
+                The search index is generated when the site builds. If you are browsing a development preview,
+                use <a href="/discover">Discover</a> instead.
+            </p>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    async function initSearch() {
+        const form = document.querySelector('[data-search-form]');
+        const input = document.querySelector('[data-search-input]');
+        const results = document.querySelector('[data-search-results]');
+        const status = document.querySelector('[data-search-status]');
+        const note = document.querySelector('[data-search-note]');
+        const empty = document.querySelector('[data-search-empty]');
+        const fallback = document.querySelector('[data-search-fallback]');
+        if (!(form instanceof HTMLFormElement) || !(input instanceof HTMLInputElement) || !(results instanceof HTMLElement)) return;
+
+        const setEmpty = (visible) => {
+            if (note instanceof HTMLElement) note.hidden = !visible;
+            if (empty instanceof HTMLElement) empty.hidden = !visible;
+        };
+
+        let pagefind = null;
+        try {
+            // Index is generated into dist/ after Astro builds; Vite must not
+            // resolve this at build time (hence the variable + @vite-ignore).
+            const pagefindUrl = '/pagefind/pagefind.js';
+            pagefind = await import(/* @vite-ignore */ pagefindUrl);
+        } catch {
+            if (fallback instanceof HTMLElement) fallback.hidden = false;
+            if (status) status.textContent = 'Search is unavailable in this preview.';
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const preset = params.get('q') ?? '';
+        if (preset) input.value = preset;
+
+        let timer = 0;
+        const run = async () => {
+            const query = input.value.trim();
+            if (!query) {
+                results.innerHTML = '';
+                setEmpty(false);
+                if (status) status.textContent = 'Type to search across every page.';
+                return;
+            }
+            const answer = await pagefind.search(query);
+            const items = await Promise.all(answer.results.slice(0, 12).map((item) => item.data()));
+            results.innerHTML = '';
+            setEmpty(items.length === 0);
+            if (status) status.textContent = `${answer.results.length} result${answer.results.length === 1 ? '' : 's'} for “${query}”.`;
+            for (const item of items) {
+                const row = document.createElement('a');
+                row.className = 'leaderboard-row';
+                row.href = item.url;
+                const main = document.createElement('span');
+                main.className = 'leaderboard-main';
+                const name = document.createElement('strong');
+                name.textContent = item.meta?.title ?? item.url;
+                const excerpt = document.createElement('span');
+                excerpt.textContent = item.excerpt ?? '';
+                main.appendChild(name);
+                main.appendChild(excerpt);
+                row.appendChild(main);
+                results.appendChild(row);
+            }
+            if (items.length === 0 && status) status.textContent = `No matches for “${query}”. Try fewer words: even the best knots slip.`;
+        };
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            void run();
+        });
+        input.addEventListener('input', () => {
+            window.clearTimeout(timer);
+            timer = window.setTimeout(() => void run(), 220);
+        });
+        if (preset) void run();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => void initSearch());
+    } else {
+        void initSearch();
+    }
+    document.addEventListener('astro:page-load', () => void initSearch());
+</script>

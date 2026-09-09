@@ -3,6 +3,7 @@
 
 /* Base styles first */
 @import './layout.css';
+@import './primitives.css';
 
 /* Component-specific styles */
 @import './navigation.css';
@@ -10,8 +11,11 @@
 @import './forms.css';
 @import './blog.css';
 @import './pages.css';
+@import './hero.css';
 @import './design-system.css';
 @import './cookie-consent.css';
+@import './screener.css';
+@import './waitlist.css';
 
 /* Note: This file is imported after tokens.css in the main layout
    to ensure design system tokens are available to all components */

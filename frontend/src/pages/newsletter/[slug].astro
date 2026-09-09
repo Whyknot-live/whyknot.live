@@ -1,0 +1,194 @@
+---
+/* /newsletter/[slug] — one 5-3-1 issue. Static paths from the backfilled
+   seed (src/content/newsletter.json); NewsArticle schema + canonical. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import TimeStamp from '../../components/TimeStamp.astro';
+import NewsletterSubscribe from '../../components/NewsletterSubscribe.astro';
+import newsletterData from '../../content/newsletter.json';
+
+interface IssueEntry {
+    name: string;
+    tagline: string;
+    url: string;
+    slug?: string;
+    score?: number;
+    votes?: number;
+    sponsored?: boolean;
+    blurb?: string;
+}
+
+interface Issue {
+    number: number;
+    slug: string;
+    subject: string;
+    date: string;
+    intro?: string;
+    rising: IssueEntry[];
+    deals: IssueEntry[];
+    underdog: IssueEntry;
+    sponsor?: { name: string; tagline: string; url: string; sponsored: boolean };
+}
+
+const allIssues = ((newsletterData as { issues: Issue[] }).issues ?? []).slice().sort((a, b) => a.number - b.number);
+
+export async function getStaticPaths() {
+    const data = (await import('../../content/newsletter.json')).default as { issues: Issue[] };
+    return (data.issues ?? []).map((issue) => ({ params: { slug: issue.slug }, props: { issue } }));
+}
+
+const { issue } = Astro.props as { issue: Issue };
+const selfUrl = `https://www.whyknot.live/newsletter/${issue.slug}`;
+const title = `${issue.subject} | Issue #${issue.number} · WhyKnot 5-3-1`;
+const description = issue.intro ?? `5 fastest-rising, 3 editor deals, 1 underdog. Issue #${issue.number} from ${issue.date}.`;
+const sponsor = issue.sponsor ?? {
+    name: 'Your product in front of makers',
+    tagline: 'The 5-3-1 roundup reaches builders every Sunday. Claim this slot.',
+    url: 'https://www.whyknot.live/pricing',
+    sponsored: false,
+};
+const others = allIssues.filter((entry) => entry.slug !== issue.slug).slice(-2).reverse();
+
+const schema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+        {
+            '@type': 'NewsArticle',
+            headline: issue.subject,
+            description,
+            datePublished: issue.date,
+            mainEntityOfPage: selfUrl,
+            author: { '@type': 'Organization', name: 'WhyKnot', url: 'https://www.whyknot.live' },
+            publisher: {
+                '@type': 'Organization',
+                name: 'WhyKnot',
+                url: 'https://www.whyknot.live',
+                logo: { '@type': 'ImageObject', url: 'https://www.whyknot.live/images/logo-y-knot.png' },
+            },
+        },
+        {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.whyknot.live' },
+                { '@type': 'ListItem', position: 2, name: 'Newsletter', item: 'https://www.whyknot.live/newsletter' },
+                { '@type': 'ListItem', position: 3, name: `Issue #${issue.number}`, item: selfUrl },
+            ],
+        },
+    ],
+};
+---
+
+<Layout
+    title={title}
+    description={description}
+    type="article"
+    publishedTime={issue.date}
+    author="WhyKnot Team"
+    canonical={selfUrl}
+    schema={schema}
+    constrainContent
+>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Newsletter', href: '/newsletter' }, { label: `Issue #${issue.number}` }]} />
+        <article>
+            <div class="card-meta-row">
+                <span class="eyebrow">Issue #{issue.number}</span>
+                <span class="meta-sep" aria-hidden="true">·</span>
+                <TimeStamp date={new Date(issue.date)} />
+                <a class="btn btn-ghost" href="/newsletter">Archive</a>
+            </div>
+            <h1 style="margin: var(--space-3) 0 0">{issue.subject}</h1>
+            {issue.intro && <p class="profile-tagline">{issue.intro}</p>}
+            <p class="method-note">
+                5 fastest-rising · 3 editor deals · 1 underdog. Money never buys a score:
+                <a href="/legal/methodology">how ranking works</a>.
+            </p>
+
+            <section aria-labelledby="issue-rising" style="margin-top: var(--space-8)">
+                <h2 id="issue-rising">5 fastest-rising</h2>
+                <div class="leaderboard">
+                    {issue.rising.map((entry, i) => (
+                        <a class="leaderboard-row" href={entry.url}>
+                            <span class="leaderboard-main">
+                                <strong>{i + 1}. {entry.name}</strong>
+                                <span>{entry.tagline}</span>
+                                {entry.blurb && <span class="card-tagline">{entry.blurb}</span>}
+                            </span>
+                            {typeof entry.score === 'number' && <span class="card-tagline">Score {entry.score}</span>}
+                        </a>
+                    ))}
+                </div>
+            </section>
+
+            <section aria-labelledby="issue-sponsor" style="margin-top: var(--space-8)">
+                <h2 id="issue-sponsor">Sponsored</h2>
+                <div class="card">
+                    <div class="card-meta-row">
+                        <span class="sponsored-tag">Sponsored</span>
+                    </div>
+                    <h3 style="margin: var(--space-2) 0 0">
+                        <a href={sponsor.url}>{sponsor.name}</a>
+                    </h3>
+                    <p class="card-tagline">{sponsor.tagline}</p>
+                    <div class="cluster" style="margin-top: var(--space-3)">
+                        <a class="btn" href={sponsor.url}>Learn more</a>
+                        <a class="btn btn-ghost" href="/pricing">Sponsor a slot</a>
+                    </div>
+                </div>
+            </section>
+
+            <section aria-labelledby="issue-deals" style="margin-top: var(--space-8)">
+                <h2 id="issue-deals">3 editor deals</h2>
+                <p class="card-tagline">Sponsored deals are always labeled Sponsored.</p>
+                <div class="card-grid" data-cols="3">
+                    {issue.deals.map((entry) => (
+                        <a class="card spot-card" href={entry.url}>
+                            <div class="card-meta-row">
+                                {entry.sponsored && <span class="sponsored-tag">Sponsored</span>}
+                                {typeof entry.score === 'number' && <span class="card-tagline">Score {entry.score}</span>}
+                            </div>
+                            <h3 style="margin: var(--space-2) 0 0">{entry.name}</h3>
+                            <p class="card-tagline">{entry.tagline}</p>
+                            {entry.blurb && <p class="card-tagline">{entry.blurb}</p>}
+                        </a>
+                    ))}
+                </div>
+            </section>
+
+            <section aria-labelledby="issue-underdog" style="margin-top: var(--space-8)">
+                <h2 id="issue-underdog">1 underdog</h2>
+                <p class="card-tagline">Low votes, high score: our editorial voice.</p>
+                <div class="callout">
+                    <h3 style="margin: 0">
+                        <a href={issue.underdog.url}>{issue.underdog.name}</a>
+                    </h3>
+                    <p class="callout-description">{issue.underdog.tagline}</p>
+                    {issue.underdog.blurb && <p class="card-tagline">{issue.underdog.blurb}</p>}
+                </div>
+            </section>
+
+            <section aria-labelledby="issue-subscribe" style="margin-top: var(--space-8)">
+                <h2 id="issue-subscribe">Get next Sunday's issue</h2>
+                <NewsletterSubscribe variant="footer" />
+            </section>
+
+            {others.length > 0 && (
+                <section aria-labelledby="issue-more" style="margin-top: var(--space-8)">
+                    <h2 id="issue-more">More issues</h2>
+                    <div class="card-grid" data-cols="2">
+                        {others.map((entry) => (
+                            <a class="card" href={`/newsletter/${entry.slug}`}>
+                                <div class="card-meta-row">
+                                    <span class="eyebrow">Issue #{entry.number}</span>
+                                    <span class="meta-sep" aria-hidden="true">·</span>
+                                    <time datetime={entry.date}>{entry.date}</time>
+                                </div>
+                                <h3 style="margin: var(--space-2) 0 0">{entry.subject}</h3>
+                            </a>
+                        ))}
+                    </div>
+                </section>
+            )}
+        </article>
+    </div>
+</Layout>

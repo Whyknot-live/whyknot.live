@@ -1,0 +1,246 @@
+---
+/* HeroKnot: the WhyKnot mark as a living torus knot.
+   The knot is the hero of this site, not a side decoration: this one
+   component serves every surface via props:
+     <HeroKnot />                              hero (WebGL, interactive)
+     <HeroKnot size="sm" static note="…" />    empty / error / 404 states
+     <HeroKnot size="xs" static caption={null} /> section eyebrows, footer
+   Poster-first: a hand-tied SVG renders immediately (and stays under
+   reduced motion, data-saver, or no WebGL). The canvas mounts lazily on
+   view via dynamic import, so three.js never touches initial load. */
+import { knotPun } from "../data/knot-puns";
+
+export interface Props {
+    size?: "xs" | "sm" | "md" | "lg" | "hero";
+    tone?: "default" | "ghost" | "ink";
+    caption?: string | null;
+    note?: string;
+    pun?: string;
+    punSeed?: string;
+    static?: boolean;
+    interactive?: boolean;
+    label?: string;
+}
+
+const {
+    size = "hero",
+    tone = "default",
+    caption = size === "hero" ? "torus knot (p 2, q 3) · live render on view" : null,
+    note,
+    pun,
+    punSeed = "whyknot",
+    static: isStatic = size !== "hero",
+    interactive = size === "hero",
+    label = "A hand-tied torus knot, the WhyKnot mark",
+} = Astro.props;
+
+const egg = pun ?? knotPun(punSeed);
+---
+
+<figure
+    class="hero-knot knot"
+    data-knot
+    data-size={size}
+    data-tone={tone}
+    data-static={isStatic ? "true" : undefined}
+    data-webgl={!isStatic ? "true" : undefined}
+    role={interactive ? "button" : undefined}
+    tabindex={interactive ? "0" : undefined}
+    aria-label={interactive ? `${label}. Activate to pull the string.` : label}
+    title={interactive ? "Pull gently to untangle" : undefined}
+>
+    <svg class="knot-poster" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+        <path
+            class="knot-thread knot-thread--shadow"
+            d="M60 140 C 40 110 50 70 85 60 C 120 50 150 70 148 100 C 146 128 118 138 104 128 C 92 120 96 104 110 104 C 130 104 150 120 158 142"
+            fill="none"
+        />
+        <path
+            class="knot-thread"
+            d="M60 140 C 40 110 50 70 85 60 C 120 50 150 70 148 100 C 146 128 118 138 104 128 C 92 120 96 104 110 104 C 130 104 150 120 158 142"
+            fill="none"
+        />
+        <circle class="knot-end" cx="158" cy="142" r="5" />
+    </svg>
+    <figcaption class="knot-meta">
+        {caption && <span class="knot-caption" data-scramble>{caption}</span>}
+        <span class="knot-egg hand-note" data-knot-egg hidden>{egg}</span>
+    </figcaption>
+    {note && <span class="hand-note knot-note">{note}</span>}
+</figure>
+
+<script>
+    async function initKnots() {
+        document.querySelectorAll("[data-knot]").forEach((mount) => {
+            if (!(mount instanceof HTMLElement)) return;
+            if (!mount.hasAttribute("data-knot-done")) {
+                mount.setAttribute("data-knot-done", "true");
+                bindEgg(mount);
+                if (mount.hasAttribute("data-webgl")) void mountWebGL(mount);
+            }
+        });
+    }
+
+    /* Pull-the-string egg: third nudge reveals the hidden note. */
+    function bindEgg(mount: HTMLElement) {
+        if (mount.hasAttribute("data-egg-bound")) return;
+        mount.setAttribute("data-egg-bound", "true");
+        if (mount.getAttribute("role") !== "button") return;
+        let pulls = 0;
+        const pull = () => {
+            pulls += 1;
+            const egg = mount.querySelector("[data-knot-egg]");
+            if (egg instanceof HTMLElement && pulls >= 3) {
+                egg.hidden = false;
+                mount.setAttribute("data-untangled", "true");
+                console.log('%cYou pulled the thread three times. The knot yields.', 'color: #20c5b5; font-family: monospace;');
+                const win = window as unknown as { WhyKnotToast?: { show: (msg: string, tone?: string) => void } };
+                win.WhyKnotToast?.show('The knot yields. A hidden thread untangled.', 'success');
+            }
+            if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                mount.animate(
+                    [
+                        { transform: "rotate(0deg)" },
+                        { transform: "rotate(1.2deg)" },
+                        { transform: "rotate(-1.2deg)" },
+                        { transform: "rotate(0deg)" },
+                    ],
+                    { duration: 320 },
+                ).finished?.catch(() => {});
+            }
+        };
+        mount.addEventListener("click", pull);
+        mount.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                pull();
+            }
+        });
+    }
+
+    async function mountWebGL(mount) {
+        // Poster stays for reduced motion, data-saver, or WebGL absence.
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const connection = navigator.connection;
+        if (connection && connection.saveData === true) return;
+        if (!("WebGLRenderingContext" in window)) return;
+        // At most two live knots per page — the rest stay hand-tied posters.
+        const live = document.querySelectorAll('[data-knot="live"]').length;
+        if (live >= 2) return;
+
+        let started = false;
+        const start = async () => {
+            if (started) return;
+            started = true;
+            let THREE = null;
+            try {
+                THREE = await import("three");
+            } catch {
+                return; // network hiccup: poster remains, page unaffected
+            }
+            if (!THREE) return;
+
+            const canvas = document.createElement("canvas");
+            canvas.setAttribute("aria-hidden", "true");
+            mount.appendChild(canvas);
+            mount.setAttribute("data-knot", "live");
+
+            let renderer = null;
+            try {
+                renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            } catch {
+                canvas.remove();
+                return;
+            }
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+            camera.position.set(0, 0, 6.4);
+
+            const knot = new THREE.LineSegments(
+                new THREE.WireframeGeometry(new THREE.TorusKnotGeometry(1.35, 0.38, 260, 36)),
+                new THREE.LineBasicMaterial({ color: 0x2dd4bf, transparent: true, opacity: 0.85 }),
+            );
+            const dust = new THREE.Points(
+                new THREE.TorusKnotGeometry(1.35, 0.38, 120, 18),
+                new THREE.PointsMaterial({ color: 0x4dafe6, size: 0.035, transparent: true, opacity: 0.7 }),
+            );
+            scene.add(knot);
+            scene.add(dust);
+
+            const finePointer = window.matchMedia("(pointer: fine)").matches;
+            let targetX = 0;
+            let targetY = 0;
+            if (finePointer) {
+                mount.addEventListener("pointermove", (event) => {
+                    const rect = mount.getBoundingClientRect();
+                    targetX = ((event.clientX - rect.left) / rect.width - 0.5) * 0.6;
+                    targetY = ((event.clientY - rect.top) / rect.height - 0.5) * 0.6;
+                });
+                mount.addEventListener("pointerleave", () => {
+                    targetX = 0;
+                    targetY = 0;
+                });
+            }
+
+            const resize = () => {
+                const width = mount.clientWidth || 1;
+                const height = mount.clientHeight || 1;
+                renderer.setSize(width, height, false);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            };
+            resize();
+            const resizeObserver = new ResizeObserver(resize);
+            resizeObserver.observe(mount);
+
+            let visible = true;
+            const visibility = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    visible = entry.isIntersecting;
+                });
+            });
+            visibility.observe(mount);
+
+            let currentX = 0;
+            let currentY = 0;
+            renderer.setAnimationLoop(() => {
+                if (!visible || document.hidden) return;
+                knot.rotation.x += 0.0016;
+                knot.rotation.y += 0.0022;
+                dust.rotation.x -= 0.0009;
+                dust.rotation.y -= 0.0013;
+                currentX += (targetX - currentX) * 0.04;
+                currentY += (targetY - currentY) * 0.04;
+                scene.rotation.y = currentX;
+                scene.rotation.x = currentY;
+                renderer.render(scene, camera);
+            });
+        };
+
+        if ("IntersectionObserver" in window) {
+            const io = new IntersectionObserver(
+                (entries, observer) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            observer.disconnect();
+                            void start();
+                        }
+                    });
+                },
+                { rootMargin: "240px" },
+            );
+            io.observe(mount);
+        } else {
+            void start();
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => void initKnots());
+    } else {
+        void initKnots();
+    }
+    document.addEventListener("astro:page-load", () => void initKnots());
+</script>

@@ -1,0 +1,56 @@
+---
+/* SiteCard — discovery grid unit. Screenshot-led, score-backed, trust-labeled.
+   Links to /sites/[slug] (Phase 2 route). */
+import ScoreRing from './ScoreRing.astro';
+import VerifyBadge from './VerifyBadge.astro';
+import TechBadge from './TechBadge.astro';
+
+export interface SiteCardData {
+    slug: string;
+    name: string;
+    url: string;
+    tagline: string;
+    type: string;
+    category: string;
+    accent: 'coral' | 'blue' | 'green' | 'yellow';
+    score: number;
+    performance: number;
+    verified: boolean;
+    stack: string[];
+    publishedAt: Date;
+}
+
+export interface Props {
+    site: SiteCardData;
+}
+
+const { site } = Astro.props;
+const mono = site.name.trim().charAt(0).toUpperCase() || 'W';
+const date = site.publishedAt instanceof Date ? site.publishedAt.toISOString().slice(0, 10) : String(site.publishedAt);
+---
+
+<article class="card site-card spot-card">
+    <a class="site-card-link" href={`/sites/${site.slug}`} aria-label={`${site.name}: ${site.tagline}`}>
+        <div class="site-shot" data-accent={site.accent} role="img" aria-label={`Preview placeholder for ${site.name}`}>
+            <span class="shot-mono" aria-hidden="true">{mono}</span>
+        </div>
+        <div class="card-meta-row">
+            <span>{site.type}</span>
+            <span class="meta-sep" aria-hidden="true">·</span>
+            <span>{site.category}</span>
+            <span class="meta-sep" aria-hidden="true">·</span>
+            <VerifyBadge state={site.verified ? 'verified' : 'unverified'} />
+        </div>
+        <h3>{site.name}</h3>
+        <p class="card-tagline">{site.tagline}</p>
+        {site.stack.length > 0 && (
+            <div class="card-meta-row" aria-label={`Built with ${site.stack.join(', ')}`}>
+                {site.stack.slice(0, 3).map((tech) => <TechBadge name={tech} />)}
+            </div>
+        )}
+        <div class="card-foot">
+            <ScoreRing score={site.score} label="WhyKnot score" size="sm" />
+            <span class="perf-note">Perf <strong>{site.performance}</strong> · {date}</span>
+        </div>
+    </a>
+</article>

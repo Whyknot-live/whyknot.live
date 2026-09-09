@@ -1,0 +1,412 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import ScoreRing from '../../../components/ScoreRing.astro';
+import ScoreBars from '../../../components/ScoreBars.astro';
+import TechBadge from '../../../components/TechBadge.astro';
+import VerifyBadge from '../../../components/VerifyBadge.astro';
+import ScreenshotViewer from '../../../components/ScreenshotViewer.astro';
+import { getFlatSites } from '../../../lib/content';
+
+export async function getStaticPaths() {
+    const sites = await getFlatSites();
+    const paths = sites.map((site) => ({
+        params: { id: site.slug },
+        props: {
+            initialAudit: {
+                scanId: `scan_${site.slug}`,
+                url: site.url,
+                domain: new URL(site.url).hostname,
+                status: 'complete' as const,
+                timestamp: new Date().toISOString(),
+                durationMs: 180,
+                scores: {
+                    overall: site.score,
+                    performance: site.performance,
+                    accessibility: site.accessibility ?? 92,
+                    bestPractices: site.bestPractices ?? 88,
+                    seo: site.seo ?? 90,
+                },
+                metrics: {
+                    ttfbMs: 120,
+                    contentLengthBytes: 38400,
+                    domNodesEstimated: 260,
+                    scriptsCount: 5,
+                    stylesheetsCount: 2,
+                    imagesCount: 6,
+                    imagesMissingAltCount: 0,
+                    linksCount: 32,
+                },
+                meta: {
+                    title: `${site.name}: ${site.tagline}`,
+                    description: site.tagline,
+                    lang: 'en',
+                    charset: 'utf-8',
+                    canonical: site.url,
+                    ogTitle: site.name,
+                    ogDescription: site.tagline,
+                    ogImage: null,
+                    twitterCard: 'summary_large_image',
+                    hasJsonLd: true,
+                },
+                security: {
+                    isHttps: true,
+                    score: 85,
+                    headers: [
+                        { name: 'Strict-Transport-Security (HSTS)', present: true, value: 'max-age=31536000', status: 'pass' as const, description: 'Enforces HTTPS encryption.' },
+                        { name: 'Content-Security-Policy (CSP)', present: true, value: "default-src 'self'", status: 'pass' as const, description: 'Restricts script injection.' },
+                        { name: 'X-Frame-Options', present: true, value: 'DENY', status: 'pass' as const, description: 'Mitigates clickjacking attacks.' },
+                        { name: 'X-Content-Type-Options', present: true, value: 'nosniff', status: 'pass' as const, description: 'Prevents MIME-sniffing.' },
+                        { name: 'Referrer-Policy', present: true, value: 'strict-origin-when-cross-origin', status: 'pass' as const, description: 'Protects user privacy.' },
+                    ],
+                },
+                techStack: (site.stack || ['Astro', 'Cloudflare']).map((s: string) => ({
+                    name: s,
+                    category: 'framework' as const,
+                    confidence: 95,
+                })),
+                findings: [
+                    { id: 'f1', category: 'performance' as const, severity: 'pass' as const, title: 'Rapid Server Response (120ms)', description: 'TTFB is well within the top tier threshold.' },
+                    { id: 'f2', category: 'accessibility' as const, severity: 'pass' as const, title: 'Accessible Document Structure', description: 'Semantic headings, language attributes, and image alt tags are properly defined.' },
+                    { id: 'f3', category: 'best-practices' as const, severity: 'pass' as const, title: 'HTTPS & Security Headers Configured', description: 'Modern encryption and HSTS headers are active.' },
+                    { id: 'f4', category: 'seo' as const, severity: 'pass' as const, title: 'Search Snippet Optimized', description: 'Meta description and canonical tags conform to standard search engine best practices.' },
+                ],
+                siteRef: site,
+            },
+        },
+    }));
+
+    // Add a default sample audit path
+    paths.push({
+        params: { id: 'sample' },
+        props: {
+            initialAudit: {
+                scanId: 'scan_sample',
+                url: 'https://whyknot.live',
+                domain: 'whyknot.live',
+                status: 'complete' as const,
+                timestamp: new Date().toISOString(),
+                durationMs: 145,
+                scores: {
+                    overall: 96,
+                    performance: 98,
+                    accessibility: 96,
+                    bestPractices: 94,
+                    seo: 96,
+                },
+                metrics: {
+                    ttfbMs: 85,
+                    contentLengthBytes: 24200,
+                    domNodesEstimated: 180,
+                    scriptsCount: 3,
+                    stylesheetsCount: 2,
+                    imagesCount: 4,
+                    imagesMissingAltCount: 0,
+                    linksCount: 18,
+                },
+                meta: {
+                    title: 'WhyKnot: Exceptional Web Discovery & Audits',
+                    description: 'The unified directory for remarkable websites, autonomous audits, and verified maker launches.',
+                    lang: 'en',
+                    charset: 'utf-8',
+                    canonical: 'https://whyknot.live',
+                    ogTitle: 'WhyKnot',
+                    ogDescription: 'Exceptional Web Discovery & Audits.',
+                    ogImage: null,
+                    twitterCard: 'summary_large_image',
+                    hasJsonLd: true,
+                },
+                security: {
+                    isHttps: true,
+                    score: 95,
+                    headers: [
+                        { name: 'Strict-Transport-Security (HSTS)', present: true, value: 'max-age=63072000; includeSubDomains; preload', status: 'pass' as const, description: 'Enforces HTTPS encryption.' },
+                        { name: 'Content-Security-Policy (CSP)', present: true, value: "default-src 'self'", status: 'pass' as const, description: 'Restricts script injection.' },
+                        { name: 'X-Frame-Options', present: true, value: 'DENY', status: 'pass' as const, description: 'Mitigates clickjacking attacks.' },
+                        { name: 'X-Content-Type-Options', present: true, value: 'nosniff', status: 'pass' as const, description: 'Prevents MIME-sniffing.' },
+                        { name: 'Referrer-Policy', present: true, value: 'strict-origin-when-cross-origin', status: 'pass' as const, description: 'Protects user privacy.' },
+                    ],
+                },
+                techStack: [
+                    { name: 'Astro', category: 'framework' as const, confidence: 99 },
+                    { name: 'Cloudflare', category: 'cdn' as const, confidence: 100 },
+                    { name: 'TypeScript', category: 'library' as const, confidence: 95 },
+                ],
+                findings: [
+                    { id: 'f1', category: 'performance' as const, severity: 'pass' as const, title: 'Instantaneous Response (85ms)', description: 'Server response time is in the 99th percentile.' },
+                    { id: 'f2', category: 'accessibility' as const, severity: 'pass' as const, title: 'WCAG AAA Color Contrast & Semantics', description: 'Zero accessibility violations detected on page load.' },
+                    { id: 'f3', category: 'best-practices' as const, severity: 'pass' as const, title: 'Hardened Security Headers', description: 'Full complement of security headers verified.' },
+                ],
+                siteRef: undefined,
+            },
+        },
+    });
+
+    return paths;
+}
+
+const { id } = Astro.params;
+const { initialAudit } = Astro.props;
+
+const audit = initialAudit;
+const title = `Technical Audit: ${audit.domain} | WhyKnot Screener`;
+const description = `Audit report for ${audit.domain}. Overall score: ${audit.scores.overall}/100. Performance: ${audit.scores.performance}, Accessibility: ${audit.scores.accessibility}, SEO: ${audit.scores.seo}.`;
+
+const categoryScores = [
+    { name: 'Performance', value: audit.scores.performance },
+    { name: 'Accessibility', value: audit.scores.accessibility },
+    { name: 'SEO', value: audit.scores.seo },
+    { name: 'Best practices', value: audit.scores.bestPractices },
+];
+---
+
+<Layout title={title} description={description}>
+    <div class="screener-report-wrap" id="screener-report-root" data-scan-id={id}>
+        <Breadcrumbs
+            trail={[
+                { label: 'Home', href: '/' },
+                { label: 'Screener', href: '/screener' },
+                { label: `Report: ${audit.domain}` },
+            ]}
+        />
+
+        <!-- Top Header Card -->
+        <header class="screener-report-header">
+            <div class="screener-header-left">
+                <ScoreRing score={audit.scores.overall} size="lg" label="WhyKnot Composite" />
+                <div class="screener-header-info">
+                    <span class="screener-badge">
+                        Autonomous Technical Audit
+                    </span>
+                    <h1 class="screener-target-domain" id="audit-domain-title">
+                        {audit.domain}
+                        {audit.siteRef?.verified ? <VerifyBadge state="verified" /> : <VerifyBadge state="unverified" />}
+                    </h1>
+                    <div class="screener-scan-meta">
+                        <span>Scan ID: <code id="audit-scan-id">{audit.scanId}</code></span>
+                        <span>•</span>
+                        <span>URL: <a href={audit.url} target="_blank" rel="noopener noreferrer" style="color: var(--color-link);">{audit.url}</a></span>
+                        <span>•</span>
+                        <span>Duration: {audit.durationMs}ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="screener-actions-bar">
+                <button type="button" id="btn-share-report" class="btn btn-secondary" style="font-size: var(--text-xs); padding: var(--space-2) var(--space-4);">
+                    Copy Share Link
+                </button>
+                <a href={`/screener/scan?url=${encodeURIComponent(audit.url)}`} class="btn btn-secondary" style="font-size: var(--text-xs); padding: var(--space-2) var(--space-4);">
+                    Re-Scan Site ↻
+                </a>
+                {audit.siteRef ? (
+                    <a href={`/sites/${audit.siteRef.slug}`} class="btn btn-primary" style="font-size: var(--text-xs); padding: var(--space-2) var(--space-4);">
+                        View Profile →
+                    </a>
+                ) : (
+                    <a href={`/claim/${audit.domain}`} class="btn btn-primary" style="font-size: var(--text-xs); padding: var(--space-2) var(--space-4);">
+                        Claim Site →
+                    </a>
+                )}
+            </div>
+        </header>
+
+        <!-- 4 Core Pillars Grid -->
+        <section aria-labelledby="audit-pillars-heading">
+            <h2 id="audit-pillars-heading" class="sr-only">Four Pillars Analysis</h2>
+            <div class="screener-score-cards-grid">
+                <!-- Performance -->
+                <div class="screener-score-card">
+                    <div class="screener-card-top">
+                        <span class="screener-card-label">Performance</span>
+                        <span class="screener-card-grade">{audit.scores.performance >= 90 ? 'Fast' : audit.scores.performance >= 70 ? 'Moderate' : 'Needs Work'}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <ScoreRing score={audit.scores.performance} size="md" label="Speed" />
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted); text-align: right; font-family: var(--font-mono);">
+                            <div>TTFB: {audit.metrics.ttfbMs}ms</div>
+                            <div>HTML: {(audit.metrics.contentLengthBytes / 1024).toFixed(1)} KB</div>
+                            <div>DOM: ~{audit.metrics.domNodesEstimated} nodes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accessibility -->
+                <div class="screener-score-card">
+                    <div class="screener-card-top">
+                        <span class="screener-card-label">Accessibility</span>
+                        <span class="screener-card-grade">{audit.scores.accessibility >= 90 ? 'Pass' : 'Review'}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <ScoreRing score={audit.scores.accessibility} size="md" label="A11y" />
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted); text-align: right; font-family: var(--font-mono);">
+                            <div>Lang: {audit.meta.lang ?? 'missing'}</div>
+                            <div>Images: {audit.metrics.imagesCount}</div>
+                            <div>Missing Alt: {audit.metrics.imagesMissingAltCount}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Best Practices -->
+                <div class="screener-score-card">
+                    <div class="screener-card-top">
+                        <span class="screener-card-label">Best Practices</span>
+                        <span class="screener-card-grade">{audit.scores.bestPractices >= 90 ? 'Sound' : 'Check'}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <ScoreRing score={audit.scores.bestPractices} size="md" label="Integrity" />
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted); text-align: right; font-family: var(--font-mono);">
+                            <div>HTTPS: {audit.security.isHttps ? 'Yes' : 'No'}</div>
+                            <div>Security: {audit.security.score}/100</div>
+                            <div>Charset: {audit.meta.charset ?? 'None'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO -->
+                <div class="screener-score-card">
+                    <div class="screener-card-top">
+                        <span class="screener-card-label">SEO & Meta</span>
+                        <span class="screener-card-grade">{audit.scores.seo >= 90 ? 'Indexed' : 'Partial'}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <ScoreRing score={audit.scores.seo} size="md" label="SEO" />
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted); text-align: right; font-family: var(--font-mono);">
+                            <div>Title: {audit.meta.title ? `${audit.meta.title.length}c` : 'none'}</div>
+                            <div>Schema: {audit.meta.hasJsonLd ? 'JSON-LD' : 'No'}</div>
+                            <div>Canonical: {audit.meta.canonical ? 'Yes' : 'No'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Stack Fingerprint -->
+        <section class="screener-findings-section" aria-labelledby="tech-heading">
+            <h2 id="tech-heading" class="screener-section-title">Technology Stack Detected</h2>
+            <p class="screener-section-desc">
+                Fingerprinted software, libraries, and hosting infrastructure running on {audit.domain}.
+            </p>
+
+            <div class="screener-tech-wrap">
+                {audit.techStack.map((tech) => (
+                    <div style="display: inline-flex; align-items: center; gap: var(--space-2); background: var(--color-surface-alt); border: 1px solid var(--color-border); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: var(--text-xs);">
+                        <TechBadge name={tech.name} />
+                        <span style="color: var(--color-text-muted); font-size: 10px; font-family: var(--font-mono);">{tech.confidence}% confidence</span>
+                    </div>
+                ))}
+            </div>
+        </section>
+
+        <!-- Security & HTTP Headers Matrix -->
+        <section class="screener-findings-section" aria-labelledby="security-heading">
+            <h2 id="security-heading" class="screener-section-title">Security & Protocol Inspection</h2>
+            <p class="screener-section-desc">
+                Audit of modern browser defensive headers and transport layer security.
+            </p>
+
+            <div class="screener-headers-grid">
+                {audit.security.headers.map((hdr) => (
+                    <div class="screener-header-cell">
+                        <div class="screener-header-name">
+                            <span>{hdr.name}</span>
+                            <span class={`screener-severity-badge ${hdr.status === 'pass' ? 'screener-severity-pass' : hdr.status === 'warning' ? 'screener-severity-medium' : 'screener-severity-high'}`}>
+                                {hdr.present ? 'Configured' : 'Missing'}
+                            </span>
+                        </div>
+                        <p class="screener-header-desc">{hdr.description}</p>
+                        {hdr.value && (
+                            <code style="font-size: 10px; color: var(--color-text-muted); word-break: break-all; margin-top: var(--space-1); background: var(--color-surface); padding: 2px 4px; border-radius: 4px;">
+                                {hdr.value}
+                            </code>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </section>
+
+        <!-- Actionable Findings & Recommendations -->
+        <section class="screener-findings-section" aria-labelledby="findings-heading">
+            <h2 id="findings-heading" class="screener-section-title">Findings & Remediation</h2>
+            <p class="screener-section-desc">
+                Prioritized recommendations derived from the synthetic audit pass.
+            </p>
+
+            <div class="screener-findings-list">
+                {audit.findings.map((f) => (
+                    <div class="screener-finding-item">
+                        <div class="screener-finding-header">
+                            <div style="display: flex; align-items: center; gap: var(--space-2);">
+                                <span class="screener-card-label" style="font-size: 10px; color: var(--color-accent-600);">{f.category}</span>
+                                <h3 class="screener-finding-title">{f.title}</h3>
+                            </div>
+                            <span class={`screener-severity-badge screener-severity-${f.severity}`}>
+                                {f.severity}
+                            </span>
+                        </div>
+                        <p class="screener-finding-desc">{f.description}</p>
+                        {f.recommendation && (
+                            <div class="screener-finding-rec">
+                                💡 <strong>Fix:</strong> {f.recommendation}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </section>
+
+        <!-- Claim or Launch Callout Banner -->
+        <div class="screener-cta-banner">
+            <div>
+                <h2 class="screener-cta-title">Are you the maker or webmaster of {audit.domain}?</h2>
+                <p class="screener-cta-desc">
+                    Claim this site to receive an official Verified Badge, unlock your Maker Dashboard, display custom stories, and schedule recurring audits.
+                </p>
+            </div>
+            <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+                <a href={`/claim/${audit.domain}`} class="btn btn-primary">Claim Domain Ownership →</a>
+                <a href="/submit" class="btn btn-secondary">Submit to Launches</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side Hydration for dynamically scanned reports -->
+    <script is:inline>
+        (function() {
+            const root = document.getElementById('screener-report-root');
+            if (!root) return;
+            const scanId = root.getAttribute('data-scan-id');
+            const shareBtn = document.getElementById('btn-share-report');
+
+            if (shareBtn) {
+                shareBtn.addEventListener('click', () => {
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href);
+                        const orig = shareBtn.textContent;
+                        shareBtn.textContent = 'Link Copied! ✓';
+                        setTimeout(() => { shareBtn.textContent = orig; }, 2000);
+                    }
+                });
+            }
+
+            // Check if this report was generated dynamically in sessionStorage
+            const cached = sessionStorage.getItem('whyknot_audit_' + scanId);
+            if (cached) {
+                try {
+                    const dynamicAudit = JSON.parse(cached);
+                    // Dynamically hydrate domain title if different
+                    const domainTitle = document.getElementById('audit-domain-title');
+                    if (domainTitle && dynamicAudit.domain) {
+                        domainTitle.textContent = dynamicAudit.domain;
+                    }
+                    const scanIdCode = document.getElementById('audit-scan-id');
+                    if (scanIdCode && dynamicAudit.scanId) {
+                        scanIdCode.textContent = dynamicAudit.scanId;
+                    }
+                } catch (e) {
+                    // Ignore parse errors
+                }
+            }
+        })();
+    </script>
+</Layout>

@@ -1,0 +1,31 @@
+---
+/* BoostButton — community backing control in WhyKnot's own language.
+   Static in SSG: renders the server count and wires to the backing API once
+   auth lands (data hooks reserved). Paid promotion is always "Sponsored" and
+   never uses this control. */
+export interface Props {
+    boosts: number;
+    slug: string;
+    boosted?: boolean;
+}
+
+const { boosts, slug, boosted = false } = Astro.props;
+---
+
+<button
+    type="button"
+    class="boost-button"
+    data-boost
+    data-launch={slug}
+    data-boosted={String(boosted)}
+    aria-pressed={boosted ? 'true' : 'false'}
+    aria-label={`Boost ${slug}: sign in to boost`}
+    title="Sign in to boost this launch"
+>
+    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M8 2.5 14 10H2 Z" fill="currentColor"></path>
+        <rect x="4.5" y="10.5" width="7" height="2.4" rx="1.2" fill="currentColor"></rect>
+    </svg>
+    <span class="boost-count" data-boost-count>{boosts.toLocaleString('en-US')}</span>
+    <span>Boost</span>
+</button>

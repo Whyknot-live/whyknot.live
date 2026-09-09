@@ -1,0 +1,91 @@
+---
+/* /newsletter — 5-3-1 Sunday roundup archive (SEO). Static seed from
+   src/content/newsletter.json; the API (/api/newsletter/issues) serves the
+   same shape once newsletter_issues is populated in Mongo. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import NewsletterSubscribe from '../../components/NewsletterSubscribe.astro';
+import newsletterData from '../../content/newsletter.json';
+
+interface ArchiveEntry {
+    name: string;
+    tagline: string;
+    url: string;
+    slug?: string;
+    score?: number;
+    votes?: number;
+    sponsored?: boolean;
+    blurb?: string;
+}
+
+interface ArchiveIssue {
+    number: number;
+    slug: string;
+    subject: string;
+    date: string;
+    intro?: string;
+    rising: ArchiveEntry[];
+    deals: ArchiveEntry[];
+    underdog: ArchiveEntry;
+    sponsor?: { name: string; tagline: string; url: string; sponsored: boolean };
+}
+
+const issues = ((newsletterData as { issues: ArchiveIssue[] }).issues ?? []).slice().sort((a, b) => b.number - a.number);
+const title = 'Newsletter 5-3-1: Sunday Roundup Archive | WhyKnot';
+const description = 'Every Sunday: 5 fastest-rising, 3 editor deals, 1 underdog. Browse the archive and get the next issue.';
+const canonical = 'https://www.whyknot.live/newsletter';
+---
+
+<Layout title={title} description={description} canonical={canonical} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Newsletter' }]} />
+        <SectionHeader
+            eyebrow="Newsletter · 5-3-1"
+            title="The Sunday roundup"
+            description="5 fastest-rising · 3 editor deals · 1 underdog. Written from our data, every Sunday."
+        />
+
+        {issues.length === 0 ? (
+            <>
+                <EmptyState
+                    title="No issues yet"
+                    body="The first Sunday roundup is still being assembled. Get it the moment it ships."
+                    note="Initial dispatch initiates the archive."
+                    punSeed="newsletter-empty"
+                />
+                <div style="margin-top: var(--space-6)">
+                    <NewsletterSubscribe variant="footer" />
+                </div>
+            </>
+        ) : (
+            <>
+                <div class="card-grid" data-cols="2">
+                    {issues.map((issue) => (
+                        <a class="card spot-card" href={`/newsletter/${issue.slug}`}>
+                            <div class="card-meta-row">
+                                <span class="eyebrow">Issue #{issue.number}</span>
+                                <span class="meta-sep" aria-hidden="true">·</span>
+                                <time datetime={issue.date}>{issue.date}</time>
+                            </div>
+                            <h3 style="margin: var(--space-2) 0 0">{issue.subject}</h3>
+                            <p class="card-tagline">
+                                {issue.rising.length} rising · {issue.deals.length} deals · 1 underdog
+                            </p>
+                            {issue.intro && <p class="card-tagline">{issue.intro}</p>}
+                            <span class="btn btn-ghost" style="margin-top: var(--space-3)">Read issue →</span>
+                        </a>
+                    ))}
+                </div>
+                <div style="margin-top: var(--space-8)" id="subscribe">
+                    <NewsletterSubscribe
+                        variant="footer"
+                        heading="Get next Sunday's 5-3-1"
+                        description="One email a week. Unsubscribe in one click, no login."
+                    />
+                </div>
+            </>
+        )}
+    </div>
+</Layout>

@@ -1,0 +1,108 @@
+---
+/* /legal/methodology — how WhyKnot scores, verifies, and ranks. Trust is a
+   product feature, so the rules are public and versioned. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import ScoreRing from '../../components/ScoreRing.astro';
+import VerifyBadge from '../../components/VerifyBadge.astro';
+import SourceLine from '../../components/SourceLine.astro';
+
+const title = 'Methodology: How WhyKnot scores and verifies';
+const description =
+    'How WhyKnot scores websites, verifies ownership, handles paid placement, and labels every fact with its source. Version 1.1.';
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Methodology' }]} />
+        <SectionHeader
+            eyebrow="Trust on the record"
+            title="Methodology"
+            description="Version 1.1. When these rules change, the version number changes with them."
+        />
+
+        <section aria-labelledby="method-scoring">
+            <h2 id="method-scoring">How scoring works</h2>
+            <p>
+                Every site carries a <strong>WhyKnot score (0–100)</strong>, representing an overall
+                editorial judgment informed by automated screening. Category scores for performance,
+                accessibility, SEO, and best practices follow standard Lighthouse bands:
+                90 and above is good, 50 to 89 needs work, below 50 is poor. Category scores populate
+                once the Screener runs. Until then the profile states its status plainly.
+            </p>
+            <div class="cluster">
+                <ScoreRing score={94} label="Good" size="sm" />
+                <ScoreRing score={72} label="Needs work" size="sm" />
+                <ScoreRing score={34} label="Poor" size="sm" />
+            </div>
+        </section>
+
+        <section aria-labelledby="method-verification" style="margin-top: var(--space-8)">
+            <h2 id="method-verification">How verification works</h2>
+            <p>
+                Verification proves <strong>domain ownership</strong> and nothing more. Owners verify
+                with a DNS TXT record (strongest), an HTML file upload, or a meta tag. Tokens
+                must stay in place and are rechecked; lapses move a profile to stale or expired.
+            </p>
+            <div class="cluster">
+                <VerifyBadge state="verified" date="2026-09-01" />
+                <VerifyBadge state="pending" />
+                <VerifyBadge state="stale" date="2026-04-12" />
+                <VerifyBadge state="expired" date="2026-06-01" />
+            </div>
+            <p class="method-note" style="margin-top: var(--space-4)">
+                Domain verification is not revenue verification, and neither is an editorial
+                opinion. The three are badged separately at all times.
+            </p>
+        </section>
+
+        <section aria-labelledby="method-provenance" style="margin-top: var(--space-8)">
+            <h2 id="method-provenance">Every fact has a source</h2>
+            <div class="cluster">
+                <SourceLine source="detected" timestamp="2026-09-09" confidence="high" />
+                <SourceLine source="owner" timestamp="2026-09-02" confidence="high" />
+                <SourceLine source="editor" timestamp="2026-09-01" />
+                <SourceLine source="community" timestamp="2026-08-28" confidence="low" />
+            </div>
+            <p style="margin-top: var(--space-4)">
+                Automated detection is heuristic pattern-matching with stated confidence, never
+                presented as absolute truth. Stale facts are labeled stale with the exact date they
+                expired.
+            </p>
+        </section>
+
+        <section aria-labelledby="method-paid" style="margin-top: var(--space-8)">
+            <h2 id="method-paid">Money never buys a score</h2>
+            <p>
+                Paid placement is labeled <span class="sponsored-tag">Sponsored</span> in a neutral
+                style, visually separate from editorial picks, verification badges, and technical
+                scores. Sponsorship cannot change a score, a rank, or a badge. The ranking inputs
+                simply have no field for it.
+            </p>
+            <section aria-labelledby="sponsored-metrics" style="margin-top: var(--space-6)">
+                <h3 id="sponsored-metrics">Sponsored metrics</h3>
+                <p>
+                    Every paid slot is labeled <span class="sponsored-tag">Sponsored</span> (label coverage 100%).
+                    Ranking inputs contain zero sponsored fields, so sponsorship cannot move a score, rank, or badge.
+                    Live per-slot impressions, CTR, occupancy, and revenue are reported from <code>/api/sponsor/metrics</code>.
+                    Eligibility: listed + screened launches only. <a href="/sponsor">Rate card</a>
+                </p>
+            </section>
+        </section>
+
+        <section aria-labelledby="method-relaunch" style="margin-top: var(--space-8)">
+            <h2 id="method-relaunch">Relaunches: paid, major-version only</h2>
+            <p>Relaunch is paid and allowed only for a <strong>major version</strong> (1.x → 2.0), <strong>once per major version</strong>. The badge carries the relaunch count, the original launch stays in the archive, and velocity resets. History is never rewritten.</p>
+        </section>
+
+        <section aria-labelledby="method-screenshots" style="margin-top: var(--space-8)">
+            <h2 id="method-screenshots">Screenshots and takedowns</h2>
+            <p>
+                Previews are shown for identification and commentary. Owners who prefer no preview
+                can claim their profile and request removal via the
+                <a href="/contact">contact form</a>. All legitimate requests are honored promptly.
+            </p>
+        </section>
+    </div>
+</Layout>

@@ -1,0 +1,5 @@
+{
+  "maya-chen": {"name":"Maya Chen","bio":"Design engineer exploring calm software. Previously built research tools at an independent lab.","location":"Lisbon","links":{"website":"https://example.com","twitter":"https://example.com","github":"https://example.com"},"verified":true,"joinedAt":"2026-08-20"},
+  "rowan-bell": {"name":"Rowan Bell","bio":"Infrastructure minimalist. Believes small teams deserve boring, reliable building blocks.","location":"Toronto","links":{"website":"https://example.com","github":"https://example.com"},"verified":false,"joinedAt":"2026-08-24"},
+  "samir-shah": {"name":"Samir Shah","bio":"Founder working on humane productivity tools. Writes about attention and craft.","location":"Bengaluru","links":{"website":"https://example.com","twitter":"https://example.com"},"verified":true,"joinedAt":"2026-08-29"}
+}

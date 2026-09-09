@@ -1,0 +1,62 @@
+---
+/* AlternativesGraph — Comparison card juxtaposing a product against primary alternatives.
+   Visualizes score variances, primary differences, and tech stack divergences. */
+import ScoreRing from './ScoreRing.astro';
+import TechBadge from './TechBadge.astro';
+
+export interface AlternativeNode {
+    name: string;
+    slug?: string;
+    score: number;
+    tagline: string;
+    tags: string[];
+    isSubject?: boolean;
+}
+
+interface Props {
+    subjectName: string;
+    alternatives: AlternativeNode[];
+}
+
+const { subjectName, alternatives } = Astro.props;
+---
+
+<div class="alt-graph-card">
+    <div class="alt-graph-head">
+        <div>
+            <h3 style="margin: 0; font-size: var(--text-md);">Architectural Alternatives</h3>
+            <p class="field-hint" style="margin: var(--space-1) 0 0 0;">
+                Benchmarking <strong style="color: var(--color-text);">{subjectName}</strong> against verified landscape peers.
+            </p>
+        </div>
+        <a href="/discover" class="btn btn-ghost" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
+            Explore Sector →
+        </a>
+    </div>
+
+    <div class="alt-nodes-grid">
+        {alternatives.map((node) => (
+            <div class={`alt-node ${node.isSubject ? 'is-primary' : ''}`}>
+                <div class="alt-node-header">
+                    <div>
+                        <span class="alt-node-name">{node.name}</span>
+                        {node.isSubject && (
+                            <span class="tag-pill" style="margin-left: var(--space-1); font-size: 0.65rem; background: var(--color-accent); color: #000;">
+                                Current
+                            </span>
+                        )}
+                    </div>
+                    <ScoreRing score={node.score} label={node.name} size="sm" />
+                </div>
+                <p class="field-hint" style="font-size: var(--text-xs); line-height: 1.4; margin: 0;">
+                    {node.tagline}
+                </p>
+                <div class="alt-node-features">
+                    {node.tags.map((tag) => (
+                        <TechBadge name={tag} />
+                    ))}
+                </div>
+            </div>
+        ))}
+    </div>
+</div>

@@ -1,0 +1,44 @@
+---
+/* SectionHeader — editorial section opener used across gateway + feeds.
+   Numbered eyebrow (`index="01"`) plus an optional knot tick keeps sections
+   feeling like chapters of one publication, not stacked landing blocks.
+   `aside` renders a handwritten margin note for a human touch. */
+export interface Props {
+    title: string;
+    eyebrow?: string;
+    description?: string;
+    href?: string;
+    linkLabel?: string;
+    index?: string;
+    knot?: boolean;
+    aside?: string;
+}
+
+const { title, eyebrow, description, href, linkLabel, index, knot = false, aside } = Astro.props;
+---
+
+<div class="section-header">
+    <div class="section-header-main">
+        {eyebrow && (
+            <p class="eyebrow">
+                {knot && (
+                    <svg class="knot-tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path
+                            d="M7 17 C 4 13 5 7 10 6 C 15 5 19 8 18 12 C 17 15 13 16 11 14 C 10 12 11 10 13 10 C 16 10 18 12 19 15"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                )}
+                {index && <span class="section-index">{index}</span>}
+                <span>{eyebrow}</span>
+            </p>
+        )}
+        <h2>{title}</h2>
+        {description && <p class="section-description">{description}</p>}
+        {aside && <p class="hand-note section-aside">{aside}</p>}
+    </div>
+    {href && linkLabel && <a class="btn btn-ghost section-link" href={href}>{linkLabel} →</a>}
+</div>

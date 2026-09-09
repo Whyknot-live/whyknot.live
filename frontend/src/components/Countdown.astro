@@ -1,0 +1,70 @@
+---
+/* Countdown — SSR-safe launch countdown reusing the orphan .countdown-*
+   token classes (no <style> blocks here). Server renders the initial
+   days/hrs/min/secs; a tiny inline script ticks every [data-countdown]
+   on the page once per second. */
+import { countdownParts } from '../lib/launch-events';
+
+export interface Props {
+    scheduledAt: Date | string;
+    label?: string;
+}
+
+const { scheduledAt, label = 'Launches in' } = Astro.props;
+const scheduled = scheduledAt instanceof Date ? scheduledAt : new Date(scheduledAt);
+const iso = scheduled.toISOString();
+const initial = countdownParts(scheduled, new Date());
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<div class="countdown-timer" data-countdown={iso} role="timer" aria-label={`${label} ${iso}`}>
+    <div class="timer-unit">
+        <div class="timer-number" data-part="days">{pad(initial.days)}</div>
+        <p class="timer-label">Days</p>
+    </div>
+    <span class="timer-separator" aria-hidden="true">:</span>
+    <div class="timer-unit">
+        <div class="timer-number" data-part="hours">{pad(initial.hours)}</div>
+        <p class="timer-label">Hrs</p>
+    </div>
+    <span class="timer-separator" aria-hidden="true">:</span>
+    <div class="timer-unit">
+        <div class="timer-number" data-part="mins">{pad(initial.mins)}</div>
+        <p class="timer-label">Min</p>
+    </div>
+    <span class="timer-separator" aria-hidden="true">:</span>
+    <div class="timer-unit">
+        <div class="timer-number" data-part="secs">{pad(initial.secs)}</div>
+        <p class="timer-label">Sec</p>
+    </div>
+</div>
+
+<script>
+    (() => {
+        if (window.__whyknotCountdownInit) return;
+        window.__whyknotCountdownInit = true;
+        const pad2 = (n) => String(n).padStart(2, '0');
+        const tick = () => {
+            const now = Date.now();
+            document.querySelectorAll('[data-countdown]').forEach((root) => {
+                const iso = root.getAttribute('data-countdown');
+                if (!iso) return;
+                const target = new Date(iso).valueOf();
+                let diff = target - now;
+                if (!Number.isFinite(diff) || diff < 0) diff = 0;
+                const parts = {
+                    days: pad2(Math.floor(diff / 86400000)),
+                    hours: pad2(Math.floor((diff % 86400000) / 3600000)),
+                    mins: pad2(Math.floor((diff % 3600000) / 60000)),
+                    secs: pad2(Math.floor((diff % 60000) / 1000)),
+                };
+                for (const [key, value] of Object.entries(parts)) {
+                    const el = root.querySelector('[data-part="' + key + '"]');
+                    if (el && el.textContent !== value) el.textContent = value;
+                }
+            });
+        };
+        tick();
+        window.setInterval(tick, 1000);
+    })();
+</script>

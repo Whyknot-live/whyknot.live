@@ -5,6 +5,10 @@
 User-agent: *
 Allow: /
 
+# Search-result and machine endpoints stay out of the crawl:
+# /search is noindex by meta; filter/sort states create no URLs by design
+Disallow: /search
+
 # Block common spam/hack attempt patterns (PHP files don't exist on this site)
 Disallow: /*.php$
 Disallow: /*.php/

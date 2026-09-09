@@ -1,0 +1,230 @@
+---
+/* CheckoutButton — Razorpay-first (C1), INR-only at launch.
+   Backend creates orders; frontend only receives keyId + orderId.
+   Props: plan ('verified' | 'pro' | 'team'), label, email (optional prefill).
+   Uses native accessible <dialog> modal for email input instead of window.prompt(),
+   and WhyKnotToast for clean non-blocking feedback. */
+
+interface Props {
+    plan: 'verified' | 'pro' | 'team';
+    label?: string;
+    email?: string;
+}
+
+const { plan, label = 'Pay now', email = '' } = Astro.props;
+const uniqueId = Math.random().toString(36).slice(2, 8);
+const btnId = `rzp-btn-${plan}-${uniqueId}`;
+const modalId = `rzp-modal-${plan}-${uniqueId}`;
+const emailInputId = `rzp-email-${plan}-${uniqueId}`;
+---
+
+<button class="btn" id={btnId} data-plan={plan} type="button">{label}</button>
+
+<dialog class="modal" id={modalId} aria-labelledby={`${modalId}-title`} data-modal>
+    <div class="modal-head">
+        <h3 id={`${modalId}-title`}>
+            {plan === 'verified' ? 'Verify Domain Ownership' : `Subscribe to ${plan.toUpperCase()}`}
+        </h3>
+        <form method="dialog">
+            <button class="modal-x" value="close" aria-label="Close dialog">×</button>
+        </form>
+    </div>
+    <div class="modal-body">
+        <p class="field-hint" style="margin-bottom: var(--space-4)">
+            Enter your official receipt email to initialize Razorpay checkout.
+        </p>
+        <form id={`${modalId}-form`} class="stack" style="gap: var(--space-3)">
+            <div class="field" data-field>
+                <label class="field-label" for={emailInputId}>
+                    Receipt Email Address
+                    <span class="field-required" aria-hidden="true"> *</span>
+                </label>
+                <input
+                    type="email"
+                    id={emailInputId}
+                    name="email"
+                    required
+                    class="form-input"
+                    value={email}
+                    placeholder="architect@domain.com"
+                    autocomplete="email"
+                />
+            </div>
+            <div id={`${modalId}-error`} class="field-error" role="alert" style="display: none;"></div>
+            <div class="cluster" style="justify-content: flex-end; margin-top: var(--space-2)">
+                <button type="button" class="btn btn-ghost" data-dialog-cancel>Cancel</button>
+                <button type="submit" class="btn btn-primary" id={`${modalId}-submit`}>
+                    Proceed to Payment →
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+    import { getApiBaseUrl } from '../lib/api-base';
+
+    declare global {
+        interface Window {
+            Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+            WhyKnotToast?: { show: (message: string, tone?: string) => void };
+        }
+    }
+
+    function loadRazorpay(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            if (window.Razorpay) return resolve(true);
+            const s = document.createElement('script');
+            s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            s.onload = () => resolve(true);
+            s.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+            document.head.appendChild(s);
+        });
+    }
+
+    function notify(message: string, tone: 'success' | 'danger' | 'info' = 'danger') {
+        if (window.WhyKnotToast) {
+            window.WhyKnotToast.show(message, tone);
+        } else {
+            console.warn(`[WhyKnot Checkout] ${message}`);
+        }
+    }
+
+    document.querySelectorAll('[id^="rzp-btn-"]:not([data-rzp-bound])').forEach((button) => {
+        button.setAttribute('data-rzp-bound', 'true');
+        const btn = button as HTMLButtonElement;
+        const plan = btn.getAttribute('data-plan') || 'verified';
+        const modalId = btn.id.replace('rzp-btn-', 'rzp-modal-');
+        const dialog = document.getElementById(modalId) as HTMLDialogElement | null;
+        const form = document.getElementById(`${modalId}-form`) as HTMLFormElement | null;
+        const emailInput = document.getElementById(modalId.replace('rzp-modal-', 'rzp-email-')) as HTMLInputElement | null;
+        const errorDiv = document.getElementById(`${modalId}-error`);
+        const cancelBtn = dialog?.querySelector('[data-dialog-cancel]');
+
+        cancelBtn?.addEventListener('click', () => {
+            dialog?.close();
+        });
+
+        async function startCheckout(targetEmail: string) {
+            btn.disabled = true;
+            const orig = btn.textContent;
+            btn.textContent = 'Initializing checkout…';
+
+            try {
+                const apiBase = getApiBaseUrl();
+                await loadRazorpay();
+
+                if (plan === 'verified') {
+                    const res = await fetch(`${apiBase}/api/payments/create-order`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: targetEmail, plan: 'verified' })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error ?? 'Order initiation failed');
+
+                    if (!window.Razorpay) throw new Error('Payment gateway unavailable');
+                    const rzp = new window.Razorpay({
+                        key: data.keyId,
+                        amount: data.amount,
+                        currency: data.currency,
+                        order_id: data.orderId,
+                        name: 'WhyKnot',
+                        description: 'Verified Domain Registry (one-time)',
+                        prefill: { email: targetEmail },
+                        theme: { color: '#20c5b5' },
+                        handler: async (resp: Record<string, string>) => {
+                            const v = await fetch(`${apiBase}/api/payments/verify`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    email: targetEmail,
+                                    plan: 'verified',
+                                    razorpay_order_id: resp.razorpay_order_id,
+                                    razorpay_payment_id: resp.razorpay_payment_id,
+                                    razorpay_signature: resp.razorpay_signature
+                                })
+                            });
+                            if (v.ok) window.location.href = '/payment/success?plan=verified';
+                            else window.location.href = '/payment/failure?reason=verify';
+                        },
+                        modal: {
+                            ondismiss: () => {
+                                btn.disabled = false;
+                                btn.textContent = orig;
+                            }
+                        }
+                    });
+                    dialog?.close();
+                    rzp.open();
+                } else {
+                    const res = await fetch(`${apiBase}/api/payments/create-subscription`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: targetEmail, plan })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        if (data.error === 'subscription_plan_not_configured') {
+                            throw new Error('Subscriptions open soon. Join the waitlist for priority access.');
+                        }
+                        throw new Error(data.error ?? 'Subscription initiation failed');
+                    }
+
+                    if (!window.Razorpay) throw new Error('Payment gateway unavailable');
+                    const rzp = new window.Razorpay({
+                        key: data.keyId,
+                        subscription_id: data.subscriptionId,
+                        name: 'WhyKnot',
+                        description: plan === 'pro' ? 'Pro Tier (Monthly)' : 'Team Tier (Monthly)',
+                        prefill: { email: targetEmail },
+                        theme: { color: '#20c5b5' },
+                        handler: () => {
+                            window.location.href = `/payment/success?plan=${plan}`;
+                        },
+                        modal: {
+                            ondismiss: () => {
+                                btn.disabled = false;
+                                btn.textContent = orig;
+                            }
+                        }
+                    });
+                    dialog?.close();
+                    rzp.open();
+                }
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : 'Checkout failed';
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.style.display = 'block';
+                }
+                notify(message, 'danger');
+                btn.disabled = false;
+                btn.textContent = orig;
+            }
+        }
+
+        btn.addEventListener('click', () => {
+            const currentEmail = emailInput?.value.trim() ?? '';
+            if (currentEmail && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(currentEmail)) {
+                startCheckout(currentEmail);
+            } else {
+                dialog?.showModal();
+            }
+        });
+
+        form?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = emailInput?.value.trim() ?? '';
+            if (!val || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val)) {
+                if (errorDiv) {
+                    errorDiv.textContent = 'Please provide a valid receipt email.';
+                    errorDiv.style.display = 'block';
+                }
+                return;
+            }
+            if (errorDiv) errorDiv.style.display = 'none';
+            startCheckout(val);
+        });
+    });
+</script>

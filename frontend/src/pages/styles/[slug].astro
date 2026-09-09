@@ -1,0 +1,16 @@
+---
+/* /styles/[slug] — wrapper over FacetPage; copy + matching in lib/facets.ts. */
+import FacetPage from '../../components/FacetPage.astro';
+import { FACETS } from '../../lib/facets';
+
+const def = FACETS.styles;
+
+export async function getStaticPaths() {
+    const { FACETS: registry } = await import('../../lib/facets');
+    return registry.styles.paths();
+}
+
+const { value, sites } = Astro.props;
+---
+
+<FacetPage def={def} value={value} sites={sites} slug={Astro.params.slug!} />

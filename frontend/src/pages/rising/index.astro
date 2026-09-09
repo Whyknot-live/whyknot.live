@@ -1,0 +1,39 @@
+---
+/* /rising — recent additions gaining editorial weight. P0 definition:
+   published in the last 60 days, ordered by score. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { getFlatSites } from '../../lib/content';
+
+const title = 'Rising websites | WhyKnot';
+const description = 'Recently added websites climbing the WhyKnot library.';
+const cutoff = Date.now() - 60 * 24 * 60 * 60 * 1000;
+const sites = (await getFlatSites()).filter((site) => site.publishedAt.valueOf() >= cutoff);
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Rising' }]} />
+        <SectionHeader eyebrow="Feed" title="Rising" description={description} />
+        {sites.length > 0 ? (
+            <div class="card-grid" data-cols="3">
+                {sites.map((site) => <SiteCard site={site} />)}
+            </div>
+        ) : (
+            <EmptyState
+                title="Nothing rising right now"
+                body="Rising tracks recent additions gaining editorial weight. Check back soon."
+                actionHref="/new"
+                actionLabel="See what's new"
+                note="slow week? good: the string holds."
+                punSeed="rising-empty"
+            />
+        )}
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Rising means added in the last 60 days, ordered by score. <a href="/legal/methodology">How ranking works</a>
+        </p>
+    </div>
+</Layout>

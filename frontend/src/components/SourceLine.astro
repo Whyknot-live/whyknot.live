@@ -1,0 +1,29 @@
+---
+/* SourceLine — provenance for a single fact. Every automated/editorial/owner
+   claim carries source + timestamp + confidence so detection is never
+   presented as absolute truth. */
+export type FactSource = 'detected' | 'owner' | 'editor' | 'community';
+
+export interface Props {
+    source: FactSource;
+    timestamp?: string;
+    confidence?: 'high' | 'med' | 'low';
+    stale?: boolean;
+}
+
+const { source, timestamp, confidence, stale = false } = Astro.props;
+
+const LABELS: Record<FactSource, string> = {
+    detected: 'Detected by WhyKnot',
+    owner: 'Confirmed by owner',
+    editor: 'Written by editor',
+    community: 'Community-submitted',
+};
+---
+
+<span class="source-line" data-source={source} data-stale={String(stale)}>
+    <span class="source-dot" aria-hidden="true"></span>
+    <span>{LABELS[source]}</span>
+    {timestamp && <time datetime={timestamp}>{stale ? `Stale since ${timestamp}` : timestamp}</time>}
+    {confidence && <span class="source-confidence">· {confidence} confidence</span>}
+</span>

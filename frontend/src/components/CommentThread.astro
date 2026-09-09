@@ -1,0 +1,66 @@
+---
+/* CommentThread — launch and profile discussion. Static in SSG with data
+   hooks reserved for the community API (POST /api/comments). One reply level
+   keeps threads readable; deeper discussion belongs on the launch page. */
+import Avatar from './Avatar.astro';
+import TimeStamp from './TimeStamp.astro';
+
+export interface ThreadComment {
+    id: string;
+    author: string;
+    handle?: string;
+    time: Date | string;
+    body: string;
+    maker?: boolean;
+    replies?: ThreadComment[];
+}
+
+export interface Props {
+    comments: ThreadComment[];
+}
+
+const { comments } = Astro.props;
+---
+
+{comments.length > 0 ? (
+    <ol class="comment-list">
+        {comments.map((comment) => (
+            <li>
+                <article class="comment" data-comment={comment.id}>
+                    <Avatar name={comment.author} size="sm" />
+                    <div class="comment-main">
+                        <div class="comment-meta">
+                            <strong>{comment.author}</strong>
+                            {comment.handle && <span>@{comment.handle}</span>}
+                            {comment.maker && <span class="maker-tag">Maker</span>}
+                            <TimeStamp date={comment.time} />
+                        </div>
+                        <p class="comment-body">{comment.body}</p>
+                        {comment.replies && comment.replies.length > 0 && (
+                            <ol class="comment-replies">
+                                {comment.replies.map((reply) => (
+                                    <li>
+                                        <article class="comment" data-comment={reply.id}>
+                                            <Avatar name={reply.author} size="sm" />
+                                            <div class="comment-main">
+                                                <div class="comment-meta">
+                                                    <strong>{reply.author}</strong>
+                                                    {reply.handle && <span>@{reply.handle}</span>}
+                                                    {reply.maker && <span class="maker-tag">Maker</span>}
+                                                    <TimeStamp date={reply.time} />
+                                                </div>
+                                                <p class="comment-body">{reply.body}</p>
+                                            </div>
+                                        </article>
+                                    </li>
+                                ))}
+                            </ol>
+                        )}
+                    </div>
+                </article>
+            </li>
+        ))}
+    </ol>
+) : (
+    <p class="card-tagline">No comments yet. Thoughtful questions get the best maker replies.</p>
+)}

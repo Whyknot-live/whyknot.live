@@ -72,21 +72,26 @@
   width: 100%;
 }
 
-.search-input {
+.search-container .search-input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-full);
-  background: var(--color-surface-container);
+  height: var(--input-height);
+  padding: 0 var(--input-padding-x) 0 2.25rem;
+  border: 1px solid var(--input-border);
+  border-radius: var(--input-radius);
+  background: var(--input-bg);
   color: var(--color-on-surface);
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  font-size: var(--input-font-size);
+  font-family: var(--font-sans);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+  box-sizing: border-box;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: var(--color-accent-300);
-  box-shadow: 0 0 0 3px rgba(32, 197, 181, 0.1);
+.search-container .search-input:focus,
+.search-container .search-input:focus-visible {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-ring);
+  background: var(--color-surface);
 }
 
 .search-icon {
@@ -464,7 +469,7 @@
 }
 .toc-list a:hover,
 .toc-list a:focus { color: var(--color-accent-300); }
-.toc-list a:focus-visible { outline: 2px solid var(--color-accent-300); outline-offset: 2px; border-radius: 4px; }
+.toc-list a:focus-visible { outline: 2px solid var(--color-outline-focus); outline-offset: 2px; border-radius: 4px; }
 
 /* Sections */
 .policy-content,
@@ -662,8 +667,43 @@
   .color-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
-  
+
   .component-examples {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---------- Gateway (/) ---------- */
+.eyebrow-mono {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-accent-600);
+    margin: 0 0 var(--space-3);
+}
+:root[data-theme="dark"] .eyebrow-mono { color: var(--color-accent-200); }
+.gateway-title {
+    margin: 0;
+    font-family: var(--font-display, "Bebas Neue", sans-serif);
+    font-size: clamp(2.6rem, 7vw, 5rem);
+    line-height: 1.02;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    max-width: 16ch;
+}
+.gateway-sub {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    max-width: 56ch;
+    margin: var(--space-4) 0 var(--space-6);
+}
+.screener-split {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+    align-items: center;
+}
+@media (min-width: 960px) {
+    .screener-split { grid-template-columns: 1fr 1.1fr; }
 }

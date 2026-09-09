@@ -1,0 +1,29 @@
+---
+/* /collections — curated sets with a point of view. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import CollectionCard from '../../components/CollectionCard.astro';
+import { getFlatCollections } from '../../lib/content';
+
+const title = 'Curated collections | WhyKnot';
+const description = 'Hand-built collections of exceptional websites: fast by default, quietly excellent, agent-ready.';
+const collections = await getFlatCollections();
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Collections' }]} />
+        <SectionHeader eyebrow="Curated" title="Collections" description={description} />
+        <div class="card-grid" data-cols="3">
+            {collections.map((collection) => (
+                <CollectionCard
+                    slug={collection.slug}
+                    name={collection.name}
+                    description={collection.description}
+                    count={collection.siteSlugs.length || collection.count}
+                />
+            ))}
+        </div>
+    </div>
+</Layout>

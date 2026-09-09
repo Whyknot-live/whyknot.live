@@ -25,7 +25,15 @@ const envSchema = z.object({
   // Optional pepper for environment-specific password hashing
   // Use different peppers for dev, staging, and production
   ADMIN_PASSWORD_PEPPER: z.string().optional(),
-  ADMIN_JWT_SECRET: z.string().min(32, 'JWT secret must be at least 32 characters')
+  ADMIN_JWT_SECRET: z.string().min(32, 'JWT secret must be at least 32 characters'),
+  // Razorpay payments (P1 revenue loops, C1 Razorpay-first, INR-only at launch)
+  // Optional so existing deploys without payments still boot; payments routes 503 when missing.
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+  RAZORPAY_CURRENCY: z.string().optional(),
+  RAZORPAY_PLAN_PRO_ID: z.string().optional(),
+  RAZORPAY_PLAN_TEAM_ID: z.string().optional()
 })
 
 export function validateEnv() {

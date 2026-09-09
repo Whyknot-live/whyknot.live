@@ -1,0 +1,27 @@
+---
+/* CommentForm — posts to the community API once auth lands. Until then it
+   renders honestly disabled with a sign-in path instead of a dead form. */
+export interface Props {
+    postTo?: string;
+    signInHref?: string;
+}
+
+const { postTo, signInHref = '/account/signin' } = Astro.props;
+const live = Boolean(postTo);
+---
+
+{live ? (
+    <form class="comment-form" action={postTo} method="post" data-comment-form>
+        <label class="field-label" for="comment-body">Join the discussion</label>
+        <textarea id="comment-body" name="body" required minlength={2} maxlength={2000} placeholder="Ask a question, share a use case, compare alternatives…"></textarea>
+        <div><button type="submit" class="btn">Post comment</button></div>
+    </form>
+) : (
+    <div class="comment-form" data-comment-form>
+        <label class="field-label" for="comment-body-disabled">Join the discussion</label>
+        <textarea id="comment-body-disabled" disabled placeholder="Sign in to comment…"></textarea>
+        <div class="cluster">
+            <a class="btn" href={signInHref}>Sign in to comment</a>
+        </div>
+    </div>
+)}

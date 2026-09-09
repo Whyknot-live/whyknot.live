@@ -1,0 +1,335 @@
+---
+/* ClaimForm: 4-step maker-claim flow (C2: DNS + file + meta only).
+   Step 1: pick profile handle + domain. Step 2: method tabs (copy reused
+   verbatim from /verify). Step 3: owner email. Step 4: place token, Verify now.
+   Calls POST /api/claim/start then POST /api/claim/check, polls status.
+   No <style> blocks: global utility classes only. */
+import Tabs from './Tabs.astro';
+
+export interface Props {
+    initialHandle?: string;
+}
+
+const { initialHandle = '' } = Astro.props;
+---
+
+<div class="claim-form" data-claim-root data-initial-handle={initialHandle}>
+    <ol class="cluster" data-claim-progress aria-label="Claim progress">
+        <li data-progress="1" aria-current="step">1 · Profile</li>
+        <li data-progress="2">2 · Method</li>
+        <li data-progress="3">3 · Owner email</li>
+        <li data-progress="4">4 · Verify</li>
+    </ol>
+
+    <form id="claim-form" class="card" novalidate aria-label="Claim a maker profile">
+        <!-- Step 1: profile handle + domain -->
+        <fieldset data-step="1">
+            <legend>Which profile are you claiming?</legend>
+            <div class="form-group">
+                <label class="form-label" for="claim-handle">Maker handle</label>
+                <input class="form-input" id="claim-handle" name="makerHandle" type="text" required autocomplete="username" placeholder="e.g. ada" value={initialHandle} />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="claim-domain">Your domain</label>
+                <input class="form-input" id="claim-domain" name="domain" type="text" required inputmode="url" autocomplete="url" placeholder="e.g. example.com" />
+                <p class="method-note">The domain you control: the token must resolve there, not on whyknot.live.</p>
+            </div>
+            <div class="cluster">
+                <button type="button" class="btn" data-next="2">Continue</button>
+            </div>
+        </fieldset>
+
+        <!-- Step 2: method tabs (copy reused from /verify) -->
+        <fieldset data-step="2" hidden>
+            <legend>Pick a verification method</legend>
+            <Tabs
+                id="claim-methods"
+                tabs={[
+                    { id: 'dns', label: 'DNS record' },
+                    { id: 'file', label: 'HTML file' },
+                    { id: 'meta', label: 'Meta tag' },
+                ]}
+            />
+            <div role="tabpanel" id="claim-methods-panel-dns" aria-labelledby="claim-methods-tab-dns">
+                <p>Add a TXT record at your DNS provider. Strongest method: survives redeploys and covers the whole domain.</p>
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <tbody>
+                            <tr><td>Type</td><td><code>TXT</code></td></tr>
+                            <tr><td>Host</td><td><code>@</code></td></tr>
+                            <tr><td>Value</td><td><code data-token-slot="dns-value">whyknot-verify=YOUR_TOKEN</code></td></tr>
+                            <tr><td>Propagation</td><td>Minutes to 24 hours (we keep checking automatically)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <label class="form-label" style="margin-top: var(--space-3)">
+                    <input type="radio" name="method" value="dns" checked /> Use DNS record
+                </label>
+            </div>
+            <div role="tabpanel" id="claim-methods-panel-file" aria-labelledby="claim-methods-tab-file" hidden>
+                <p>Upload a verification file to your site root. Simple when you control hosting; breaks if the file is removed.</p>
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <tbody>
+                            <tr><td>Path</td><td><code data-token-slot="file-path">/whyknot-verify-YOUR_TOKEN.html</code></td></tr>
+                            <tr><td>Contents</td><td><code data-token-slot="file-value">whyknot-verify=YOUR_TOKEN</code></td></tr>
+                            <tr><td>Note</td><td>Redirects are not followed: the file must serve at the exact path</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <label class="form-label" style="margin-top: var(--space-3)">
+                    <input type="radio" name="method" value="file" /> Use HTML file
+                </label>
+            </div>
+            <div role="tabpanel" id="claim-methods-panel-meta" aria-labelledby="claim-methods-tab-meta" hidden>
+                <p>Add a meta tag to your homepage <code>&lt;head&gt;</code>. Fastest when you edit markup; theme changes can remove it.</p>
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <tbody>
+                            <tr><td>Tag</td><td><code data-token-slot="meta-tag">&lt;meta name="whyknot-verify" content="YOUR_TOKEN"&gt;</code></td></tr>
+                            <tr><td>Location</td><td>Homepage served to logged-out visitors (redirect targets count)</td></tr>
+                            <tr><td>Note</td><td>Keep it in place: removal eventually revokes the badge</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <label class="form-label" style="margin-top: var(--space-3)">
+                    <input type="radio" name="method" value="meta" /> Use meta tag
+                </label>
+            </div>
+            <div class="cluster" style="margin-top: var(--space-4)">
+                <button type="button" class="btn btn-ghost" data-prev="1">Back</button>
+                <button type="button" class="btn" data-next="3">Continue</button>
+            </div>
+        </fieldset>
+
+        <!-- Step 3: owner email -->
+        <fieldset data-step="3" hidden>
+            <legend>Where should we reach you?</legend>
+            <div class="form-group">
+                <label class="form-label" for="claim-email">Owner email</label>
+                <input class="form-input" id="claim-email" name="ownerEmail" type="email" required autocomplete="email" placeholder="you@yourdomain.com" />
+                <p class="method-note">We send the token and review updates here. Reviews are manual (expect a reply within 48 hours).</p>
+            </div>
+            <div class="cluster">
+                <button type="button" class="btn btn-ghost" data-prev="2">Back</button>
+                <button type="submit" class="btn" id="claim-start-btn">Get my token</button>
+            </div>
+        </fieldset>
+
+        <!-- Step 4: place token + verify now -->
+        <fieldset data-step="4" hidden>
+            <legend>Place your token, then verify</legend>
+            <p>Your token: <code data-token-slot="token">YOUR_TOKEN</code></p>
+            <div data-claim-instructions>
+                <p class="method-note" data-instruction="dns">Add the TXT record above, wait for propagation, then press Verify now.</p>
+                <p class="method-note" data-instruction="file" hidden>Upload the file above to your site root, then press Verify now.</p>
+                <p class="method-note" data-instruction="meta" hidden>Add the meta tag above to your homepage, then press Verify now.</p>
+            </div>
+            <div class="cluster">
+                <button type="button" class="btn btn-ghost" data-prev="3">Back</button>
+                <button type="button" class="btn" id="claim-check-btn">Verify now</button>
+            </div>
+            <p class="method-note" id="claim-check-hint">Checks run live against your domain. DNS can take minutes to 24 hours. You can re-check any time.</p>
+        </fieldset>
+    </form>
+
+    <div class="form-success" id="claim-success">
+        <span id="claim-success-text">Claim started. Check your email for the token.</span>
+    </div>
+    <div class="form-error" id="claim-error">
+        <span id="claim-error-text">Something went wrong. Please try again.</span>
+    </div>
+</div>
+
+<script>
+    const root = document.querySelector('[data-claim-root]') as HTMLElement | null;
+    const form = document.getElementById('claim-form') as HTMLFormElement | null;
+    const handleInput = document.getElementById('claim-handle') as HTMLInputElement | null;
+    const domainInput = document.getElementById('claim-domain') as HTMLInputElement | null;
+    const emailInput = document.getElementById('claim-email') as HTMLInputElement | null;
+    const startBtn = document.getElementById('claim-start-btn') as HTMLButtonElement | null;
+    const checkBtn = document.getElementById('claim-check-btn') as HTMLButtonElement | null;
+    const successBox = document.getElementById('claim-success');
+    const successText = document.getElementById('claim-success-text');
+    const errorBox = document.getElementById('claim-error');
+    import { getApiBaseUrl } from '../lib/api-base';
+
+    const errorText = document.getElementById('claim-error-text');
+
+    let currentStep = 1;
+    let claimId: string | null = null;
+    let claimToken: string | null = null;
+    let apiBaseUrl: string | null = null;
+
+    try {
+        apiBaseUrl = getApiBaseUrl();
+    } catch (error) {
+        console.error('Claim configuration error:', error);
+        showError('Claiming is temporarily unavailable. Please try again later.');
+    }
+
+    function selectedMethod(): string {
+        const checked = document.querySelector('input[name="method"]:checked') as HTMLInputElement | null;
+        return checked?.value ?? 'dns';
+    }
+
+    function goToStep(step: number) {
+        currentStep = step;
+        document.querySelectorAll('[data-step]').forEach((el) => {
+            (el as HTMLElement).hidden = el.getAttribute('data-step') !== String(step);
+        });
+        document.querySelectorAll('[data-progress]').forEach((el) => {
+            const n = Number(el.getAttribute('data-progress'));
+            if (n === step) el.setAttribute('aria-current', 'step');
+            else el.removeAttribute('aria-current');
+        });
+    }
+
+    function renderToken(token: string) {
+        claimToken = token;
+        const method = selectedMethod();
+        document.querySelectorAll('[data-token-slot]').forEach((el) => {
+            const slot = el.getAttribute('data-token-slot');
+            if (slot === 'dns-value' || slot === 'file-value') el.textContent = `whyknot-verify=${token}`;
+            else if (slot === 'file-path') el.textContent = `/whyknot-verify-${token}.html`;
+            else if (slot === 'meta-tag') el.textContent = `<meta name="whyknot-verify" content="${token}">`;
+            else if (slot === 'token') el.textContent = token;
+        });
+        document.querySelectorAll('[data-instruction]').forEach((el) => {
+            (el as HTMLElement).hidden = el.getAttribute('data-instruction') !== method;
+        });
+    }
+
+    function showSuccess(message: string) {
+        hideMessages();
+        if (successText) successText.textContent = message;
+        successBox?.classList.add('show');
+    }
+
+    function showError(message: string) {
+        hideMessages();
+        if (errorText) errorText.textContent = message;
+        errorBox?.classList.add('show');
+    }
+
+    function hideMessages() {
+        successBox?.classList.remove('show');
+        errorBox?.classList.remove('show');
+    }
+
+    document.querySelectorAll('[data-next]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const next = Number((btn as HTMLElement).getAttribute('data-next'));
+            if (currentStep === 1) {
+                if (!handleInput?.value.trim()) { showError('Enter your maker handle.'); return; }
+                if (!domainInput?.value.trim()) { showError('Enter the domain you control.'); return; }
+            }
+            hideMessages();
+            goToStep(next);
+        });
+    });
+
+    document.querySelectorAll('[data-prev]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            hideMessages();
+            goToStep(Number((btn as HTMLElement).getAttribute('data-prev')));
+        });
+    });
+
+    document.querySelectorAll('input[name="method"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            if (claimToken) renderToken(claimToken);
+            else {
+                const method = selectedMethod();
+                document.querySelectorAll('[data-instruction]').forEach((el) => {
+                    (el as HTMLElement).hidden = el.getAttribute('data-instruction') !== method;
+                });
+            }
+        });
+    });
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!apiBaseUrl) { showError('Claiming is temporarily unavailable.'); return; }
+        const makerHandle = handleInput?.value.trim() ?? '';
+        const domain = domainInput?.value.trim() ?? '';
+        const ownerEmail = emailInput?.value.trim() ?? '';
+        if (!makerHandle || !domain || !ownerEmail) { showError('Fill in your handle, domain, and owner email.'); return; }
+
+        if (startBtn) startBtn.disabled = true;
+        hideMessages();
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/claim/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ makerHandle, domain, method: selectedMethod(), ownerEmail }),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                if (response.status === 429) showError('Too many requests. Please try again later.');
+                else if (response.status === 400 && data.error === 'invalid_domain') showError('That domain looks invalid. Use e.g. example.com.');
+                else if (response.status === 400 && data.error === 'blocked_domain') showError('Local or private domains cannot be claimed.');
+                else showError('Could not start your claim. Check the fields and try again.');
+                return;
+            }
+            claimId = data.claimId;
+            renderToken(data.token);
+            goToStep(4);
+            showSuccess(`Token issued for @${makerHandle}. Place it via ${selectedMethod().toUpperCase()}, then press Verify now.`);
+        } catch (error) {
+            console.error('Claim start error:', error);
+            showError('Network error. Please check your connection and try again.');
+        } finally {
+            if (startBtn) startBtn.disabled = false;
+        }
+    });
+
+    checkBtn?.addEventListener('click', async () => {
+        if (!apiBaseUrl) { showError('Claiming is temporarily unavailable.'); return; }
+        if (!claimId) { showError('Start your claim first to get a token.'); return; }
+        checkBtn.disabled = true;
+        hideMessages();
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/claim/check`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ claimId }),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                showError(response.status === 404 ? 'Claim not found. Start again.' : 'Check failed. Please try again.');
+                return;
+            }
+            if (data.verified) {
+                showSuccess('Token verified. Your claim is now in the manual review queue (within 48 hours).');
+                void pollStatus();
+            } else {
+                showError(`Token not found yet (${data.detail ?? 'no match'}). DNS can take a while. Keep the token in place and re-check.`);
+            }
+        } catch (error) {
+            console.error('Claim check error:', error);
+            showError('Network error. Please check your connection and try again.');
+        } finally {
+            checkBtn.disabled = false;
+        }
+    });
+
+    async function pollStatus() {
+        if (!apiBaseUrl || !handleInput) return;
+        const makerHandle = handleInput.value.trim();
+        if (!makerHandle) return;
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/claim/status?makerHandle=${encodeURIComponent(makerHandle)}`);
+            const data = await response.json().catch(() => ({}));
+            if (response.ok && data.claim && successText) {
+                const status = String(data.claim.status ?? '');
+                if (status === 'approved') successText.textContent = 'Claim approved. This profile is now maker-owned.';
+                else if (status === 'rejected' && errorText) {
+                    errorBox?.classList.add('show');
+                    errorText.textContent = 'This claim was not approved. Contact us if you think that is a mistake.';
+                }
+            }
+        } catch {
+            // Status polling is best-effort; the check result above is authoritative.
+        }
+    }

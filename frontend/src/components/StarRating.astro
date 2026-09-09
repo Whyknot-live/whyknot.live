@@ -1,0 +1,18 @@
+---
+/* StarRating — read-only rating display. Text glyphs, never emoji. */
+export interface Props {
+    value: number;
+    max?: number;
+    label?: string;
+}
+
+const { value, max = 5, label } = Astro.props;
+const clamped = Math.min(max, Math.max(0, Math.round(value)));
+const text = label ?? `Rated ${clamped} out of ${max}`;
+---
+
+<span class="stars" role="img" aria-label={text}>
+    {Array.from({ length: max }, (_, i) => (
+        <span class={i < clamped ? 'star-on' : 'star-off'} aria-hidden="true">★</span>
+    ))}
+</span>

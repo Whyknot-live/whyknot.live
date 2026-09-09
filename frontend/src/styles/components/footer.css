@@ -42,21 +42,18 @@
   align-items: center;
   text-decoration: none;
   color: inherit;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
   width: fit-content;
 }
 
 .footer-logo:hover {
-  opacity: 0.8;
+  opacity: 0.9;
+  transform: scale(1.04);
 }
 
-.footer-logo .logo-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(-60deg, var(--color-accent-300), var(--color-accent-200));
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+.footer-logo .whyknot-logo-img {
+  height: 42px;
+  max-height: 42px;
 }
 
 .footer-tagline {

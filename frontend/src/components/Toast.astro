@@ -1,0 +1,37 @@
+---
+/* Toast — polite live-region stack. Fire from anywhere after this component
+   renders once per page: window.WhyKnotToast.show('Saved', 'success'). */
+---
+
+<div class="toast-stack" data-toasts aria-live="polite" aria-atomic="false"></div>
+
+<script>
+    function initToasts() {
+        if ('WhyKnotToast' in window) return;
+        const show = (message, tone) => {
+            const host = document.querySelector('[data-toasts]');
+            if (!(host instanceof HTMLElement)) return;
+            const el = document.createElement('div');
+            el.className = 'toast';
+            if (tone) el.dataset.tone = tone;
+            el.textContent = message;
+            host.appendChild(el);
+            window.setTimeout(() => el.remove(), 4200);
+            while (host.children.length > 3) host.firstElementChild?.remove();
+        };
+        window.WhyKnotToast = { show };
+        document.querySelectorAll('[data-toast]:not([data-wired])').forEach((trigger) => {
+            trigger.setAttribute('data-wired', 'true');
+            trigger.addEventListener('click', () => {
+                show(trigger.getAttribute('data-toast') ?? '', trigger.getAttribute('data-toast-tone') ?? undefined);
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initToasts);
+    } else {
+        initToasts();
+    }
+    document.addEventListener('astro:page-load', initToasts);
+</script>

@@ -1,0 +1,77 @@
+---
+/* /launches/upcoming — scheduled launches with a live countdown.
+   Until scheduledAt ships in the schema, publishedAt doubles as the
+   scheduled moment (see patch notes). Sorted soonest-first. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import LaunchCard from '../../components/LaunchCard.astro';
+import Countdown from '../../components/Countdown.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import TimeStamp from '../../components/TimeStamp.astro';
+import { getFlatLaunches } from '../../lib/content';
+import { isUpcoming } from '../../lib/launch-events';
+
+const title = 'Upcoming launches | WhyKnot';
+const description = 'Scheduled launches with live countdowns. Follow along as the board opens on launch day.';
+
+const launches = await getFlatLaunches();
+const now = new Date();
+const upcoming = launches
+    .filter((launch) => isUpcoming(launch, now))
+    .sort((a, b) => a.publishedAt.valueOf() - b.publishedAt.valueOf());
+
+function scheduledFor(launch: (typeof launches)[number]): Date {
+    const withSchedule = launch as unknown as { scheduledAt?: Date | string };
+    if (withSchedule.scheduledAt) {
+        return withSchedule.scheduledAt instanceof Date
+            ? withSchedule.scheduledAt
+            : new Date(withSchedule.scheduledAt);
+    }
+    return launch.publishedAt;
+}
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Launches', href: '/launches' }, { label: 'Upcoming' }]} />
+        <SectionHeader eyebrow="Launch calendar" title="Upcoming" description={description} />
+        <div class="tabs" role="navigation" aria-label="Launch boards">
+            <a class="tab" href="/launches">Today</a>
+            <a class="tab" href="/launches/week">This week</a>
+            <a class="tab" href="/launches/month">Month</a>
+            <a class="tab" href="/launches/rising">Rising</a>
+            <a class="tab" href="/launches/upcoming" aria-current="page">Upcoming</a>
+        </div>
+        <div style="margin-top: var(--space-5)">
+            {upcoming.length > 0 ? (
+                <div class="card-grid" data-cols="2">
+                    {upcoming.map((launch) => (
+                        <div>
+                            <LaunchCard launch={launch} />
+                            <div style="margin-top: var(--space-3)">
+                                <Countdown scheduledAt={scheduledFor(launch)} />
+                                <p class="card-tagline">
+                                    Opens <TimeStamp date={scheduledFor(launch)} />.
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <EmptyState
+                    title="Nothing scheduled"
+                    body="No upcoming launches are scheduled right now. Makers can queue one for editorial review."
+                    actionHref="/submit"
+                    actionLabel="How launching works"
+                    note="the calendar is clear: your launch could be next."
+                    punSeed="upcoming-empty"
+                />
+            )}
+        </div>
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Countdowns tick down to the scheduled open. Notify-me follows with maker accounts.
+            Until then, check back on launch day. <a href="/launches">Today's board</a>
+        </p>
+    </div>
+</Layout>

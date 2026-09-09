@@ -1,0 +1,57 @@
+---
+/* /launches — today's board. Points-weighted ranking ships with accounts;
+   until then the board orders by backing velocity, stated below. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import LaunchCard from '../../components/LaunchCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { getFlatLaunches, launchDayBounds } from '../../lib/content';
+
+const title = "Today's launches | WhyKnot";
+const description = 'What makers launched today: new tools and sites, backed by the community, screened by WhyKnot.';
+
+const launches = await getFlatLaunches();
+const { today } = launchDayBounds(launches);
+const board = launches.filter((launch) => launch.publishedAt.toISOString().slice(0, 10) === today);
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Launches' }]} />
+        <SectionHeader
+            eyebrow="Launch board"
+            title="Today's launches"
+            description={description}
+        />
+        <div class="tabs" role="navigation" aria-label="Launch boards">
+            <a class="tab" href="/launches" aria-current="page">Today</a>
+            <a class="tab" href="/launches/week">This week</a>
+            <a class="tab" href="/launches/month">Month</a>
+            <a class="tab" href="/launches/rising">Rising</a>
+            <a class="tab" href="/launches/upcoming">Upcoming</a>
+            <a class="tab" href="/launches/winners">Winners</a>
+        </div>
+        <div class="cluster" style="margin: var(--space-4) 0 var(--space-5)">
+            <a class="btn" href="/submit">Submit a launch</a>
+        </div>
+        {board.length > 0 ? (
+            <div class="card-grid" data-cols="2">
+                {board.map((launch) => <LaunchCard launch={launch} />)}
+            </div>
+        ) : (
+            <EmptyState
+                title="No launches today yet"
+                body="The board resets daily. Makers can queue a launch for editorial review."
+                actionHref="/submit"
+                actionLabel="How launching works"
+                note="the runway is clear: your move, makers."
+                punSeed="launches-empty"
+            />
+        )}
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Ordered by backing velocity (backings plus triple-weighted discussion, per day live).
+            Points-weighted ranking with trust signals ships with maker accounts. <a href="/legal/methodology">How ranking works</a>
+        </p>
+    </div>
+</Layout>

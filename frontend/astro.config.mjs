@@ -1,9 +1,12 @@
 import { defineConfig } from 'astro/config';
+import pagefind from 'astro-pagefind';
+import react from '@astrojs/react';
 
 // https://docs.astro.build/en/guides/configuring-astro/
 export default defineConfig({
     site: 'https://www.whyknot.live',
     output: 'static',
+    integrations: [pagefind(), react()],
     server: {
         port: 4321,
         host: '0.0.0.0'

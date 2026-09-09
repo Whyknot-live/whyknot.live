@@ -62,21 +62,20 @@
   align-items: center;
   text-decoration: none;
   color: inherit;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .nav-logo:hover {
-  opacity: 0.8;
+  opacity: 0.9;
+  transform: scale(1.04);
 }
 
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(-60deg, var(--color-accent-300), var(--color-accent-200));
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  transition: all 0.3s ease;
+.whyknot-logo-img {
+  display: block;
+  width: auto;
+  height: 36px;
+  max-height: 36px;
+  object-fit: contain;
 }
 
 /* Desktop Navigation */
@@ -124,8 +123,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
   cursor: pointer;
@@ -280,7 +279,7 @@
 .nav-link:focus-visible,
 .mobile-nav-link:focus-visible,
 .mobile-menu-btn:focus-visible {
-  outline: 2px solid var(--color-accent-300);
+  outline: 2px solid var(--color-outline-focus);
   outline-offset: 2px;
   border-radius: 4px;
 }

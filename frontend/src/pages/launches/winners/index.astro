@@ -1,0 +1,63 @@
+---
+/* /launches/winners — weekly winners archive. Derived from weeklyWinners()
+   at build time: no manual edits, new weeks appear when the data does. */
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import SectionHeader from '../../../components/SectionHeader.astro';
+import LaunchCard from '../../../components/LaunchCard.astro';
+import EmptyState from '../../../components/EmptyState.astro';
+import { getFlatLaunches } from '../../../lib/content';
+import { weeklyWinners } from '../../../lib/launch-events';
+
+const title = 'Launch winners | WhyKnot';
+const description = 'One winner per week, picked by backing velocity. The archive updates itself.';
+
+const launches = await getFlatLaunches();
+const winners = weeklyWinners(launches);
+const weeks = [...winners.keys()].sort().reverse();
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Launches', href: '/launches' }, { label: 'Winners' }]} />
+        <SectionHeader eyebrow="Hall of fame" title="Weekly winners" description={description} />
+        <div class="tabs" role="navigation" aria-label="Launch boards">
+            <a class="tab" href="/launches">Today</a>
+            <a class="tab" href="/launches/week">This week</a>
+            <a class="tab" href="/launches/month">Month</a>
+            <a class="tab" href="/launches/rising">Rising</a>
+            <a class="tab" href="/launches/winners" aria-current="page">Winners</a>
+        </div>
+        <div style="margin-top: var(--space-5)">
+            {weeks.length > 0 ? (
+                <div class="card-grid" data-cols="2">
+                    {weeks.map((week) => {
+                        const winner = winners.get(week)!;
+                        return (
+                            <div>
+                                <p class="card-meta-row">
+                                    <span class="badge badge-pick">Winner · {week}</span>
+                                    <a class="card-tagline" href={`/launches/winners/${week}`}>Week detail →</a>
+                                </p>
+                                <LaunchCard launch={winner} />
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <EmptyState
+                    title="No winners yet"
+                    body="Winners are crowned at the end of each launch week. Check back after the first full week."
+                    actionHref="/launches"
+                    actionLabel="Today's board"
+                    note="every winner starts as a quiet launch."
+                    punSeed="winners-empty"
+                />
+            )}
+        </div>
+        <p class="method-note" style="margin-top: var(--space-8)">
+            One winner per ISO week, ranked by backing velocity (backings plus triple-weighted
+            discussion, per day live). <a href="/legal/methodology">How ranking works</a>
+        </p>
+    </div>
+</Layout>

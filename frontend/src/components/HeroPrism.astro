@@ -1,0 +1,235 @@
+---
+/* HeroPrism: typo + refraction hero from OpenCode architecture.
+   Giant left-aligned type stays in the DOM for SEO/a11y. A procedural
+   glass torus-knot floats in front, refracting a canvas-texture copy of
+   the italic line via real transmission: no HDRI, no models, no assets.
+   Poster-first: static gradient + knot glyph renders immediately and stays
+   under reduced motion, data-saver, or no WebGL. */
+export interface Props {
+    headlineA?: string;
+    headlineB?: string;
+}
+
+const {
+    headlineA = "Discover websites",
+    headlineB = "worth your time.",
+} = Astro.props;
+---
+
+<div class="prism-stage" data-prism data-line={headlineB} aria-label="Glass knot refracting the headline">
+    <div class="prism-poster" aria-hidden="true">
+        <span aria-hidden="true">🪢</span>
+    </div>
+    <!-- canvas mounted here lazily -->
+    <span class="prism-caption" aria-hidden="true">drag · scroll to turn it</span>
+</div>
+
+<script>
+    function prismTheme() {
+        const saved = document.documentElement.getAttribute("data-theme");
+        if (saved === "light" || saved === "dark") return saved;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    function makeTypeTexture(line: string) {
+        const c = document.createElement("canvas");
+        c.width = 1024;
+        c.height = 256;
+        const ctx = c.getContext("2d");
+        const draw = (theme: string) => {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.font = "italic 700 120px 'Bebas Neue', system-ui, sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = theme === "dark" ? "#c5efe9" : "#092a28";
+            ctx.fillText(line, c.width / 2, c.height / 2 + 6);
+        };
+        draw(prismTheme());
+        return { canvas: c, redraw: () => draw(prismTheme()) };
+    }
+
+    async function mountPrism(stage: HTMLElement) {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+        if (conn && conn.saveData === true) return;
+        if (!("WebGLRenderingContext" in window)) return;
+
+        let THREE = null;
+        let RoomEnvironment = null;
+        try {
+            THREE = await import("three");
+            const envModule = await import("three/addons/environments/RoomEnvironment.js");
+            RoomEnvironment = envModule.RoomEnvironment;
+        } catch {
+            return;
+        }
+        if (!THREE || !RoomEnvironment) return;
+
+        const canvas = document.createElement("canvas");
+        canvas.setAttribute("aria-hidden", "true");
+        stage.appendChild(canvas);
+
+        let renderer: InstanceType<typeof THREE.WebGLRenderer> | null = null;
+        try {
+            renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        } catch {
+            canvas.remove();
+            return;
+        }
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
+        camera.position.set(0, 0, 6.2);
+
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+        // Back plane: canvas-texture copy of the italic line: this is what the glass bends.
+        const line = stage.getAttribute("data-line") || "worth your time.";
+        const typeTex = makeTypeTexture(line);
+        const typeMap = new THREE.CanvasTexture(typeTex.canvas);
+        typeMap.colorSpace = THREE.SRGBColorSpace;
+        typeMap.anisotropy = 4;
+        const typePlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(4.6, 1.15),
+            new THREE.MeshBasicMaterial({ map: typeMap, transparent: true, opacity: 0.95, depthWrite: false })
+        );
+        typePlane.position.set(0, -0.15, -1.4);
+        scene.add(typePlane);
+
+        // The knot: brand mark as procedural glass with physical optical refraction.
+        const knot = new THREE.Mesh(
+            new THREE.TorusKnotGeometry(0.95, 0.3, 220, 36),
+            new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+                metalness: 0,
+                roughness: 0.06,
+                transmission: 1,
+                thickness: 1.4,
+                ior: 1.45,
+                clearcoat: 1,
+                clearcoatRoughness: 0.08,
+                iridescence: 0.32,
+                iridescenceIOR: 1.3,
+                attenuationColor: new THREE.Color(0x2fddcc),
+                attenuationDistance: 2.4,
+                specularIntensity: 1,
+                envMapIntensity: 1.1,
+            })
+        );
+        knot.position.set(0.55, 0.1, 0.4);
+        scene.add(knot);
+
+        // Key + rim lighting so the glass reads on both themes.
+        const key = new THREE.DirectionalLight(0xffffff, 1.6);
+        key.position.set(3, 4, 5);
+        scene.add(key);
+        const rim = new THREE.PointLight(0x2dd4bf, 18, 20);
+        rim.position.set(-3.5, -1.5, 2.5);
+        scene.add(rim);
+
+        // Sparse sparkles: one quiet layer, not a particle explosion.
+        const N = 170;
+        const pos = new Float32Array(N * 3);
+        for (let i = 0; i < N; i++) {
+            pos[i * 3] = (Math.random() - 0.5) * 7;
+            pos[i * 3 + 1] = (Math.random() - 0.5) * 4.4;
+            pos[i * 3 + 2] = -1 + Math.random() * 2.4;
+        }
+        const sparkGeo = new THREE.BufferGeometry();
+        sparkGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        const sparks = new THREE.Points(
+            sparkGeo,
+            new THREE.PointsMaterial({ color: 0x5eead4, size: 0.022, transparent: true, opacity: 0.65, depthWrite: false })
+        );
+        scene.add(sparks);
+
+        const resize = () => {
+            const w = Math.max(1, stage.clientWidth);
+            const h = Math.max(1, stage.clientHeight);
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        };
+        resize();
+        const ro = new ResizeObserver(resize);
+        ro.observe(stage);
+
+        const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+        if (window.matchMedia("(pointer: fine)").matches) {
+            stage.addEventListener("pointermove", (e: MouseEvent) => {
+                const r = stage.getBoundingClientRect();
+                pointer.tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+                pointer.ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
+            });
+            stage.addEventListener("pointerleave", () => { pointer.tx = 0; pointer.ty = 0; });
+        }
+
+        const themeObs = new MutationObserver(() => {
+            typeTex.redraw();
+            typeMap.needsUpdate = true;
+            const dark = prismTheme() === "dark";
+            rim.intensity = dark ? 22 : 12;
+            sparks.material.opacity = dark ? 0.7 : 0.45;
+        });
+        themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+        let visible = true;
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((en) => { visible = en.isIntersecting; });
+        });
+        io.observe(stage);
+
+        const clock = new THREE.Clock();
+        let scrollY = 0;
+        renderer.setAnimationLoop(() => {
+            if (!visible || document.hidden) return;
+            const t = clock.getElapsedTime();
+            pointer.x += (pointer.tx - pointer.x) * 0.045;
+            pointer.y += (pointer.ty - pointer.y) * 0.045;
+            scrollY += ((window.scrollY || 0) - scrollY) * 0.04;
+            const turn = scrollY / window.innerHeight;
+
+            knot.rotation.y = t * 0.16 + pointer.x * 0.55 + turn * 1.2;
+            knot.rotation.x = Math.sin(t * 0.22) * 0.18 - pointer.y * 0.3;
+            knot.position.y = 0.1 + Math.sin(t * 0.5) * 0.07;
+            sparks.rotation.y = t * 0.014 + pointer.x * 0.05;
+            camera.position.x += (pointer.x * 0.28 - camera.position.x) * 0.04;
+            camera.position.y += (-pointer.y * 0.2 - camera.position.y) * 0.04;
+            camera.lookAt(0.3, 0, 0);
+            renderer.render(scene, camera);
+        });
+        stage.setAttribute("data-prism", "live");
+    }
+
+    function initPrisms() {
+        document.querySelectorAll("[data-prism]:not([data-prism-done])").forEach((stage) => {
+            if (!(stage instanceof HTMLElement)) return;
+            stage.setAttribute("data-prism-done", "true");
+            if (!("IntersectionObserver" in window)) {
+                void mountPrism(stage);
+                return;
+            }
+            const io = new IntersectionObserver((entries, obs) => {
+                entries.forEach((en) => {
+                    if (en.isIntersecting) {
+                        obs.disconnect();
+                        void mountPrism(stage);
+                    }
+                });
+            }, { rootMargin: "240px" });
+            io.observe(stage);
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initPrisms);
+    } else {
+        initPrisms();
+    }
+    document.addEventListener("astro:page-load", initPrisms);
+</script>

@@ -347,7 +347,7 @@ router.get('/admin/check', async (c) => {
 
     authLogger.debug('Admin auth check: authenticated')
     return c.json({ ok: true, authenticated: true })
-  } catch (err) {
+  } catch (_err) {
     return c.json({ ok: true, authenticated: false })
   }
 })
@@ -368,6 +368,151 @@ router.post('/admin/logout', verifyAdminToken, async (c) => {
   })
   authLogger.info('Admin logout successful')
   return c.json({ ok: true })
+})
+
+type ClaimDoc = {
+  claimId: string
+  makerHandle: string
+  domain: string
+  method: string
+  status: string
+  createdAt?: Date
+  reviewedAt?: Date
+  [key: string]: unknown
+}
+
+// Maker-claim review queue (P1, C2: human review)
+router.get('/admin/claims', verifyAdminToken, async (c) => {
+  const env = validateEnv()
+  await connectMongo(env.MONGODB_URI, env.MONGODB_DB)
+  const db = getDb()
+  try {
+    const page = Math.max(1, Number.parseInt(c.req.query('page') ?? '1', 10) || 1)
+    const limit = Math.max(1, Math.min(Number.parseInt(c.req.query('limit') ?? '50', 10) || 50, 200))
+    const skip = (page - 1) * limit
+    const search = (c.req.query('search') ?? '').trim()
+    const method = (c.req.query('method') ?? '').trim()
+    const status = (c.req.query('status') ?? '').trim()
+    if (c.req.query('stats') === '1') {
+      const [pending, approved, decided] = await Promise.all([
+        db.collection<ClaimDoc>('claims').countDocuments({ status: 'pending' }),
+        db.collection<ClaimDoc>('claims').countDocuments({ status: 'approved' }),
+        db.collection<ClaimDoc>('claims').find({ reviewedAt: { $exists: true }, createdAt: { $exists: true } }).project({ createdAt: 1, reviewedAt: 1 }).toArray()
+      ])
+      const durs = decided
+        .map((d) => new Date(d.reviewedAt as Date).valueOf() - new Date(d.createdAt as Date).valueOf())
+        .filter((n) => Number.isFinite(n) && n >= 0)
+        .sort((a, b) => a - b)
+      const medianReviewTimeMs = durs.length === 0 ? null : durs[Math.floor(durs.length / 2)]
+      return c.json({ ok: true, stats: { pending, approved, medianReviewTimeMs } })
+    }
+    const filter: Filter<ClaimDoc> = {}
+    if (search) filter.makerHandle = { $regex: escapeRegexFragment(search), $options: 'i' }
+    if (method) filter.method = method
+    if (status) filter.status = status
+    const total = await db.collection<ClaimDoc>('claims').countDocuments(filter)
+    const items = await db.collection<ClaimDoc>('claims').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray()
+    return c.json({ ok: true, data: items, pagination: { page, limit, total, pages: Math.max(1, Math.ceil(total / limit)) } })
+  } catch (err) {
+    apiLogger.error('Admin claims fetch error', { error: err instanceof Error ? err.message : 'Unknown error' })
+    return c.json({ error: 'server_error' }, 500)
+  }
+})
+
+router.post('/admin/claims/:id', verifyAdminToken, async (c) => {
+  const env = validateEnv()
+  await connectMongo(env.MONGODB_URI, env.MONGODB_DB)
+  const db = getDb()
+  try {
+    const parsed = z.object({ decision: z.enum(['approved', 'rejected']), note: z.string().max(500).optional() }).safeParse(await c.req.json().catch(() => null))
+    if (!parsed.success) return c.json({ error: 'invalid_request' }, 400)
+    const res = await db.collection<ClaimDoc>('claims').updateOne(
+      { claimId: c.req.param('id'), status: 'pending' },
+      { $set: { status: parsed.data.decision, reviewerNote: parsed.data.note ?? null, reviewedAt: new Date() } }
+    )
+    if (res.matchedCount === 0) return c.json({ error: 'not_found' }, 404)
+    return c.json({ ok: true })
+  } catch (err) {
+    apiLogger.error('Admin claim review error', { error: err instanceof Error ? err.message : 'Unknown error' })
+    return c.json({ error: 'server_error' }, 500)
+  }
+})
+
+type SubmissionDoc = {
+  slug: string
+  url: string
+  name: string
+  status: string
+  slotDate?: string
+  [key: string]: unknown
+}
+
+// Submission review queue (P1 submit-flow: approve/request-changes/reject)
+router.get('/admin/submissions', verifyAdminToken, async (c) => {
+  const env = validateEnv()
+  await connectMongo(env.MONGODB_URI, env.MONGODB_DB)
+  const db = getDb()
+  try {
+    const page = Math.max(1, Number.parseInt(c.req.query('page') ?? '1', 10) || 1)
+    const limit = Math.max(1, Math.min(Number.parseInt(c.req.query('limit') ?? '50', 10) || 50, 200))
+    const skip = (page - 1) * limit
+    const status = (c.req.query('status') ?? '').trim()
+    const filter: Filter<SubmissionDoc> = {}
+    if (status) filter.status = status
+    const total = await db.collection<SubmissionDoc>('submissions').countDocuments(filter)
+    const items = await db.collection<SubmissionDoc>('submissions').find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray()
+    const queued = await db.collection<SubmissionDoc>('submissions').countDocuments({ status: 'queued' })
+    return c.json({ ok: true, data: items, pagination: { page, limit, total, pages: Math.max(1, Math.ceil(total / limit)) }, queued })
+  } catch (err) {
+    apiLogger.error('Admin submissions fetch error', { error: err instanceof Error ? err.message : 'Unknown error' })
+    return c.json({ error: 'server_error' }, 500)
+  }
+})
+
+router.post('/admin/submissions/:slug', verifyAdminToken, async (c) => {
+  const env = validateEnv()
+  await connectMongo(env.MONGODB_URI, env.MONGODB_DB)
+  const db = getDb()
+  try {
+    const parsed = z.object({ decision: z.enum(['approved', 'changes_requested', 'rejected']), reason: z.string().max(500).optional() }).safeParse(await c.req.json().catch(() => null))
+    if (!parsed.success) return c.json({ error: 'invalid_request' }, 400)
+    const status = parsed.data.decision === 'approved' ? 'approved' : parsed.data.decision === 'rejected' ? 'rejected' : 'changes_requested'
+    const res = await db.collection<SubmissionDoc>('submissions').updateOne(
+      { slug: c.req.param('slug') },
+      { $set: { status, reviewReason: parsed.data.reason ?? null, reviewedAt: new Date() } }
+    )
+    if (res.matchedCount === 0) return c.json({ error: 'not_found' }, 404)
+    // Note: paid-skip refund on reject is wired when Razorpay refunds land (submit-flow follow-up).
+    return c.json({ ok: true, status })
+  } catch (err) {
+    apiLogger.error('Admin submission review error', { error: err instanceof Error ? err.message : 'Unknown error' })
+    return c.json({ error: 'server_error' }, 500)
+  }
+})
+
+// Newsletter preview/send (P1 newsletter-531; send stays 501 until ESP scale decision)
+router.post('/admin/newsletter/preview', verifyAdminToken, async (c) => {
+  try {
+    const { buildIssueFromContent } = await import('../jobs/send-newsletter')
+    const { buildNewsletterHtml, buildNewsletterText } = await import('../templates/newsletter-531')
+    const body = await c.req.json().catch(() => null)
+    const parsed = z.object({
+      rising: z.array(z.object({ name: z.string(), tagline: z.string(), url: z.string(), sponsored: z.boolean().optional() })).length(5),
+      deals: z.array(z.object({ name: z.string(), tagline: z.string(), url: z.string(), sponsored: z.boolean().optional() })).length(3),
+      underdog: z.object({ name: z.string(), tagline: z.string(), url: z.string() })
+    }).safeParse(body)
+    if (!parsed.success) return c.json({ error: 'invalid_request' }, 400)
+    const issue = await buildIssueFromContent(parsed.data.rising, parsed.data.deals, parsed.data.underdog)
+    return c.json({ ok: true, html: buildNewsletterHtml(issue), text: buildNewsletterText(issue) })
+  } catch (err) {
+    apiLogger.error('Newsletter preview error', { error: err instanceof Error ? err.message : 'Unknown error' })
+    return c.json({ error: 'server_error' }, 500)
+  }
+})
+
+router.post('/admin/newsletter/send', verifyAdminToken, async (c) => {
+  apiLogger.warn('Newsletter send attempted before ESP scale decision')
+  return c.json({ error: 'not_enabled', message: 'Bulk send disabled until ESP scale decision. Use preview.' }, 501)
 })
 
 export default router

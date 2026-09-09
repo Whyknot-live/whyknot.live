@@ -1,188 +1,166 @@
 ---
-import Logo from "./Logo.astro";
+/* Global product navigation. Items for unbuilt phases render with an honest
+   "Soon" tag (aria-disabled) and flip to live links as phases land. */
+import Logo from './Logo.astro';
 
 export interface Props {
     transparent?: boolean;
 }
 
 const { transparent = false } = Astro.props;
+const pathname = Astro.url.pathname;
+
+interface NavItem {
+    label: string;
+    href: string;
+    live: boolean;
+}
+
+const ITEMS: NavItem[] = [
+    { label: 'Discover', href: '/discover', live: true },
+    { label: 'Screener', href: '/screener', live: true },
+    { label: 'Launches', href: '/launches', live: true },
+    { label: 'Collections', href: '/collections', live: true },
+    { label: 'Topics', href: '/topics', live: true },
+    { label: 'Pricing', href: '/pricing', live: true },
+];
+
+function isActive(href: string): boolean {
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+}
 ---
 
-<nav
-    class={`minimal-nav ${transparent ? "nav-transparent" : ""}`}
-    role="navigation"
-    aria-label="Main navigation"
->
+<nav class={`main-nav${transparent ? ' nav-transparent' : ''}`} aria-label="Main navigation" data-pagefind-ignore>
     <div class="nav-container">
+        <div class="nav-brand">
+            <a href="/" class="nav-logo" aria-label="WhyKnot homepage">
+                <Logo width={36} height={36} useImage={true} />
+            </a>
+        </div>
+        <div class="nav-links" role="list">
+            {ITEMS.map((item) =>
+                item.live ? (
+                    <a
+                        href={item.href}
+                        role="listitem"
+                        class={`nav-link${isActive(item.href) ? ' nav-link--active' : ''}`}
+                        aria-current={isActive(item.href) ? 'page' : undefined}
+                    >
+                        {item.label}
+                    </a>
+                ) : (
+                    <span role="listitem">
+                        <a
+                            href={item.href}
+                            class="nav-link"
+                            aria-disabled="true"
+                            title={`${item.label} is coming soon`}
+                            onclick="return false;"
+                        >
+                            {item.label} <span class="soon-tag">Soon</span>
+                        </a>
+                    </span>
+                ),
+            )}
+            <span class="nav-cta">
+                <a href="/#waitlist" class="btn">Get early access</a>
+            </span>
+            <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle color theme">
+                <span class="theme-toggle-icon" aria-hidden="true">◐</span>
+            </button>
+        </div>
         <button
-            class="nav-logo theme-toggle-logo"
-            aria-label="Toggle theme (Click to switch between light and dark mode)"
-            data-theme-toggle-logo
+            type="button"
+            class="mobile-menu-btn"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+            aria-label="Open menu"
+            data-menu-btn
         >
-            <Logo width={42} height={42} />
+            <span class="hamburger-line" aria-hidden="true"></span>
+            <span class="hamburger-line" aria-hidden="true"></span>
+            <span class="hamburger-line" aria-hidden="true"></span>
         </button>
+    </div>
+    <div class="mobile-nav" id="mobile-nav" aria-hidden="true" data-mobile-nav>
+        <div class="mobile-nav-content">
+            {ITEMS.map((item) =>
+                item.live ? (
+                    <a
+                        href={item.href}
+                        class={`mobile-nav-link${isActive(item.href) ? ' mobile-nav-link--active' : ''}`}
+                        aria-current={isActive(item.href) ? 'page' : undefined}
+                    >
+                        {item.label}
+                    </a>
+                ) : (
+                    <a href={item.href} class="mobile-nav-link" aria-disabled="true" title={`${item.label} is coming soon`} onclick="return false;">
+                        {item.label} <span class="soon-tag">Soon</span>
+                    </a>
+                ),
+            )}
+            <div class="mobile-nav-cta">
+                <a href="/#waitlist" class="btn mobile-nav-btn">Get early access</a>
+            </div>
+            <div class="mobile-nav-cta">
+                <button type="button" class="btn btn-ghost mobile-nav-btn" data-theme-toggle>Toggle theme</button>
+            </div>
+        </div>
     </div>
 </nav>
 
-<style>
-    .minimal-nav {
-        position: fixed;
-        bottom: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(32px) saturate(180%);
-        -webkit-backdrop-filter: blur(32px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 1.5rem;
-        z-index: 100;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow:
-            0 8px 32px -8px rgba(49, 67, 72, 0.1),
-            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-    }
-
-    .minimal-nav:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: translateX(-50%) translateY(-2px);
-        box-shadow:
-            0 12px 48px -12px rgba(32, 197, 181, 0.15),
-            0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-    }
-
-    .nav-container {
-        padding: 1rem 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .nav-logo {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        transition: transform 0.3s ease;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        border-radius: 50%;
-    }
-
-    .theme-toggle-logo {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        border-radius: 50%;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-    }
-
-    .theme-toggle-logo::before {
-        content: "";
-        position: absolute;
-        inset: -8px;
-        border-radius: 50%;
-        background: transparent;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        opacity: 0;
-        scale: 0.8;
-    }
-
-    .nav-logo:hover,
-    .theme-toggle-logo:hover {
-        transform: scale(1.1);
-    }
-
-    .theme-toggle-logo:hover::before {
-        background: rgba(32, 197, 181, 0.1);
-        backdrop-filter: blur(12px);
-        opacity: 1;
-        scale: 1;
-    }
-
-    .theme-toggle-logo:active {
-        transform: scale(1.05);
-    }
-
-    .theme-toggle-logo:focus-visible {
-        outline: 2px solid var(--color-accent-300);
-        outline-offset: 4px;
-    }
-
-    .nav-logo :global(img) {
-        filter: drop-shadow(0 4px 8px rgba(32, 197, 181, 0.3));
-        transition: filter 0.3s ease;
-    }
-
-    .nav-logo:hover :global(img) {
-        filter: drop-shadow(0 6px 12px rgba(32, 197, 181, 0.5));
-    }
-
-    .nav-transparent {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    @media (max-width: 768px) {
-        .minimal-nav {
-            bottom: 1rem;
-            left: 1rem;
-            right: 1rem;
-            transform: none;
-        }
-
-        .minimal-nav:hover {
-            transform: translateY(-2px);
-        }
-
-        .nav-container {
-            padding: 0.8rem 1rem;
-        }
-
-        .nav-logo :global(img) {
-            width: 36px;
-            height: 36px;
-        }
-    }
-</style>
-
 <script>
-    // Theme toggle functionality for logo click
-    function initLogoThemeToggle() {
-        const themeToggleLogo = document.querySelector(
-            "[data-theme-toggle-logo]",
-        );
+    function initProductNav() {
+        const btn = document.querySelector('[data-menu-btn]');
+        const panel = document.querySelector('[data-mobile-nav]');
+        if (!(btn instanceof HTMLButtonElement) || !(panel instanceof HTMLElement)) return;
 
-        if (themeToggleLogo) {
-            themeToggleLogo.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+        const setOpen = (open) => {
+            btn.setAttribute('aria-expanded', String(open));
+            btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+            panel.setAttribute('aria-hidden', String(!open));
+        };
 
-                // Get current theme
-                const currentTheme =
-                    document.documentElement.getAttribute("data-theme");
-                const newTheme = currentTheme === "dark" ? "light" : "dark";
+        btn.addEventListener('click', () => {
+            setOpen(btn.getAttribute('aria-expanded') !== 'true');
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                setOpen(false);
+                btn.focus();
+            }
+        });
+        panel.querySelectorAll('a:not([aria-disabled="true"])').forEach((link) => {
+            link.addEventListener('click', () => setOpen(false));
+        });
 
-                // Apply new theme
-                document.documentElement.setAttribute("data-theme", newTheme);
-                localStorage.setItem("theme", newTheme);
+        const nav = btn.closest('.main-nav');
+        const onScroll = () => {
+            if (!(nav instanceof HTMLElement)) return;
+            nav.classList.toggle('nav-scrolled', window.scrollY > 24);
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        document.querySelectorAll('[data-theme-toggle]').forEach((toggle) => {
+            toggle.addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('theme', next);
+                } catch {
+                    /* storage unavailable — theme still applies for session */
+                }
             });
-        }
+        });
     }
 
-    // Initialize on DOM ready
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initLogoThemeToggle);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initProductNav);
     } else {
-        initLogoThemeToggle();
+        initProductNav();
     }
-
-    // Re-initialize on Astro page transitions
-    document.addEventListener("astro:page-load", initLogoThemeToggle);
+    document.addEventListener('astro:page-load', initProductNav);
 </script>

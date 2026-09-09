@@ -1,70 +1,407 @@
 ---
+/* / — product gateway: split hero with a living knot, sticky Screener story,
+   snap rails, bento collections. Every link resolves today. */
 import Layout from "../layouts/Layout.astro";
-import ComingSoon from "../components/ComingSoon.astro";
 import Waitlist from "../components/Waitlist.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import SiteCard from "../components/SiteCard.astro";
+import CollectionCard from "../components/CollectionCard.astro";
+import ScoreRing from "../components/ScoreRing.astro";
+import VerifyBadge from "../components/VerifyBadge.astro";
+import SourceLine from "../components/SourceLine.astro";
+import HeroConstellation from "../components/HeroConstellation.astro";
+import SectionEggs from "../components/SectionEggs.astro";
+import { SpotlightCard } from "../components/react/SpotlightCard";
+import { CountUp } from "../components/react/CountUp";
+import { getFlatSites, getFlatCollections, getFlatTopics, facetTerms, stackTerms } from "../lib/content";
 
-const title = "WhyKnot? - Launching Soon";
+const title = "WhyKnot | Discover websites worth your time";
 const description =
-    "Something amazing is coming September 19, 2026. Join our alpha community starting September 19th and be the first to discover the web's most innovative websites and tools.";
+    "WhyKnot is a curated library of exceptional websites. Every entry is scored for quality and performance, verified for ownership, and traceable to its evidence.";
 
 const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "WhyKnot",
     description: description,
-    url: "https://whyknot.live",
+    url: "https://www.whyknot.live",
+    potentialAction: {
+        "@type": "SearchAction",
+        target: "https://www.whyknot.live/search?q={query}",
+        "query-input": "required name=query",
+    },
 };
+
+const sites = await getFlatSites();
+const collections = await getFlatCollections();
+const topics = await getFlatTopics();
+const picks = sites.filter((site) => site.score >= 90);
+const [feature, ...pickRest] = picks;
+const rail = sites.slice(0, 6);
+const ticker = stackTerms(sites).slice(0, 14);
+const avg = sites.length > 0 ? sites.reduce((sum, site) => sum + site.score, 0) / sites.length : 0;
+const categoryCount = facetTerms(sites, "category").length;
+const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
 ---
 
-<Layout
-    title={title}
-    description={description}
-    keywords="innovative websites, creative tools, web discovery, design inspiration, coming soon, alpha access"
-    schema={schema}
-    transparentNav={true}
-    hideFooter={true}
-    bodyClass="snap-scroll-container"
->
-    <div class="snap-scroll-wrapper">
-        <ComingSoon />
-        <Waitlist />
+<Layout title={title} description={description} schema={schema} transparentNav={true}>
+    <!-- Hero: live map of the library behind, type + handmade props in front -->
+    <section class="hero-cover-section" aria-labelledby="gateway-title">
+        <HeroConstellation sites={sites} />
+        <div class="hero-cover-scrim" aria-hidden="true"></div>
+        <p class="hand-note tape-note hero-tape" data-reveal="fade">every claim pinned to its proof ↓</p>
+        <div class="container hero-cover-content">
+            <p class="eyebrow-mono" data-reveal="fade">A curated library · scored · verified</p>
+            <h1 id="gateway-title" class="gateway-title" data-reveal="fade">
+                Discover websites <em>worth your <span class="gradient-text">time.</span></em>
+            </h1>
+            <p class="gateway-sub" data-reveal data-blur style="--reveal-delay: 120ms">
+                A curated library of exceptional websites. Every entry scored for quality
+                and performance, verified for ownership, traceable to its evidence.
+            </p>
+            <form class="scan-bar" action="/search" method="get" role="search" data-reveal style="--reveal-delay: 220ms">
+                <label class="sr-only" for="gateway-search">Search the library</label>
+                <input id="gateway-search" type="search" name="q" placeholder="Try “portfolio”, “AI”, “Astro”…" autocomplete="off" required />
+                <kbd class="scan-kbd" aria-hidden="true">/</kbd>
+                <button type="submit" class="btn" data-magnet="0.12">Search</button>
+            </form>
+            <div class="hero-stamp-row" data-reveal style="--reveal-delay: 300ms">
+                <span class="stamp">screened · not scraped</span>
+                <svg class="doodle-arrow" viewBox="0 0 54 40" aria-hidden="true" focusable="false">
+                    <path d="M4 6 C 18 8, 34 12, 44 30 M36 24 L44 30 L46 20" />
+                </svg>
+                <a class="prism-secondary" href="/discover">See the bar <span class="arrow" aria-hidden="true">→</span></a>
+            </div>
+            <div class="hero-cover-meta" data-reveal style="--reveal-delay: 360ms">
+                <span class="hero-meta-item">
+                    <span class="live-dot" aria-hidden="true"></span>
+                    <strong>{sites.length}</strong> verified entries
+                </span>
+                <span class="hero-meta-sep" aria-hidden="true">/</span>
+                <span class="hero-meta-item">
+                    <strong>{avg.toFixed(1)}</strong> quality baseline
+                </span>
+                <span class="hero-meta-sep" aria-hidden="true">/</span>
+                <span class="hero-meta-item">
+                    <strong>{collections.length}</strong> curated collections
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Proof strip: confident metrics, hairline grid -->
+    <div class="container prism-proof" aria-label="Library coverage">
+        <div class="prism-proof-inner" data-reveal>
+            <div class="proof-cell">
+                <span class="proof-num">{sites.length}</span>
+                <span class="proof-label">sites curated</span>
+            </div>
+            <div class="proof-cell">
+                <span class="proof-num">{avg.toFixed(1)}</span>
+                <span class="proof-label">avg WhyKnot score</span>
+            </div>
+            <div class="proof-cell">
+                <span class="proof-num">{categoryCount}</span>
+                <span class="proof-label">categories</span>
+            </div>
+            <div class="proof-cell">
+                <span class="proof-num">{collections.length}</span>
+                <span class="proof-label">collections</span>
+            </div>
+        </div>
     </div>
+
+    <section aria-label="Browse topics" class="topics-strip">
+        <div class="container">
+            <div class="cluster">
+                {topics.map((topic) => (
+                    <a class="chip" href={`/topics/${topic.slug}`}>{topic.name}</a>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- Stack ticker -->
+    <div class="marquee" aria-label="Technologies detected across the library">
+        <div class="marquee-track">
+            {ticker.map((term) => <span class="tech-badge">{term.value}</span>)}
+            {ticker.map((term) => <span class="tech-badge" aria-hidden="true">{term.value}</span>)}
+        </div>
+    </div>
+
+    <!-- Featured: one story + shortlist -->
+    {feature && (
+        <section aria-labelledby="gateway-featured">
+            <div class="container section">
+                <div data-reveal data-view-rise>
+                    <SectionHeader
+                        index="01"
+                        knot
+                        eyebrow="Exceptional"
+                        title="The top of the shelf"
+                        description="Every week our editors inspect the web for work that makes people stop. High-scoring, verified, and impossible to forget."
+                        aside="The bar is non-negotiable. Only the top percentile survives."
+                        href="/editors-picks"
+                        linkLabel="All picks"
+                    />
+                </div>
+                <div class="feature-grid">
+                    <article class="card spot-card feature-card" data-reveal>
+                        <a class="site-card-link" href={`/sites/${feature.slug}`} aria-label={`${feature.name}: ${feature.tagline}`}>
+                            <div class="site-shot" data-accent={feature.accent} role="img" aria-label={`Preview placeholder for ${feature.name}`}>
+                                <span class="shot-mono" aria-hidden="true">{featureMono}</span>
+                            </div>
+                            <div class="card-meta-row">
+                                <span class="badge badge-pick">Editor's Pick</span>
+                                <VerifyBadge state={feature.verified ? 'verified' : 'unverified'} />
+                            </div>
+                            <h3>{feature.name}</h3>
+                            <p class="card-tagline">{feature.tagline}</p>
+                            <div class="feature-rings">
+                                <ScoreRing score={feature.score} label="Overall" size="sm" />
+                                <ScoreRing score={feature.performance} label="Perf" size="sm" />
+                            </div>
+                        </a>
+                    </article>
+                    <div class="leaderboard" data-reveal style="--reveal-delay: 120ms">
+                        {pickRest.slice(0, 3).map((site) => (
+                            <a class="leaderboard-row" href={`/sites/${site.slug}`}>
+                                <ScoreRing score={site.score} size="sm" />
+                                <span class="leaderboard-main"><strong>{site.name}</strong><span>{site.tagline}</span></span>
+                            </a>
+                        ))}
+                        <a class="leaderboard-row" href="/editors-picks">
+                            <span class="leaderboard-main"><strong>All editor's picks →</strong><span>Every 90+ site in one place</span></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )}
+
+    <!-- Trending rail -->
+    <section aria-labelledby="gateway-trending">
+        <div class="container section">
+            <div data-reveal data-view-rise>
+                <SectionHeader
+                    index="02"
+                    knot
+                    eyebrow="Feed"
+                    title="Trending now"
+                    description="Highest WhyKnot scores across the library. Drag or scroll sideways."
+                    aside="Rank determined by execution. Capital buys zero velocity."
+                    href="/trending"
+                    linkLabel="Full ranking"
+                />
+            </div>
+            <div class="rail" data-reveal style="--reveal-delay: 100ms">
+                {rail.map((site) => <SiteCard site={site} />)}
+                <a class="rail-end" href="/trending">Full ranking →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screener: sticky story with ambient gravitational easter egg -->
+    <section aria-labelledby="gateway-screener" id="screener" style="position: relative; overflow: hidden;">
+        <SectionEggs opacity={0.3} particleCount={48} />
+        <div class="container section" style="position: relative; z-index: 1;">
+            <div data-reveal data-view-rise>
+                <SectionHeader
+                    index="03"
+                    knot
+                    eyebrow="Screener"
+                    title="Inspect before you admire"
+                    description="Paste any public URL and WhyKnot reports performance, accessibility, SEO, technology, and security, with evidence attached to every claim."
+                    aside="Synthetic audits reveal what marketing conceals."
+                />
+            </div>
+            <div class="sticky-split">
+                <div class="sticky-rail" data-reveal>
+                    <div class="terminal" role="img" aria-label="Animated preview of a Screener run: fetch, screenshot, Lighthouse audit, technology detection, and security checks completing in sequence.">
+                        <div class="terminal-bar" aria-hidden="true">
+                            <span class="terminal-dot" data-c="a"></span>
+                            <span class="terminal-dot" data-c="b"></span>
+                            <span class="terminal-dot" data-c="c"></span>
+                            <span style="margin-left: 0.5rem">whyknot screener (preview)</span>
+                        </div>
+                        <div class="terminal-scanbar" aria-hidden="true"></div>
+                        <div class="terminal-body" data-scan-lines aria-hidden="true"></div>
+                    </div>
+                    <div class="cluster" style="margin-top: var(--space-4)">
+                        <a class="btn btn-primary" href="/screener" data-magnet="0.12">Launch Screener →</a>
+                        <a class="btn btn-secondary" href="/screener/report/sample" data-magnet="0.12">View Sample Audit</a>
+                    </div>
+                </div>
+                <div class="scan-steps">
+                    <div class="scan-step" data-reveal><span class="step-index">Step 01</span><h3>Paste a URL</h3><p>Any public website. Validation, normalization, and clear privacy expectations up front.</p></div>
+                    <div class="scan-step" data-reveal><span class="step-index">Step 02</span><h3>Evidence attached</h3><p>Screenshots, Core Web Vitals, stack fingerprints, headers, and metadata, each labeled by source and confidence.</p></div>
+                    <div class="scan-step" data-reveal><span class="step-index">Step 03</span><h3>Scores that show work</h3><p>Findings carry severity, explanation, and fixes: never a bare number.</p></div>
+                    <div class="scan-step" data-reveal><span class="step-index">Step 04</span><h3>History and sharing</h3><p>Score timelines plus machine-readable reports you can link anywhere.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Collections bento -->
+    <section aria-labelledby="gateway-collections">
+        <div class="container section">
+            <div data-reveal data-view-rise>
+                <SectionHeader
+                    index="04"
+                    knot
+                    eyebrow="Curated"
+                    title="Collections with a point of view"
+                    aside="Curated under strict editorial tension."
+                    href="/collections"
+                    linkLabel="All collections"
+                />
+            </div>
+            <div class="card-grid" data-cols="3" data-reveal style="--reveal-delay: 100ms">
+                {collections.slice(0, 3).map((collection, i) => (
+                    <div class={i === 0 ? 'span-2' : undefined}>
+                        <CollectionCard
+                            slug={collection.slug}
+                            name={collection.name}
+                            description={collection.description}
+                            count={collection.siteSlugs.length || collection.count}
+                        />
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust -->
+    <section aria-labelledby="gateway-trust">
+        <div class="container section">
+            <div data-reveal data-view-rise>
+                <SectionHeader
+                    index="05"
+                    knot
+                    eyebrow="Trust"
+                    title="Beauty you can check"
+                    description="Four rules govern every fact on WhyKnot. Money never buys a score."
+                    href="/legal/methodology"
+                    linkLabel="Methodology"
+                />
+            </div>
+            <div class="card-grid" data-cols="3" data-reveal style="--reveal-delay: 100ms">
+                <div class="card spot-card">
+                    <VerifyBadge state="verified" date="2026-09-01" />
+                    <h3>Ownership, proven</h3>
+                    <p class="card-tagline">Domain verification by DNS, file, or meta tag, with timestamps, expiry, and audit history.</p>
+                </div>
+                <div class="card spot-card">
+                    <h3>Every claim has a source</h3>
+                    <div class="cluster">
+                        <SourceLine source="detected" timestamp="2026-09-09" confidence="high" />
+                        <SourceLine source="owner" timestamp="2026-09-02" confidence="high" />
+                        <SourceLine source="editor" timestamp="2026-09-01" />
+                    </div>
+                    <p class="card-tagline">Automated detection, owner confirmation, editorial judgment, and community input are never blurred together.</p>
+                </div>
+                <div class="card spot-card">
+                    <h3>Scores show their work</h3>
+                    <ScoreRing score={94} label="Example" size="sm" />
+                    <p class="card-tagline">Category breakdowns, findings with severity and evidence, and scan history on every profile.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Maker entry -->
+    <section aria-labelledby="gateway-maker">
+        <div class="container section">
+            <div class="card spot-card" data-tone="accent" data-reveal data-view-rise>
+                <SectionHeader
+                    index="06"
+                    knot
+                    eyebrow="Makers"
+                    title="Built something exceptional?"
+                    description="Claim your site, verify ownership, and launch to a community that reads the evidence. Submissions open with the launch feed."
+                    aside="Launch to a community that inspects the evidence."
+                />
+                <div class="cluster">
+                    <a class="btn btn-primary" href="/submit" data-magnet="0.12">Submit a Launch →</a>
+                    <a class="btn btn-ghost" href="/discover">See the bar</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <Waitlist />
 </Layout>
 
-<style>
-    .snap-scroll-container {
-        scroll-snap-type: y mandatory;
-        overflow-y: scroll;
-        height: 100vh;
+<script>
+    /* Press "/" anywhere to jump to the library search. */
+    function initSearchShortcut() {
+        if (document.documentElement.hasAttribute("data-search-shortcut")) return;
+        document.documentElement.setAttribute("data-search-shortcut", "true");
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return;
+            const target = event.target;
+            if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return;
+            const field = document.querySelector("#gateway-search");
+            if (field instanceof HTMLInputElement) {
+                event.preventDefault();
+                field.focus();
+            }
+        });
     }
 
-    .snap-scroll-wrapper {
-        height: 100vh;
-        overflow-y: scroll;
-        scroll-snap-type: y mandatory;
-        scroll-behavior: smooth;
+    function initScanPreview() {
+        const host = document.querySelector('[data-scan-lines]');
+        if (!(host instanceof HTMLElement) || host.hasAttribute('data-done')) return;
+        host.setAttribute('data-done', 'true');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const stages = [
+            ['dim', '$ whyknot scan https://example.com'],
+            ['run', 'fetch ............ running'],
+            ['run', 'screenshot ..... running'],
+            ['run', 'lighthouse ..... running'],
+            ['run', 'technology ..... running'],
+            ['run', 'security ....... running'],
+            ['ok', 'fetch ............ done'],
+            ['ok', 'screenshot ..... done'],
+            ['ok', 'report ready: scores with evidence attached'],
+            ['dim', 'Sample output: live scanning opens soon.'],
+        ];
+        host.innerHTML = '';
+        if (reduce) {
+            stages.forEach(([tone, text]) => appendLine(host, tone, text));
+            return;
+        }
+        let i = 0;
+        const step = () => {
+            if (i > 0) {
+                const prev = host.children[host.children.length - 1];
+                if (prev && stages[i - 1][0] === 'run') {
+                    prev.innerHTML = `<span class="t-ok">${stages[i - 1][1].replace('running', 'done&nbsp;&nbsp;&nbsp;')}</span>`;
+                }
+            }
+            if (i >= stages.length) return;
+            appendLine(host, stages[i][0], stages[i][1]);
+            i += 1;
+            window.setTimeout(step, i === 1 ? 500 : 620);
+        };
+        step();
+
+        function appendLine(root, tone, text) {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            const span = document.createElement('span');
+            span.className = tone === 'ok' ? 't-ok' : tone === 'run' ? 't-run' : 't-dim';
+            span.textContent = text;
+            line.appendChild(span);
+            root.appendChild(line);
+        }
     }
 
-    /* Hide scrollbar but keep functionality */
-    .snap-scroll-wrapper::-webkit-scrollbar {
-        display: none;
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => { initSearchShortcut(); initScanPreview(); });
+    } else {
+        initSearchShortcut();
+        initScanPreview();
     }
-
-    .snap-scroll-wrapper {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    /* Ensure sections take full height and snap */
-    :global(.coming-soon-section),
-    :global(.waitlist-section) {
-        height: 100vh;
-        scroll-snap-align: start;
-        scroll-snap-stop: always;
-    }
-
-    /* Add smooth scroll behavior */
-    html {
-        scroll-behavior: smooth;
-    }
-</style>
+    document.addEventListener('astro:page-load', () => { initSearchShortcut(); initScanPreview(); });
+</script>

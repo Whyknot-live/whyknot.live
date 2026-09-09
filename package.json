@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "astro-pagefind": "^2.0.1"
+  }
+}

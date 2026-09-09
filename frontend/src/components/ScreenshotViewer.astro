@@ -1,0 +1,60 @@
+---
+/* ScreenshotViewer — desktop/mobile preview toggle for site profiles.
+   Renders real captures when provided, otherwise a labeled placeholder so a
+   missing screenshot never looks like a broken image. */
+export interface Props {
+    name: string;
+    accent: 'coral' | 'blue' | 'green' | 'yellow';
+    desktopSrc?: string;
+    mobileSrc?: string;
+}
+
+const { name, accent, desktopSrc, mobileSrc } = Astro.props;
+const mono = name.trim().charAt(0).toUpperCase() || 'W';
+const viewerId = `shots-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+---
+
+<div class="shot-viewer" data-frame="desktop" data-shot-viewer>
+    <div class="seg-group" role="group" aria-label={`Preview size for ${name}`}>
+        <button type="button" class="seg" aria-pressed="true" data-frame-button="desktop">Desktop</button>
+        <button type="button" class="seg" aria-pressed="false" data-frame-button="mobile">Mobile</button>
+    </div>
+    <div class="site-shot" data-accent={accent} role="img" aria-label={`Preview of ${name}`}>
+        {desktopSrc || mobileSrc ? (
+            <>
+                {desktopSrc && <img src={desktopSrc} alt={`${name} on desktop`} data-frame-img="desktop" />}
+                {mobileSrc && <img src={mobileSrc} alt={`${name} on mobile`} data-frame-img="mobile" hidden />}
+                {!desktopSrc && mobileSrc && <img src={mobileSrc} alt={`${name}`} data-frame-img="desktop" />}
+            </>
+        ) : (
+            <span class="shot-mono" aria-hidden="true">{mono}</span>
+        )}
+    </div>
+</div>
+
+<script>
+    function initShotViewers() {
+        document.querySelectorAll('[data-shot-viewer]:not([data-wired])').forEach((viewer) => {
+            viewer.setAttribute('data-wired', 'true');
+            const buttons = [...viewer.querySelectorAll('[data-frame-button]')];
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const frame = button.getAttribute('data-frame-button') ?? 'desktop';
+                    viewer.setAttribute('data-frame', frame);
+                    buttons.forEach((other) => other.setAttribute('aria-pressed', String(other === button)));
+                    viewer.querySelectorAll('[data-frame-img]').forEach((img) => {
+                        const kind = img.getAttribute('data-frame-img');
+                        if (img instanceof HTMLImageElement) img.hidden = kind !== frame && kind !== 'desktop';
+                    });
+                });
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initShotViewers);
+    } else {
+        initShotViewers();
+    }
+    document.addEventListener('astro:page-load', initShotViewers);
+</script>

@@ -53,6 +53,86 @@ export async function connectMongo(uri: string, dbName: string) {
             { email: 1 },
             { unique: true, background: true }
         )
+        await db.collection('entitlements').createIndex(
+            { email: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('payment_orders').createIndex(
+            { orderId: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('payment_events').createIndex(
+            { key: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('subscriptions').createIndex(
+            { subscriptionId: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('submissions').createIndex(
+            { urlNormalized: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('submissions').createIndex(
+            { slug: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('submissions').createIndex(
+            { status: 1, slotDate: 1 },
+            { background: true }
+        )
+        await db.collection('slot_orders').createIndex(
+            { slot: 1, date: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('slot_orders').createIndex(
+            { orderId: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('slot_events').createIndex(
+            { slot: 1, kind: 1 },
+            { background: true }
+        )
+        await db.collection('claims').createIndex(
+            { claimId: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('claims').createIndex(
+            { makerHandle: 1, createdAt: -1 },
+            { background: true }
+        )
+        await db.collection('claims').createIndex(
+            { status: 1, createdAt: -1 },
+            { background: true }
+        )
+        await db.collection('newsletter_subscribers').createIndex(
+            { email: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('newsletter_subscribers').createIndex(
+            { confirmToken: 1 },
+            { background: true }
+        )
+        await db.collection('newsletter_subscribers').createIndex(
+            { unsubscribeToken: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('newsletter_issues').createIndex(
+            { slug: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('newsletter_issues').createIndex(
+            { number: -1 },
+            { background: true }
+        )
+        await db.collection('newsletter_sends').createIndex(
+            { issueSlug: 1, email: 1 },
+            { unique: true, background: true }
+        )
+        await db.collection('newsletter_sends').createIndex(
+            { issueSlug: 1 },
+            { background: true }
+        )
         dbLogger.info('MongoDB indexes created successfully')
     } catch (error) {
         dbLogger.warn('Index creation warning', {

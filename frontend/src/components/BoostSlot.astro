@@ -1,0 +1,28 @@
+---
+/* BoostSlot — the ONLY paid launch-surface wrapper.
+   Distinct <aside data-ad-slot="launch-boost"> kept OUTSIDE the ranked grid:
+   never sorted into rank, never fed to scoring. Always renders SponsoredTag. */
+import SponsoredTag from './SponsoredTag.astro';
+
+interface Props {
+    title?: string;
+    href?: string;
+    blurb?: string;
+}
+
+const { title, href, blurb } = Astro.props;
+const hasHeader = Boolean(title ?? href ?? blurb);
+---
+<aside class="card spot-card boost-slot" data-ad-slot="launch-boost" aria-label="Sponsored placement (does not affect rank)">
+    <div class="card-meta-row">
+        <SponsoredTag showWhy />
+    </div>
+    {hasHeader && (
+        <div class="boost-slot-body">
+            {title && (href ? <h3><a href={href}>{title}</a></h3> : <h3>{title}</h3>)}
+            {blurb && <p class="card-tagline">{blurb}</p>}
+        </div>
+    )}
+    <slot />
+    <p class="card-tagline">Paid placement. Outside the ranked grid: it cannot change scores, ranks, or badges.</p>
+</aside>

@@ -1,0 +1,183 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import ScoreRing from '../../components/ScoreRing.astro';
+import TechBadge from '../../components/TechBadge.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { getFlatSites } from '../../lib/content';
+
+const title = 'WhyKnot Screener | Transparent Website Technical Audits';
+const description = 'Analyze any public website in seconds. Real-time scores for Performance, Accessibility, Best Practices, SEO, Security Headers, and Tech Stack.';
+
+const sites = await getFlatSites();
+const featuredSites = sites.slice(0, 4);
+
+const sampleSites = [
+    { label: 'Astro', url: 'https://astro.build' },
+    { label: 'Linear', url: 'https://linear.app' },
+    { label: 'Resend', url: 'https://resend.com' },
+    { label: 'Raycast', url: 'https://raycast.com' },
+    { label: 'Cloudflare', url: 'https://cloudflare.com' },
+];
+---
+
+<Layout title={title} description={description}>
+    <div class="screener-wrap">
+        <Breadcrumbs trail={[{ label: 'Home', href: '/' }, { label: 'Screener' }]} />
+
+        <!-- Hero & URL Input -->
+        <section class="screener-hero" aria-labelledby="screener-title">
+            <div class="screener-badge">
+                <span class="pulse-dot" aria-hidden="true"></span>
+                WhyKnot Autonomous Screener
+            </div>
+            <h1 id="screener-title" class="screener-hero-title">
+                Inspect Any Website.<br />
+                <span class="gradient-text">Beauty × Function × Trust.</span>
+            </h1>
+            <p class="screener-hero-desc">
+                Enter a public URL to run our full-spectrum technical audit: Performance, Accessibility, SEO, Security Headers, and Tech Stack fingerprinting.
+            </p>
+
+            <form id="screener-form" class="screener-form" action="/screener/scan" method="GET">
+                <div class="screener-input-wrap">
+                    <span class="screener-prefix" aria-hidden="true">https://</span>
+                    <input
+                        type="text"
+                        name="url"
+                        id="screener-url-input"
+                        class="screener-input"
+                        placeholder="example.com"
+                        required
+                        autocomplete="off"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        aria-label="Website address to scan"
+                    />
+                    <button type="submit" class="screener-btn" id="screener-submit-btn">
+                        Analyze Website →
+                    </button>
+                </div>
+
+                <div class="screener-quick-chips">
+                    <span>Try an example:</span>
+                    {sampleSites.map((s) => (
+                        <a href={`/screener/scan?url=${encodeURIComponent(s.url)}`} class="screener-chip">
+                            {s.label}
+                        </a>
+                    ))}
+                </div>
+            </form>
+        </section>
+
+        <!-- What WhyKnot Checks (The 6 Pillars) -->
+        <section class="screener-pillars-section" aria-labelledby="pillars-heading">
+            <SectionHeader
+                eyebrow="Capabilities"
+                title="What WhyKnot Analyzes"
+                description="Our scanner runs deterministic, non-invasive audits to reveal what is under the hood."
+            />
+
+            <div class="screener-pillars-grid">
+                <div class="screener-pillar-card">
+                    <div class="screener-pillar-icon" aria-hidden="true">⚡</div>
+                    <h3 class="screener-pillar-title">Performance & Core Vitals</h3>
+                    <p class="screener-pillar-desc">
+                        Measures Time to First Byte (TTFB), total document weight, asset density, and estimated DOM complexity to gauge real-world rendering speed.
+                    </p>
+                </div>
+
+                <div class="screener-pillar-card">
+                    <div class="screener-pillar-icon" aria-hidden="true">♿</div>
+                    <h3 class="screener-pillar-title">Accessibility Heuristics</h3>
+                    <p class="screener-pillar-desc">
+                        Verifies HTML language declaration, responsive viewport tags, image alt text coverage, semantic landmarks, and heading hierarchies.
+                    </p>
+                </div>
+
+                <div class="screener-pillar-card">
+                    <div class="screener-pillar-icon" aria-hidden="true">🛡️</div>
+                    <h3 class="screener-pillar-title">Security & Headers</h3>
+                    <p class="screener-pillar-desc">
+                        Audits Strict-Transport-Security (HSTS), Content-Security-Policy (CSP), X-Frame-Options, X-Content-Type-Options, and SSL cipher integrity.
+                    </p>
+                </div>
+
+                <div class="screener-pillar-card">
+                    <div class="screener-pillar-icon" aria-hidden="true">🔍</div>
+                    <h3 class="screener-pillar-title">SEO & Structured Data</h3>
+                    <p class="screener-pillar-desc">
+                        Inspects page titles, meta descriptions, Open Graph banners, Twitter cards, canonical URLs, and schema.org JSON-LD microdata.
+                    </p>
+                </div>
+
+                <div class="screener-pillar-card">
+                    <div class="screener-pillar-icon" aria-hidden="true">🧩</div>
+                    <h3 class="screener-pillar-title">Technology Fingerprinting</h3>
+                    <p class="screener-pillar-desc">
+                        Detects underlying frontend frameworks (Astro, Next.js, React, Vue, Svelte), CMS platforms, CDNs, hosting infrastructure, and analytics scripts.
+                    </p>
+                </div>
+
+                <div class="screener-pillar-card">
+                    <div class="screener-pillar-icon" aria-hidden="true">📋</div>
+                    <h3 class="screener-pillar-title">Actionable Findings</h3>
+                    <p class="screener-pillar-desc">
+                        Synthesizes prioritized High, Medium, and Low severity recommendations with clear evidence and direct steps for developer remediation.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Audits From The Library -->
+        <section class="screener-pillars-section" aria-labelledby="featured-audits-heading">
+            <SectionHeader
+                eyebrow="Audited Sites"
+                title="Recent Screener Reports"
+                description="Explore real audit reports from exceptional websites in our curated catalog."
+            />
+
+            <div class="screener-score-cards-grid">
+                {featuredSites.map((site) => (
+                    <div class="screener-score-card">
+                        <div class="screener-card-top">
+                            <span class="screener-card-label">{site.category}</span>
+                            <span class="screener-card-grade">Score {site.score}</span>
+                        </div>
+                        <div>
+                            <h3 class="screener-step-name">{site.name}</h3>
+                            <p class="screener-step-desc">{site.tagline}</p>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto;">
+                            <ScoreRing score={site.score} size="md" label="Composite" />
+                            <a href={`/screener/report/${site.slug}`} class="chip-link">
+                                View Audit →
+                            </a>
+                        </div>
+                        {site.stack && site.stack.length > 0 && (
+                            <div class="screener-tech-wrap">
+                                {site.stack.slice(0, 3).map((t) => (
+                                    <TechBadge name={t} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </section>
+
+        <!-- Bottom CTA for Makers -->
+        <div class="screener-cta-banner">
+            <div>
+                <h2 class="screener-cta-title">Built something exceptional?</h2>
+                <p class="screener-cta-desc">
+                    Claim your website profile on WhyKnot to get verified ownership, automated re-scans, and eligibility for our weekly launch competition.
+                </p>
+            </div>
+            <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+                <a href="/verify" class="btn btn-secondary">Learn About Verification</a>
+                <a href="/submit" class="btn btn-primary">Submit a Launch →</a>
+            </div>
+        </div>
+    </div>
+</Layout>

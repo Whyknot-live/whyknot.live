@@ -179,7 +179,7 @@
 }
 
 .cookie-toggle input:focus-visible+.toggle-slider {
-  outline: 2px solid var(--color-accent-300);
+  outline: 2px solid var(--color-outline-focus);
   outline-offset: 2px;
 }
 

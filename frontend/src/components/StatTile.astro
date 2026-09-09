@@ -1,0 +1,28 @@
+---
+/* StatTile — Single metric summary tile with delta indicator and subtext.
+   Used for dashboard analytics, screener telemetry, and launch velocity. */
+interface Props {
+    label: string;
+    value: string | number;
+    delta?: string;
+    deltaDirection?: 'positive' | 'negative' | 'neutral';
+    subtext?: string;
+}
+
+const { label, value, delta, deltaDirection = 'neutral', subtext } = Astro.props;
+---
+
+<div class="stat-tile">
+    <span class="stat-tile-label">{label}</span>
+    <div class="stat-tile-value-row">
+        <span class="stat-tile-value">{value}</span>
+        {delta && (
+            <span class={`stat-tile-delta is-${deltaDirection}`} aria-label={`Change: ${delta}`}>
+                {deltaDirection === 'positive' && '↑ '}
+                {deltaDirection === 'negative' && '↓ '}
+                {delta}
+            </span>
+        )}
+    </div>
+    {subtext && <span class="stat-tile-sub">{subtext}</span>}
+</div>

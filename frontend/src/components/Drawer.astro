@@ -1,0 +1,55 @@
+---
+/* Drawer — side panel on desktop, bottom sheet on mobile (see .drawer CSS).
+   Open with <button data-drawer-open="id">. */
+export interface Props {
+    id: string;
+    title: string;
+}
+
+const { id, title } = Astro.props;
+---
+
+<aside class="drawer" id={id} role="dialog" aria-modal="false" aria-label={title} aria-hidden="true" data-drawer>
+    <div class="modal-head">
+        <h2 id={`${id}-title`}>{title}</h2>
+        <button type="button" class="modal-x" data-drawer-close aria-label={`Close ${title}`}>×</button>
+    </div>
+    <div class="modal-body">
+        <slot />
+    </div>
+</aside>
+
+<script>
+    function initDrawers() {
+        const close = (drawer) => {
+            drawer.classList.remove('open');
+            drawer.setAttribute('aria-hidden', 'true');
+        };
+        document.querySelectorAll('[data-drawer-open]:not([data-wired])').forEach((trigger) => {
+            trigger.setAttribute('data-wired', 'true');
+            trigger.addEventListener('click', () => {
+                const drawer = document.getElementById(trigger.getAttribute('data-drawer-open') ?? '');
+                if (!(drawer instanceof HTMLElement)) return;
+                drawer.classList.add('open');
+                drawer.setAttribute('aria-hidden', 'false');
+            });
+        });
+        document.querySelectorAll('[data-drawer]:not([data-wired])').forEach((drawer) => {
+            drawer.setAttribute('data-wired', 'true');
+            drawer.querySelectorAll('[data-drawer-close]').forEach((btn) => {
+                btn.addEventListener('click', () => close(drawer));
+            });
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            document.querySelectorAll('[data-drawer].open').forEach((drawer) => close(drawer));
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDrawers);
+    } else {
+        initDrawers();
+    }
+    document.addEventListener('astro:page-load', initDrawers);
+</script>

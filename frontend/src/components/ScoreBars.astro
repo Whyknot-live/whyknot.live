@@ -1,0 +1,43 @@
+---
+/* ScoreBars — labeled category meters with honest null states. Shared by
+   site profiles, Screener reports, and launch evidence panels. */
+export interface ScoreRow {
+    name: string;
+    value: number | null;
+}
+
+export interface Props {
+    rows: ScoreRow[];
+}
+
+const { rows } = Astro.props;
+
+function band(value: number): 'good' | 'soso' | 'poor' {
+    if (value >= 90) return 'good';
+    if (value >= 50) return 'soso';
+    return 'poor';
+}
+---
+
+<div class="profile-bars">
+    {rows.map((row) =>
+        row.value === null ? (
+            <div class="score-bar">
+                <div class="score-bar-row">
+                    <span class="score-bar-name">{row.name}</span>
+                    <span class="score-bar-val">Awaiting scan</span>
+                </div>
+            </div>
+        ) : (
+            <div class="score-bar" data-band={band(row.value)}>
+                <div class="score-bar-row">
+                    <span class="score-bar-name">{row.name}</span>
+                    <span class="score-bar-val">{row.value}</span>
+                </div>
+                <div class="score-bar-track">
+                    <div class="score-bar-fill" style={`width: ${row.value}%`}></div>
+                </div>
+            </div>
+        ),
+    )}
+</div>

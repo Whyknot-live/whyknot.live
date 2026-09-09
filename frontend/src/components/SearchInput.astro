@@ -1,0 +1,32 @@
+---
+/* SearchInput: reusable GET search form (gateway hero uses .scan-bar;
+   everywhere else uses this compact variant). `hint` renders a handwritten
+   nudge with example queries: the human way to teach search. */
+export interface Props {
+    action?: string;
+    name?: string;
+    placeholder?: string;
+    value?: string;
+    buttonLabel?: string;
+    hint?: string;
+}
+
+const {
+    action = "/search",
+    name = "q",
+    placeholder = "Search the library…",
+    value = "",
+    buttonLabel = "Search",
+    hint,
+} = Astro.props;
+const inputId = `search-${name}`;
+---
+
+<div class="search-wrap">
+    <form class="search-input" action={action} method="get" role="search">
+        <label class="sr-only" for={inputId}>Search</label>
+        <input id={inputId} type="search" name={name} placeholder={placeholder} value={value} autocomplete="off" />
+        <button type="submit" class="btn btn-secondary">{buttonLabel}</button>
+    </form>
+    {hint && <p class="hand-note search-hint">{hint}</p>}
+</div>

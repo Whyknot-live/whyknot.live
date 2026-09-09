@@ -1,0 +1,119 @@
+---
+/* SlotPicker — calendar grid fed by GET /api/slots/availability.
+   Props: inputName (radio group name), days (window size, max 60).
+   Full days render disabled; the first available day is pre-checked.
+   Uses getApiBaseUrl from shared resolver. */
+interface Props {
+    inputName?: string;
+    days?: number;
+}
+const { inputName = 'slotDate', days = 14 } = Astro.props;
+---
+
+<div class="slot-picker" data-slot-picker data-days={days} data-input-name={inputName}>
+    <p class="form-note" data-slot-status>Scanning launch queue availability…</p>
+    <div class="slot-options-grid" data-slot-options></div>
+</div>
+
+<script>
+    import { getApiBaseUrl } from '../lib/api-base';
+
+    interface SlotItem {
+        date: string;
+        capacity: number;
+        available: number;
+    }
+
+    function formatSlotDate(isoDate: string): string {
+        try {
+            const parts = isoDate.split('-');
+            if (parts.length === 3) {
+                const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+                return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            }
+        } catch {
+            // fallback
+        }
+        return isoDate;
+    }
+
+    async function hydrateSlotPicker(root: Element) {
+        const status = root.querySelector('[data-slot-status]');
+        const options = root.querySelector('[data-slot-options]');
+        const inputName = (root as HTMLElement).dataset.inputName || 'slotDate';
+        const days = (root as HTMLElement).dataset.days || '14';
+
+        if (!options) return;
+
+        try {
+            const apiBase = getApiBaseUrl();
+            const res = await fetch(`${apiBase}/api/slots/availability?days=${encodeURIComponent(days)}`);
+            if (!res.ok) throw new Error('availability failed');
+            const slots: SlotItem[] = await res.json();
+            if (!Array.isArray(slots) || slots.length === 0) throw new Error('no slots');
+
+            options.textContent = '';
+            let checkedFirst = false;
+
+            slots.forEach((slot) => {
+                const card = document.createElement('label');
+                card.className = 'slot-option-card';
+
+                const isFull = slot.available <= 0;
+                if (isFull) {
+                    card.classList.add('is-disabled');
+                }
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = inputName;
+                radio.value = slot.date;
+                radio.disabled = isFull;
+                radio.style.position = 'absolute';
+                radio.style.opacity = '0';
+                radio.style.pointerEvents = 'none';
+
+                if (!isFull && !checkedFirst) {
+                    radio.checked = true;
+                    card.classList.add('is-selected');
+                    checkedFirst = true;
+                }
+
+                radio.addEventListener('change', () => {
+                    options.querySelectorAll('.slot-option-card').forEach((c) => c.classList.remove('is-selected'));
+                    if (radio.checked) {
+                        card.classList.add('is-selected');
+                    }
+                });
+
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'slot-card-date';
+                dateSpan.textContent = formatSlotDate(slot.date);
+
+                const badge = document.createElement('span');
+                badge.className = `slot-card-badge ${isFull ? 'is-full' : ''}`;
+                badge.textContent = isFull ? 'Full' : `${slot.available} left`;
+
+                card.appendChild(radio);
+                card.appendChild(dateSpan);
+                card.appendChild(badge);
+                options.appendChild(card);
+            });
+
+            if (status) {
+                status.textContent = checkedFirst
+                    ? 'Available launch dates: pick your deployment day.'
+                    : 'Current queue is at capacity. Select skip-the-queue below.';
+            }
+        } catch (error) {
+            console.error('Slot picker error:', error);
+            if (status) {
+                status.textContent = 'Queue schedule is temporarily offline. Please retry shortly.';
+            }
+        }
+    }
+
+    document.querySelectorAll('[data-slot-picker]').forEach((root) => {
+        void hydrateSlotPicker(root);
+    });
+</script>

@@ -1,0 +1,32 @@
+---
+/* EmptyState — no results / no saves / no launches yet. Always offers a
+   next step. The knot carries the visual (a loose end, honestly labeled);
+   `note` adds a handwritten human aside. `glyph` remains as a legacy
+   override for one-off cases. */
+import HeroKnot from "./HeroKnot.astro";
+
+export interface Props {
+    title: string;
+    body?: string;
+    actionHref?: string;
+    actionLabel?: string;
+    glyph?: string;
+    knot?: boolean;
+    note?: string;
+    punSeed?: string;
+}
+
+const { title, body, actionHref, actionLabel, glyph, knot = true, note, punSeed = title } = Astro.props;
+---
+
+<div class="empty-state state-card" role="status">
+    {glyph ? (
+        <span class="state-glyph" aria-hidden="true">{glyph}</span>
+    ) : knot ? (
+        <HeroKnot size="sm" static tone="ghost" caption={null} punSeed={punSeed} />
+    ) : null}
+    <h3>{title}</h3>
+    {body && <p>{body}</p>}
+    {note && <p class="hand-note">{note}</p>}
+    {actionHref && actionLabel && <a class="btn" href={actionHref}>{actionLabel}</a>}
+</div>

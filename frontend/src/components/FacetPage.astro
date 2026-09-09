@@ -1,0 +1,41 @@
+---
+/* FacetPage — shared template for every taxonomy route. Copy lives in
+   lib/facets.ts; routes only resolve their slug. URLs never churn. */
+import Layout from '../layouts/Layout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import TaxonomyGrid from './TaxonomyGrid.astro';
+import type { FacetDef } from '../lib/facets';
+import type { FlatSite } from '../lib/content';
+
+export interface Props {
+    def: FacetDef;
+    value: string;
+    sites: FlatSite[];
+    slug: string;
+    description?: string;
+}
+
+const { def, value, sites, slug, description: descriptionOverride } = Astro.props;
+const description = descriptionOverride || def.description(value);
+const title = def.pageTitle(value);
+const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${value} | WhyKnot`,
+    description,
+    url: `https://www.whyknot.live/${def.base}/${slug}`,
+};
+---
+
+<Layout title={title} description={description} schema={schema} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: def.parentLabel, href: def.parentHref }, { label: def.crumb(value) }]} />
+        <TaxonomyGrid
+            eyebrow={def.eyebrow}
+            title={def.heading(value)}
+            description={description}
+            sites={sites}
+            emptyTitle={def.emptyTitle(value)}
+        />
+    </div>
+</Layout>

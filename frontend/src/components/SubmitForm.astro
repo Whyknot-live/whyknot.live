@@ -1,0 +1,353 @@
+---
+/* SubmitForm: 3-step launch submit (P1).
+   1: paste URL → POST /api/scrape-preview (title/meta/stack hints).
+   2: details: name, tagline (≤60ch live counter), topics, maker handle,
+      story (80–150 words recommended, optional).
+   3: slot picker (SlotPicker) + paid-skip upsell note linking /pricing,
+      then POST /api/submit → permanent /launches/:slug URL.
+   API base resolves like Waitlist.astro: PUBLIC_API_BASE_URL, localhost
+   fallback in dev, hard error otherwise. No <style> blocks: global CSS. */
+import SlotPicker from './SlotPicker.astro';
+---
+<form class="submit-form" id="submit-form" novalidate>
+    <ol class="submit-steps">
+        <li data-step-dot="1">Link</li>
+        <li data-step-dot="2">Details</li>
+        <li data-step-dot="3">Slot</li>
+    </ol>
+
+    <!-- Step 1: paste URL -->
+    <fieldset data-step-panel="1">
+        <legend>Paste your URL</legend>
+        <div class="form-group">
+            <label for="submit-url">Live product URL</label>
+            <input
+                type="url"
+                class="form-input"
+                id="submit-url"
+                name="url"
+                placeholder="https://yourproduct.com"
+                required
+                autocomplete="url"
+            />
+        </div>
+        <div class="cluster">
+            <button type="button" class="btn btn-primary" id="submit-preview-btn">Preview</button>
+        </div>
+        <div class="card" data-preview-box hidden>
+            <h3 data-preview-title></h3>
+            <p class="card-tagline" data-preview-description></p>
+            <p class="form-note" data-preview-stack></p>
+        </div>
+        <p class="form-note" data-form-error hidden></p>
+        <div class="cluster">
+            <button type="button" class="btn" data-next-step>Continue</button>
+        </div>
+    </fieldset>
+
+    <!-- Step 2: details -->
+    <fieldset data-step-panel="2" hidden>
+        <legend>Launch details</legend>
+        <div class="form-group">
+            <label for="submit-name">Product name</label>
+            <input type="text" class="form-input" id="submit-name" name="name" required maxlength="120" />
+        </div>
+        <div class="form-group">
+            <label for="submit-tagline">Tagline</label>
+            <input
+                type="text"
+                class="form-input"
+                id="submit-tagline"
+                name="tagline"
+                required
+                maxlength="60"
+                placeholder="What it does, in one line"
+            />
+            <p class="form-note"><span data-tagline-count>0</span>/60 characters</p>
+        </div>
+        <div class="form-group">
+            <label for="submit-topics">Topics (comma-separated, up to 5)</label>
+            <input
+                type="text"
+                class="form-input"
+                id="submit-topics"
+                name="topics"
+                placeholder="ai, productivity, devtools"
+            />
+        </div>
+        <div class="form-group">
+            <label for="submit-handle">Maker handle</label>
+            <input
+                type="text"
+                class="form-input"
+                id="submit-handle"
+                name="makerHandle"
+                required
+                maxlength="64"
+                placeholder="@you"
+            />
+        </div>
+        <div class="form-group">
+            <label for="submit-story">Maker story (optional)</label>
+            <textarea
+                class="form-input"
+                id="submit-story"
+                name="story"
+                rows="5"
+                maxlength="5000"
+                placeholder="Why did you build this? What should launch-day visitors try first?"
+            ></textarea>
+            <p class="form-note"><span data-story-count>0</span> words (80–150 recommended, optional).</p>
+        </div>
+        <p class="form-note" data-form-error hidden></p>
+        <div class="cluster">
+            <button type="button" class="btn btn-ghost" data-prev-step>Back</button>
+            <button type="button" class="btn" data-next-step>Continue</button>
+        </div>
+    </fieldset>
+
+    <!-- Step 3: slot + paid skip -->
+    <fieldset data-step-panel="3" hidden>
+        <legend>Pick your launch day</legend>
+        <SlotPicker days={14} />
+        <div class="card spot-card" data-tone="accent">
+            <h3>In a hurry?</h3>
+            <p class="card-tagline">
+                Skip the free queue and launch on the day you choose. Rejected launches are
+                auto-refunded: stated up front, no fine print.
+            </p>
+            <div class="cluster">
+                <a class="btn btn-ghost" href="/pricing">See skip-the-queue pricing</a>
+            </div>
+        </div>
+        <p class="form-note" data-form-error hidden></p>
+        <div class="cluster">
+            <button type="button" class="btn btn-ghost" data-prev-step>Back</button>
+            <button type="submit" class="btn btn-primary" id="submit-final-btn">Submit launch</button>
+        </div>
+    </fieldset>
+
+    <!-- Success -->
+    <div class="card" data-success-box hidden>
+        <h3>You're in the queue</h3>
+        <p class="card-tagline" data-success-text></p>
+        <div class="cluster">
+            <a class="btn btn-primary" data-success-link href="/launches">View your launch page</a>
+            <a class="btn btn-ghost" href="/pricing">Skip the queue instead</a>
+        </div>
+    </div>
+</form>
+<script>
+    import { getApiBaseUrl } from '../lib/api-base';
+
+    const form = document.getElementById('submit-form');
+    const panels = Array.from(document.querySelectorAll('[data-step-panel]'));
+    const dots = Array.from(document.querySelectorAll('[data-step-dot]'));
+    let currentStep = 1;
+    let apiBaseUrl: string | null = null;
+    try {
+        apiBaseUrl = getApiBaseUrl();
+    } catch (error) {
+        console.error('Submit configuration error:', error);
+        showStepError(1, 'Submissions are temporarily unavailable. Please try again later.');
+    }
+
+    function showStep(n) {
+        currentStep = n;
+        for (const panel of panels) {
+            panel.hidden = panel.dataset.stepPanel !== String(n);
+        }
+        for (const dot of dots) {
+            if (dot.dataset.stepDot === String(n)) {
+                dot.setAttribute('aria-current', 'step');
+            } else {
+                dot.removeAttribute('aria-current');
+            }
+        }
+    }
+
+    function showStepError(step, message) {
+        const panel = panels.find((p) => p.dataset.stepPanel === String(step));
+        const box = panel ? panel.querySelector('[data-form-error]') : null;
+        if (box) {
+            box.textContent = message;
+            box.hidden = false;
+        }
+    }
+
+    function clearStepError(step) {
+        const panel = panels.find((p) => p.dataset.stepPanel === String(step));
+        const box = panel ? panel.querySelector('[data-form-error]') : null;
+        if (box) {
+            box.textContent = '';
+            box.hidden = true;
+        }
+    }
+
+    function countWords(text) {
+        return text.trim().split(/\s+/).filter(Boolean).length;
+    }
+
+    const urlInput = document.getElementById('submit-url');
+    const nameInput = document.getElementById('submit-name');
+    const taglineInput = document.getElementById('submit-tagline');
+    const taglineCount = document.querySelector('[data-tagline-count]');
+    const topicsInput = document.getElementById('submit-topics');
+    const handleInput = document.getElementById('submit-handle');
+    const storyInput = document.getElementById('submit-story');
+    const storyCount = document.querySelector('[data-story-count]');
+    const previewBtn = document.getElementById('submit-preview-btn');
+    const previewBox = document.querySelector('[data-preview-box]');
+    const previewTitle = document.querySelector('[data-preview-title]');
+    const previewDescription = document.querySelector('[data-preview-description]');
+    const previewStack = document.querySelector('[data-preview-stack]');
+    const finalBtn = document.getElementById('submit-final-btn');
+
+    taglineInput?.addEventListener('input', () => {
+        if (taglineCount) taglineCount.textContent = String(taglineInput.value.length);
+    });
+    storyInput?.addEventListener('input', () => {
+        if (storyCount) storyCount.textContent = String(countWords(storyInput.value));
+    });
+
+    previewBtn?.addEventListener('click', async () => {
+        clearStepError(1);
+        const url = urlInput?.value.trim() ?? '';
+        if (!url) {
+            showStepError(1, 'Paste your product URL first.');
+            return;
+        }
+        if (!apiBaseUrl) {
+            showStepError(1, 'Submissions are temporarily unavailable. Please try again later.');
+            return;
+        }
+        previewBtn.disabled = true;
+        const orig = previewBtn.textContent;
+        previewBtn.textContent = 'Fetching preview…';
+        try {
+            const res = await fetch(`${apiBaseUrl}/api/scrape-preview`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                if (res.status === 429) throw new Error('Too many requests. Please try again later.');
+                if (data.error === 'invalid_url') throw new Error('That URL does not look valid. Check it and retry.');
+                if (data.error === 'blocked_host') throw new Error('We cannot preview that host. It must be a public website.');
+                if (data.error === 'unreachable') throw new Error('We could not reach that site. Is it live?');
+                if (data.error === 'not_html') throw new Error('That URL did not return a webpage.');
+                throw new Error('Preview failed. Please try again.');
+            }
+            if (previewTitle) previewTitle.textContent = data.title || url;
+            if (previewDescription) previewDescription.textContent = data.description || 'No meta description found. Add one before launch day.';
+            if (previewStack) {
+                previewStack.textContent = data.stackHints?.length
+                    ? `Stack hints: ${data.stackHints.join(', ')}`
+                    : 'Stack hints: none detected';
+            }
+            if (previewBox) previewBox.hidden = false;
+            if (nameInput && !nameInput.value && data.title) {
+                nameInput.value = data.title;
+            }
+        } catch (error) {
+            console.error('Scrape preview error:', error);
+            showStepError(1, error instanceof Error ? error.message : 'Preview failed. Please try again.');
+        } finally {
+            previewBtn.disabled = false;
+            previewBtn.textContent = orig;
+        }
+    });
+
+    document.querySelectorAll('[data-next-step]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            clearStepError(currentStep);
+            if (currentStep === 1 && !(urlInput?.value.trim())) {
+                showStepError(1, 'Paste your product URL first.');
+                return;
+            }
+            if (currentStep === 2) {
+                if (!nameInput?.value.trim()) {
+                    showStepError(2, 'Give your product a name.');
+                    return;
+                }
+                const tagline = taglineInput?.value.trim() ?? '';
+                if (!tagline || tagline.length > 60) {
+                    showStepError(2, 'Tagline is required and must be 60 characters or fewer.');
+                    return;
+                }
+                if (!handleInput?.value.trim()) {
+                    showStepError(2, 'Add your maker handle so voters know who built this.');
+                    return;
+                }
+            }
+            showStep(Math.min(3, currentStep + 1));
+        });
+    });
+
+    document.querySelectorAll('[data-prev-step]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            clearStepError(currentStep);
+            showStep(Math.max(1, currentStep - 1));
+        });
+    });
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearStepError(3);
+        if (!apiBaseUrl) {
+            showStepError(3, 'Submissions are temporarily unavailable. Please try again later.');
+            return;
+        }
+        const slot = form.querySelector('input[name="slotDate"]:checked');
+        const topics = (topicsInput?.value ?? '')
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean)
+            .slice(0, 5);
+        // Note: the free queue date is auto-assigned server-side to the next
+        // free day — the picker above shows live queue depth. Paid skip
+        // (see /pricing) is the only way to choose an exact day in P1.
+        void slot;
+        const payload = {
+            url: urlInput?.value.trim() ?? '',
+            name: nameInput?.value.trim() ?? '',
+            tagline: taglineInput?.value.trim() ?? '',
+            topics,
+            makerHandle: handleInput?.value.trim() ?? '',
+            story: storyInput?.value.trim() || undefined
+        };
+        finalBtn.disabled = true;
+        const orig = finalBtn.textContent;
+        finalBtn.textContent = 'Submitting…';
+        try {
+            const res = await fetch(`${apiBaseUrl}/api/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                if (res.status === 429) throw new Error('Too many requests. Please try again later.');
+                if (data.error === 'already_submitted') throw new Error('This URL is already in the queue.');
+                if (data.error === 'no_slots') throw new Error('No free launch days left. Try skip-the-queue below.');
+                throw new Error('Submit failed. Please check your details and retry.');
+            }
+            for (const panel of panels) panel.hidden = true;
+            const box = document.querySelector('[data-success-box]');
+            const text = document.querySelector('[data-success-text]');
+            const link = document.querySelector('[data-success-link]');
+            if (text) text.textContent = `Launch day: ${data.slotDate}. Your page is live at ${data.url} from day one.`;
+            if (link) link.setAttribute('href', data.url);
+            if (box) box.hidden = false;
+        } catch (error) {
+            console.error('Submit error:', error);
+            showStepError(3, error instanceof Error ? error.message : 'Submit failed. Please try again.');
+        } finally {
+            finalBtn.disabled = false;
+            finalBtn.textContent = orig;
+        }
+    });
+
+    showStep(1);
+</script>

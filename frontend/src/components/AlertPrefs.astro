@@ -1,0 +1,107 @@
+---
+/* AlertPrefs — Notification preference panel for users, makers, and profile watchers.
+   Clean accessible switches wired with token styling and local persistence. */
+interface AlertOption {
+    id: string;
+    title: string;
+    description: string;
+    defaultChecked?: boolean;
+}
+
+interface Props {
+    title?: string;
+    options?: AlertOption[];
+}
+
+const defaultOptions: AlertOption[] = [
+    {
+        id: 'pref_screener_regressions',
+        title: 'Screener Regressions',
+        description: 'Instant notification when performance or security score drops below 80.',
+        defaultChecked: true
+    },
+    {
+        id: 'pref_weekly_digest',
+        title: 'Weekly Curated Brief',
+        description: 'Sunday morning synthesis of verified product launches and library additions.',
+        defaultChecked: true
+    },
+    {
+        id: 'pref_maker_mentions',
+        title: 'Verification & Discussions',
+        description: 'Alerts when your domain verification renews or discussions mention your products.',
+        defaultChecked: false
+    }
+];
+
+const { title = 'Alert Configurations', options = defaultOptions } = Astro.props;
+---
+
+<div class="alert-prefs-card" data-alert-prefs>
+    <div class="pref-head">
+        <h3>{title}</h3>
+        <p class="field-hint" style="margin-top: var(--space-1)">
+            Manage high-signal notifications. Zero marketing spam.
+        </p>
+    </div>
+
+    <div class="stack" style="gap: var(--space-3)">
+        {options.map((opt) => (
+            <div class="pref-row">
+                <div class="pref-info">
+                    <h4>{opt.title}</h4>
+                    <p>{opt.description}</p>
+                </div>
+                <label class="pref-toggle" for={opt.id}>
+                    <input
+                        type="checkbox"
+                        id={opt.id}
+                        name={opt.id}
+                        checked={opt.defaultChecked}
+                        data-pref-id={opt.id}
+                    />
+                    <span class="pref-slider" aria-hidden="true"></span>
+                    <span class="sr-only">Toggle {opt.title}</span>
+                </label>
+            </div>
+        ))}
+    </div>
+</div>
+
+<script>
+    function initAlertPrefs() {
+        document.querySelectorAll('[data-alert-prefs]:not([data-prefs-wired])').forEach((card) => {
+            card.setAttribute('data-prefs-wired', 'true');
+            card.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                const cb = input as HTMLInputElement;
+                const prefId = cb.dataset.prefId;
+                if (!prefId) return;
+
+                // Restore saved preference
+                try {
+                    const saved = localStorage.getItem(`whyknot_pref_${prefId}`);
+                    if (saved !== null) {
+                        cb.checked = saved === 'true';
+                    }
+                } catch {
+                    // storage disabled
+                }
+
+                cb.addEventListener('change', () => {
+                    try {
+                        localStorage.setItem(`whyknot_pref_${prefId}`, String(cb.checked));
+                    } catch {
+                        // storage disabled
+                    }
+                });
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAlertPrefs);
+    } else {
+        initAlertPrefs();
+    }
+    document.addEventListener('astro:page-load', initAlertPrefs);
+</script>

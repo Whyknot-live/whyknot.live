@@ -1,0 +1,68 @@
+---
+/* /launches/winners/[week] — one week of the winners archive. Static paths
+   come straight from weeklyWinners() keys: no manual edits, new weeks appear
+   when the data does. */
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import SectionHeader from '../../../components/SectionHeader.astro';
+import LaunchCard from '../../../components/LaunchCard.astro';
+import { getFlatLaunches, launchVelocity, type FlatLaunch } from '../../../lib/content';
+import { weeklyWinners, weekKey } from '../../../lib/launch-events';
+
+export async function getStaticPaths() {
+    const launches = await getFlatLaunches();
+    const winners = weeklyWinners(launches);
+    return [...winners.entries()].map(([week, winner]) => ({
+        params: { week },
+        props: { week, winner },
+    }));
+}
+
+interface Props {
+    week: string;
+    winner: FlatLaunch;
+}
+
+const { week, winner } = Astro.props as Props;
+const allLaunches = await getFlatLaunches();
+const now = allLaunches.reduce((max, launch) => Math.max(max, launch.publishedAt.valueOf()), 0);
+const weekBoard = allLaunches
+    .filter((launch) => weekKey(launch.publishedAt) === week)
+    .sort((a, b) => launchVelocity(b, now) - launchVelocity(a, now));
+const runnersUp = weekBoard.filter((launch) => launch.slug !== winner.slug);
+
+const title = `Winner ${week}: ${winner.name} | WhyKnot`;
+const description = `${winner.name} won the week of ${week} with ${winner.votes} backings and ${winner.comments} comments.`;
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs
+            trail={[
+                { label: 'Launches', href: '/launches' },
+                { label: 'Winners', href: '/launches/winners' },
+                { label: week },
+            ]}
+        />
+        <SectionHeader eyebrow={`Week ${week}`} title={winner.name} description={description} />
+        <p class="card-meta-row">
+            <span class="badge badge-pick">Winner · {week}</span>
+            <a class="card-tagline" href="/launches/winners">All winners →</a>
+        </p>
+        <div class="card-grid" data-cols="2" style="margin-top: var(--space-5)">
+            <LaunchCard launch={winner} />
+        </div>
+        {runnersUp.length > 0 && (
+            <section aria-labelledby="week-runners" style="margin-top: var(--space-8)">
+                <h2 id="week-runners">Also launched that week</h2>
+                <div class="card-grid" data-cols="2">
+                    {runnersUp.map((launch) => <LaunchCard launch={launch} />)}
+                </div>
+            </section>
+        )}
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Winner picked by backing velocity (backings plus triple-weighted discussion, per day live)
+            across every launch in ISO week {week}. <a href="/legal/methodology">How ranking works</a>
+        </p>
+    </div>
+</Layout>

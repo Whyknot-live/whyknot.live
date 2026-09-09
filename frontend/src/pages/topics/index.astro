@@ -1,0 +1,35 @@
+---
+/* /topics — every topic with live site counts (computed, not stored). */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import { getFlatSites, getFlatTopics, slugify } from '../../lib/content';
+
+const title = 'Topics | WhyKnot';
+const description = 'Browse the discovery library by topic: design, development, AI, productivity, and more.';
+
+const sites = await getFlatSites();
+const topics = await getFlatTopics();
+const withCounts = topics.map((topic) => ({
+    ...topic,
+    live: sites.filter((site) => slugify(site.category) === topic.slug).length,
+}));
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Topics' }]} />
+        <SectionHeader eyebrow="Browse" title="Topics" description={description} />
+        <div class="card-grid" data-cols="2">
+            {withCounts.map((topic) => (
+                <article class="card">
+                    <a class="collection-card-link" href={`/topics/${topic.slug}`}>
+                        <span class="collection-count">{topic.live} site{topic.live === 1 ? '' : 's'}</span>
+                        <h3>{topic.name}</h3>
+                        <p class="card-tagline">{topic.description}</p>
+                    </a>
+                </article>
+            ))}
+        </div>
+    </div>
+</Layout>

@@ -82,12 +82,12 @@ export function startHealthPing(): void {
 
   // Perform initial ping after 1 minute (give server time to fully start)
   setTimeout(() => {
-    performHealthPing()
+    void performHealthPing()
   }, 60000)
 
   // Set up recurring ping
   pingInterval = setInterval(() => {
-    performHealthPing()
+    void performHealthPing()
   }, PING_INTERVAL)
 
   healthLogger.info('Health ping started successfully')

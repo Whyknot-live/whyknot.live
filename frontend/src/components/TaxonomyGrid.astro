@@ -1,0 +1,35 @@
+---
+/* TaxonomyGrid — shared body for category/intent/industry/style/stack/topic
+   pages. Indexable landing (unique H1 + copy) over an SSG grid. Client-side
+   refinement never creates crawlable URLs (chips, no links). */
+import SectionHeader from './SectionHeader.astro';
+import SiteCard, { type SiteCardData } from './SiteCard.astro';
+import EmptyState from './EmptyState.astro';
+
+export interface Props {
+    eyebrow: string;
+    title: string;
+    description: string;
+    sites: SiteCardData[];
+    emptyTitle?: string;
+    emptyBody?: string;
+}
+
+const {
+    eyebrow,
+    title,
+    description,
+    sites,
+    emptyTitle = 'Nothing here yet',
+    emptyBody = 'Curation is ongoing. New entries appear as editors review them.',
+} = Astro.props;
+---
+
+<SectionHeader eyebrow={eyebrow} title={title} description={description} />
+{sites.length > 0 ? (
+    <div class="card-grid" data-cols="3">
+        {sites.map((site) => <SiteCard site={site} />)}
+    </div>
+) : (
+    <EmptyState title={emptyTitle} body={emptyBody} actionHref="/discover" actionLabel="Browse everything" note="Knot a dead end: try another thread." punSeed={title} />
+)}

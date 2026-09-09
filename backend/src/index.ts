@@ -5,6 +5,14 @@ import { timeout } from 'hono/timeout'
 import { securityHeaders, rateLimitMiddleware } from './middleware/security'
 import waitlistRouter from './routes/waitlist'
 import adminRouter from './routes/admin'
+import paymentsRouter from './routes/payments'
+import scrapeRouter from './routes/scrape'
+import submitRouter from './routes/submit'
+import slotsRouter from './routes/slots'
+import sponsorRouter from './routes/sponsor'
+import claimRouter from './routes/claim'
+import newsletterRouter from './routes/newsletter'
+import screenerRouter from './routes/screener'
 import { validateEnv } from './utils/env'
 import { connectMongo, closeMongo, checkMongoHealth } from './utils/mongo'
 import { connectRedis, disconnectRedis, checkRedisHealth } from './utils/redis'
@@ -55,7 +63,7 @@ logger.info('CORS origins configured', { origins: corsOrigins });
 app.use('/api/*', cors({
     origin: corsOrigins,
     credentials: true,
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
     exposeHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
     maxAge: 86400
@@ -66,6 +74,14 @@ app.use('/api/*', rateLimitMiddleware())
 
 app.route('/api', waitlistRouter)
 app.route('/api', adminRouter)
+app.route('/api', paymentsRouter)
+app.route('/api', scrapeRouter)
+app.route('/api', submitRouter)
+app.route('/api', slotsRouter)
+app.route('/api', sponsorRouter)
+app.route('/api', claimRouter)
+app.route('/api', newsletterRouter)
+app.route('/api', screenerRouter)
 
 // robots.txt - block all search engine indexing of API
 app.get('/robots.txt', (c) => {
@@ -178,8 +194,8 @@ async function shutdown(signal: string) {
     }
 }
 
-process.on('SIGTERM', () => shutdown('SIGTERM'))
-process.on('SIGINT', () => shutdown('SIGINT'))
+process.on('SIGTERM', () => { void shutdown('SIGTERM') })
+process.on('SIGINT', () => { void shutdown('SIGINT') })
 
 // Start server
 startup().then(() => {

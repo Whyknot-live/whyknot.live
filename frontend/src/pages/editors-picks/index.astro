@@ -1,0 +1,43 @@
+---
+/* /editors-picks — the bar is 90+. Human judgment, on the record. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import SourceLine from '../../components/SourceLine.astro';
+import { getFlatSites } from '../../lib/content';
+
+const title = "Editor's picks | WhyKnot";
+const description = "Websites scoring 90 or above: the WhyKnot editors' highest recommendation.";
+const sites = (await getFlatSites()).filter((site) => site.score >= 90);
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: "Editor's picks" }]} />
+        <SectionHeader
+            eyebrow="Editorial"
+            title="Editor's picks"
+            description={description}
+        />
+        <div class="card-meta-row" style="margin-bottom: var(--space-5)">
+            <SourceLine source="editor" />
+            <span>Bar: 90+ overall score</span>
+        </div>
+        {sites.length > 0 ? (
+            <div class="card-grid" data-cols="3">
+                {sites.map((site) => <SiteCard site={site} />)}
+            </div>
+        ) : (
+            <EmptyState
+                title="No picks yet"
+                body="The bar is 90 and above. Picks appear as editors review."
+                actionHref="/discover"
+                actionLabel="Browse everything"
+                note="the bar is high and the string is patient."
+                punSeed="picks-empty"
+            />
+        )}
+    </div>
+</Layout>

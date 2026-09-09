@@ -1,0 +1,314 @@
+---
+/* Admin claims review queue (P1 maker-claim).
+   Copies the dashboard.astro filter/table pattern: method + status filters,
+   search by handle, paginated table, approve/reject actions.
+   NOTE (integrator patch): the backend endpoints below do not exist yet:
+   add GET /api/admin/claims (list w/ method/status/search/page/limit +
+   medianReviewTimeMs in stats) and POST /api/admin/claims/:id
+   {decision: 'approved' | 'rejected'} behind verifyAdminToken in admin.ts. */
+import AdminLayout from '../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Claims review queue" description="WhyKnot maker-claim manual review">
+  <div class="admin-container">
+    <div class="floating-particles" aria-hidden="true">
+      <div class="particle particle-1"></div>
+      <div class="particle particle-2"></div>
+      <div class="particle particle-3"></div>
+      <div class="particle particle-4"></div>
+      <div class="particle particle-5"></div>
+      <div class="particle particle-6"></div>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+
+    <div class="admin-header">
+      <h1><span class="gradient-text">Claims</span> review queue</h1>
+      <p>Maker-claim manual review · SLA 48 hours</p>
+    </div>
+
+    <div id="statsContainer" class="stats-grid" style="display: none;">
+      <div class="stat-card">
+        <div class="stat-label">Pending review</div>
+        <div class="stat-value" id="statPending">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Median review time</div>
+        <div class="stat-value" id="statMedian">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value" id="statApproved">-</div>
+      </div>
+    </div>
+
+    <div id="controlPanel" class="dashboard-controls" style="display: none;">
+      <div class="filter-group">
+        <label class="filter-label" for="searchInput">Search handle</label>
+        <div class="filter-field">
+          <input type="search" id="searchInput" placeholder="Search by maker handle" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="methodFilter">Filter by method</label>
+        <div class="filter-field">
+          <select id="methodFilter">
+            <option value="">All methods</option>
+            <option value="dns">DNS</option>
+            <option value="file">File</option>
+            <option value="meta">Meta</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="statusFilter">Filter by status</label>
+        <div class="filter-field">
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="verified">Verified (token OK)</option>
+            <option value="failed">Failed</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-actions">
+        <span id="resultCount" class="result-count">&nbsp;</span>
+      </div>
+    </div>
+
+    <div id="loadingState" class="loading">Loading claims…</div>
+
+    <div id="tableContainer" style="display: none;">
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Handle</th>
+              <th>Domain</th>
+              <th>Method</th>
+              <th>Owner email</th>
+              <th>Status</th>
+              <th>Checks</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="pagination">
+        <button id="prevBtn" disabled>Previous</button>
+        <span class="pagination-info" id="pageInfo">Page 1</span>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <h3>No claims yet</h3>
+      <p>When makers start claims, they will appear here for manual review.</p>
+    </div>
+  </div>
+
+  <script>
+    window.adminAPI.isAuthenticated().then((isAuth) => {
+      if (!isAuth) window.location.href = '/';
+    });
+
+    let currentPage = 1;
+    const limit = 50;
+    let totalPages = 1;
+    let currentSearch = '';
+    let currentMethod = '';
+    let currentStatus = 'pending';
+    let searchTimeout: number | undefined;
+
+    const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
+    const loadingState = document.getElementById('loadingState') as HTMLDivElement;
+    const statsContainer = document.getElementById('statsContainer') as HTMLDivElement;
+    const tableContainer = document.getElementById('tableContainer') as HTMLDivElement;
+    const emptyState = document.getElementById('emptyState') as HTMLDivElement;
+    const tableBody = document.getElementById('tableBody') as HTMLTableSectionElement;
+    const prevBtn = document.getElementById('prevBtn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('nextBtn') as HTMLButtonElement;
+    const pageInfo = document.getElementById('pageInfo') as HTMLSpanElement;
+    const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+    const methodFilter = document.getElementById('methodFilter') as HTMLSelectElement;
+    const statusFilter = document.getElementById('statusFilter') as HTMLSelectElement;
+    const resultCount = document.getElementById('resultCount') as HTMLSpanElement;
+    const controlPanel = document.getElementById('controlPanel') as HTMLDivElement;
+
+    logoutBtn.addEventListener('click', async () => {
+      await window.adminAPI.logout();
+    });
+
+    function formatDate(dateString: string): string {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+      });
+    }
+
+    function formatDuration(ms: number | null | undefined): string {
+      if (ms === null || ms === undefined || !Number.isFinite(ms)) return '-';
+      const hours = ms / 3_600_000;
+      if (hours < 1) return `${Math.max(1, Math.round(ms / 60_000))}m`;
+      if (hours < 48) return `${hours.toFixed(1)}h`;
+      return `${(hours / 24).toFixed(1)}d`;
+    }
+
+    function updateResultCount(total: number, currentRows: number) {
+      if (total === 0 || currentRows === 0) { resultCount.textContent = '0 results'; return; }
+      const start = (currentPage - 1) * limit + 1;
+      resultCount.textContent = `${start.toLocaleString()}-${(start + currentRows - 1).toLocaleString()} of ${total.toLocaleString()}`;
+    }
+
+    async function loadStats() {
+      try {
+        // Integrator patch: GET /api/admin/claims?stats=1 returns
+        // { ok, stats: { pending, approved, medianReviewTimeMs } }
+        const response = await window.adminAPI.fetch('/admin/claims?stats=1');
+        const data = await response.json();
+        if (data.ok && data.stats) {
+          document.getElementById('statPending')!.textContent = Number(data.stats.pending ?? 0).toLocaleString();
+          document.getElementById('statMedian')!.textContent = formatDuration(data.stats.medianReviewTimeMs);
+          document.getElementById('statApproved')!.textContent = Number(data.stats.approved ?? 0).toLocaleString();
+          statsContainer.style.display = 'grid';
+          controlPanel.style.display = 'grid';
+        }
+      } catch (error) {
+        console.error('Failed to load claim stats:', error);
+      }
+    }
+
+    async function loadClaims(page = 1) {
+      try {
+        loadingState.style.display = 'flex';
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'none';
+
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (currentSearch) params.set('search', currentSearch);
+        if (currentMethod) params.set('method', currentMethod);
+        if (currentStatus) params.set('status', currentStatus);
+
+        // Integrator patch: GET /api/admin/claims list endpoint.
+        const response = await window.adminAPI.fetch(`/admin/claims?${params.toString()}`);
+        const data = await response.json();
+        if (!data.ok) throw new Error('Failed to load claims');
+
+        currentPage = data.pagination.page;
+        totalPages = data.pagination.pages;
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+        tableBody.innerHTML = '';
+        controlPanel.style.display = 'grid';
+
+        if (!Array.isArray(data.data) || data.data.length === 0) {
+          loadingState.style.display = 'none';
+          emptyState.style.display = 'block';
+          updateResultCount(0, 0);
+          return;
+        }
+
+        data.data.forEach((claim: any) => {
+          const row = document.createElement('tr');
+
+          const handleCell = document.createElement('td');
+          const handleStrong = document.createElement('strong');
+          handleStrong.textContent = `@${claim.makerHandle ?? ''}`;
+          handleCell.appendChild(handleStrong);
+
+          const domainCell = document.createElement('td');
+          domainCell.textContent = claim.domain ?? '';
+
+          const methodCell = document.createElement('td');
+          const methodBadge = document.createElement('span');
+          methodBadge.className = 'interest-badge';
+          methodBadge.textContent = claim.method ?? '';
+          methodCell.appendChild(methodBadge);
+
+          const emailCell = document.createElement('td');
+          emailCell.textContent = claim.ownerEmail ?? '';
+
+          const statusCell = document.createElement('td');
+          statusCell.textContent = claim.status ?? '';
+
+          const checksCell = document.createElement('td');
+          checksCell.textContent = String(claim.checkLog?.length ?? claim.checks ?? 0);
+
+          const dateCell = document.createElement('td');
+          dateCell.textContent = claim.createdAt ? formatDate(claim.createdAt) : '';
+
+          const actionsCell = document.createElement('td');
+          const approveBtn = document.createElement('button');
+          approveBtn.type = 'button';
+          approveBtn.className = 'control-button';
+          approveBtn.textContent = 'Approve';
+          approveBtn.disabled = claim.status === 'approved';
+          approveBtn.addEventListener('click', () => { void decideClaim(claim.claimId ?? claim._id, 'approved', approveBtn); });
+          const rejectBtn = document.createElement('button');
+          rejectBtn.type = 'button';
+          rejectBtn.className = 'control-button';
+          rejectBtn.textContent = 'Reject';
+          rejectBtn.disabled = claim.status === 'rejected';
+          rejectBtn.addEventListener('click', () => { void decideClaim(claim.claimId ?? claim._id, 'rejected', rejectBtn); });
+          actionsCell.appendChild(approveBtn);
+          actionsCell.appendChild(rejectBtn);
+
+          row.append(handleCell, domainCell, methodCell, emailCell, statusCell, checksCell, dateCell, actionsCell);
+          tableBody.appendChild(row);
+        });
+
+        updateResultCount(data.pagination.total ?? 0, data.data.length);
+        loadingState.style.display = 'none';
+        tableContainer.style.display = 'block';
+      } catch (error) {
+        console.error('Failed to load claims:', error);
+        loadingState.textContent = 'Failed to load claims. The /api/admin/claims endpoint may not be deployed yet.';
+      }
+    }
+
+    async function decideClaim(id: string, decision: 'approved' | 'rejected', btn: HTMLButtonElement) {
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = 'Saving…';
+      try {
+        // Integrator patch: POST /api/admin/claims/:id { decision }
+        const response = await window.adminAPI.fetch(`/admin/claims/${encodeURIComponent(id)}`, {
+          method: 'POST',
+          body: JSON.stringify({ decision }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.ok === false) throw new Error(data.error ?? 'decision_failed');
+        await Promise.all([loadStats(), loadClaims(currentPage)]);
+      } catch (error) {
+        console.error('Claim decision failed:', error);
+        alert('Unable to save the decision. Please try again.');
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    }
+
+    prevBtn.addEventListener('click', () => { if (currentPage > 1) loadClaims(currentPage - 1); });
+    nextBtn.addEventListener('click', () => { if (currentPage < totalPages) loadClaims(currentPage + 1); });
+
+    searchInput.addEventListener('input', () => {
+      currentSearch = searchInput.value.trim();
+      if (searchTimeout) window.clearTimeout(searchTimeout);
+      searchTimeout = window.setTimeout(() => { loadClaims(1); }, 300);
+    });
+    methodFilter.addEventListener('change', () => { currentMethod = methodFilter.value; loadClaims(1); });
+    statusFilter.addEventListener('change', () => { currentStatus = statusFilter.value; loadClaims(1); });
+    statusFilter.value = 'pending';
+
+    Promise.all([loadStats(), loadClaims()]).catch((error) => {
+      console.error('Claims initialization error:', error);
+    });
+  </script>
+</AdminLayout>

@@ -1,0 +1,88 @@
+---
+/* /verify — domain ownership, explained and demonstrated. Live checking ships
+   with maker accounts; the methods, formats, and states below are final. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import Tabs from '../../components/Tabs.astro';
+import VerifyBadge from '../../components/VerifyBadge.astro';
+
+const title = 'Verify domain ownership | WhyKnot';
+const description = 'Prove you control a domain with DNS, file upload, or meta tag. Methods, states, expiry, and audit rules.';
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Verify' }]} />
+        <SectionHeader
+            eyebrow="Trust"
+            title="Verify domain ownership"
+            description="Three methods, one meaning: the profile owner controls the domain. Verification never implies revenue, quality, or endorsement."
+        />
+        <Tabs
+            id="verify-methods"
+            tabs={[
+                { id: 'dns', label: 'DNS record' },
+                { id: 'file', label: 'HTML file' },
+                { id: 'meta', label: 'Meta tag' },
+            ]}
+        />
+        <div role="tabpanel" id="verify-methods-panel-dns" aria-labelledby="verify-methods-tab-dns">
+            <p>Add a TXT record at your DNS provider. Strongest method: survives redeploys and covers the whole domain.</p>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <tbody>
+                        <tr><td>Type</td><td><code>TXT</code></td></tr>
+                        <tr><td>Host</td><td><code>@</code></td></tr>
+                        <tr><td>Value</td><td><code>whyknot-verify=YOUR_TOKEN</code></td></tr>
+                        <tr><td>Propagation</td><td>Minutes to 24 hours (we keep checking automatically)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div role="tabpanel" id="verify-methods-panel-file" aria-labelledby="verify-methods-tab-file" hidden>
+            <p>Upload a verification file to your site root. Simple when you control hosting; breaks if the file is removed.</p>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <tbody>
+                        <tr><td>Path</td><td><code>/whyknot-verify-YOUR_TOKEN.html</code></td></tr>
+                        <tr><td>Contents</td><td><code>whyknot-verify=YOUR_TOKEN</code></td></tr>
+                        <tr><td>Note</td><td>Redirects are not followed: the file must serve at the exact path</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div role="tabpanel" id="verify-methods-panel-meta" aria-labelledby="verify-methods-tab-meta" hidden>
+            <p>Add a meta tag to your homepage <code>&lt;head&gt;</code>. Fastest when you edit markup; theme changes can remove it.</p>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <tbody>
+                        <tr><td>Tag</td><td><code>&lt;meta name="whyknot-verify" content="YOUR_TOKEN"&gt;</code></td></tr>
+                        <tr><td>Location</td><td>Homepage served to logged-out visitors (redirect targets count)</td></tr>
+                        <tr><td>Note</td><td>Keep it in place: removal eventually revokes the badge</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <h2 style="margin-top: var(--space-8)">States you'll see</h2>
+        <div class="cluster">
+            <VerifyBadge state="pending" />
+            <VerifyBadge state="verified" date="2026-09-01" />
+            <VerifyBadge state="stale" date="2026-04-12" />
+            <VerifyBadge state="expired" date="2026-06-01" />
+            <VerifyBadge state="failed" />
+            <VerifyBadge state="unverified" />
+        </div>
+        <p class="method-note" style="margin-top: var(--space-4)">
+            Tokens are rechecked continuously. Stale means the token stopped resolving;
+            expired means the grant lapsed. Every transition lands in the audit log.
+            <a href="/legal/methodology">Full methodology</a>
+        </p>
+        <div class="cluster" style="margin-top: var(--space-5)">
+            <a class="btn" href="/maker/claim">Claim your maker profile</a>
+            <a class="btn btn-ghost" href="/#waitlist">Get notified at launch</a>
+        </div>
+        <p class="card-tagline" style="margin-top: var(--space-4)">Maker claims reuse these three methods plus an owner email, with manual review within 48 hours.</p>
+    </div>
+</Layout>

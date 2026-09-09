@@ -67,7 +67,7 @@
     --color-text-muted: #486664;
     --color-text-inverse: #ffffff;
     --color-link: var(--color-blue-600);
-    --color-link-hover: var(--color-blue-400);
+    --color-link-hover: var(--color-blue-700);
 
     --color-accent: var(--color-accent-400);
     --color-accent-emphasis: var(--color-accent-300);
@@ -120,7 +120,7 @@
     --color-danger-bg: #fde5e3;
     --color-danger-border: #f6b5ae;
 
-    --color-outline-focus: var(--color-accent-300);
+    --color-outline-focus: #0d9488;
 
     /* Gradients (glassmorphic turquoise) */
     --gradient-accent: linear-gradient(125deg,
@@ -150,33 +150,86 @@
     /* Radius & typography */
     --radius-xs: 2px;
     --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 16px;
+    --radius-md: 6px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
     --radius-full: 999px;
-    --font-sans: "Bebas Neue", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+    /* Typography Rule: Exactly 3 fonts across platform */
+    --font-display: "Bebas Neue", sans-serif;
+    --font-sans: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --font-hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+
+    /* Canonical Form Control Tokens — Anti-Slop, 8pt Grid */
+    --input-height-sm: 2rem;            /* 32px compact */
+    --input-height: 2.375rem;           /* 38px standard */
+    --input-height-lg: 2.75rem;         /* 44px command/hero */
+    --input-radius: 6px;
+    --input-radius-sm: 4px;
+    --input-padding-x: 0.75rem;         /* 12px */
+    --input-padding-y: 0.5rem;          /* 8px */
+    --input-font-size: 0.875rem;        /* 14px */
+    --input-font-size-sm: 0.8125rem;    /* 13px */
+    --input-bg: var(--color-surface-container-low);
+    --input-border: var(--color-outline-variant);
+    --input-border-hover: color-mix(in srgb, var(--color-accent-400) 45%, var(--color-outline-variant));
+    --input-focus-border: var(--color-accent-400);
+    --input-focus-ring: 0 0 0 1px var(--color-accent-400), 0 1px 2px rgba(32, 197, 181, 0.12);
+
+    /* Canonical Chip & Tag Tokens — Linear Precision Spec */
+    --chip-height-sm: 1.5rem;           /* 24px micro */
+    --chip-height: 1.75rem;             /* 28px standard */
+    --chip-height-lg: 2.125rem;         /* 34px choice */
+    --chip-radius: 6px;
+    --chip-radius-sm: 4px;
+    --chip-padding-x: 0.625rem;         /* 10px */
+    --chip-font-size: 0.78rem;          /* ~12.5px */
+    --chip-bg: var(--color-surface-container-low);
+    --chip-border: var(--color-outline-variant);
+    --chip-selected-bg: rgba(32, 197, 181, 0.12);
+    --chip-selected-border: var(--color-accent-400);
+    --chip-selected-fg: var(--color-accent-700);
+
+    /* Knot signature — the torus knot is the hero mark, reusable via props. */
+    --knot-ink: var(--color-accent-500);
+    --knot-ink-soft: color-mix(in srgb, var(--color-accent-400) 55%, var(--color-blue-400));
+    --note-ink: var(--color-accent-700);
+    --note-rotate: -1.5deg;
 
     /* Layout */
     --page-max-width: 72rem;
 
-    /* Gradient Title Tokens - Light Theme */
-    /* Lighter, airier gradient for light theme titles */
-    --gradient-title-light: linear-gradient(135deg,
-        var(--color-accent-200) 0%,
-        var(--color-accent-300) 22%,
-        var(--color-blue-400) 50%,
-        var(--color-accent-300) 78%,
-        var(--color-accent-200) 100%);
+    /* Canonical 8pt Spacing Grid Tokens */
+    --space-0-5: 0.125rem; /* 2px */
+    --space-1: 0.25rem;    /* 4px */
+    --space-1-5: 0.375rem; /* 6px */
+    --space-2: 0.5rem;     /* 8px */
+    --space-2-5: 0.625rem; /* 10px */
+    --space-3: 0.75rem;    /* 12px */
+    --space-3-5: 0.875rem; /* 14px */
+    --space-4: 1rem;       /* 16px */
+    --space-5: 1.25rem;    /* 20px */
+    --space-6: 1.5rem;     /* 24px */
+    --space-8: 2rem;       /* 32px */
+    --space-10: 2.5rem;    /* 40px */
+    --space-12: 3rem;      /* 48px */
+    --space-16: 4rem;      /* 64px */
+    --space-20: 5rem;      /* 80px */
+    --space-24: 6rem;      /* 96px */
+
+    /* Gradient Title Tokens - Turquoise to Blue Hybrid (Identical in Light and Dark Mode) */
+    --gradient-title-vibrant: linear-gradient(135deg, 
+        var(--color-accent-400) 0%,
+        var(--color-accent-200) 35%,
+        var(--color-secondary-100) 65%,
+        var(--color-blue-300) 100%);
     
-    --gradient-title-dark: linear-gradient(135deg, 
-        var(--color-text) 0%,
-        var(--color-accent-300) 25%,
-        var(--color-blue-400) 50%,
-        var(--color-accent-200) 75%,
-        var(--color-text) 100%);
+    --gradient-title-light: var(--gradient-title-vibrant);
+    --gradient-title-dark: var(--gradient-title-vibrant);
     
-    /* Default gradient title (light theme) */
-    --gradient-title: var(--gradient-title-light);
+    /* Default gradient title (identical in light and dark mode) */
+    --gradient-title: var(--gradient-title-vibrant);
 }
 
 /* Light-theme specific surface/card tweaks to ensure cards stand out on pale backgrounds */
@@ -267,16 +320,16 @@
     --color-accent: var(--color-accent-300);
     --color-accent-emphasis: var(--color-accent-200);
     /* keep on-accent text light for readability on vibrant gradients */
-    --color-accent-contrast: #ffffff;
+    --color-accent-contrast: #042726;
 
     /* Override gradient title for dark theme */
     --gradient-title: var(--gradient-title-dark);
 
-    /* Dark role aliases - improved contrast for button text */
+    /* Dark role aliases - dark text on bright fills for contrast */
     --color-primary: var(--color-accent-400);
-    --color-on-primary: #ffffff;
+    --color-on-primary: #042726;
     --color-primary-container: var(--color-accent-400);
-    --color-on-primary-container: #ffffff;
+    --color-on-primary-container: #042726;
     --color-secondary: var(--color-blue-800);
     --color-on-secondary: #ffffff;
     --color-secondary-container: var(--color-blue-800);
@@ -294,6 +347,7 @@
     --color-surface-container-highest: #204845;
     --color-outline: color-mix(in srgb, var(--color-neutral-600) 55%, transparent);
     --color-outline-variant: #1e4e4b;
+    --color-outline-focus: #2dd4bf;
     --color-inverse-surface: var(--color-neutral-50);
     --color-inverse-on-surface: #092a28;
     --color-inverse-primary: var(--color-primary);
@@ -315,7 +369,10 @@
     --color-danger-bg: color-mix(in srgb, #e04f44 38%, transparent);
     --color-danger-border: #e04f44;
     --color-on-accent: #ffffff;
-    --color-on-accent-muted: color-mix(in srgb, var(--color-on-accent) 65%, var(--color-accent-200));
+    --color-on-accent-muted: color-mix(in srgb, var(--color-on-accent) 70%, var(--color-accent-200));
+
+    /* Handwritten notes stay legible on dark surfaces. */
+    --note-ink: var(--color-accent-150);
 
     --gradient-radial-hero: radial-gradient(circle at 32% 24%, rgba(32, 197, 181, .30), #031015 70%);
     --shadow-sm: 0 1px 2px -1px rgba(49, 67, 72, .55);
@@ -582,59 +639,116 @@ section p {
     font-size: 1.15rem;
 }
 
-/* Modern Form Elements */
+/* Sleek Form Controls — Precision Linear Architecture */
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
 textarea,
 select {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: clamp(0.6rem, 1.5vw, 1rem);
-    padding: clamp(0.8rem, 1.5vw, 1rem) clamp(1rem, 1.5vw, 1.2rem);
+    width: 100%;
+    height: var(--input-height);
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--input-radius);
+    padding: 0 var(--input-padding-x);
     color: var(--color-text);
-    font-size: clamp(0.9rem, 2vw, 1rem);
-    font-family: inherit;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow:
-        0 4px 16px -4px rgba(49, 67, 72, 0.08),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-    outline: none;
+    font-size: var(--input-font-size);
+    font-family: var(--font-sans);
+    line-height: 1.4;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
     box-sizing: border-box;
-    max-width: 100%;
+    outline: none;
 }
 
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="search"]:hover,
+input[type="url"]:hover,
+input[type="tel"]:hover,
+input[type="number"]:hover,
+textarea:hover,
+select:hover {
+    border-color: var(--input-border-hover);
+}
+
+input[type="text"]:focus-visible,
+input[type="email"]:focus-visible,
+input[type="password"]:focus-visible,
+input[type="search"]:focus-visible,
+input[type="url"]:focus-visible,
+input[type="tel"]:focus-visible,
+input[type="number"]:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
 input[type="search"]:focus,
+input[type="url"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
 textarea:focus,
 select:focus {
-    border-color: rgba(32, 197, 181, 0.4);
-    box-shadow:
-        0 8px 32px -8px rgba(32, 197, 181, 0.2),
-        0 0 0 1px rgba(32, 197, 181, 0.2) inset,
-        0 0 20px rgba(47, 221, 204, 0.1);
-    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--input-focus-border);
+    box-shadow: var(--input-focus-ring);
+    background: var(--color-surface);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.75;
+}
+
+/* Disabled state */
+input:disabled,
+textarea:disabled,
+select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--color-surface-container-low);
+    border-color: var(--color-outline-variant);
+}
+
+/* Validation states — user-invalid (modern) & aria-invalid */
+input:user-invalid,
+textarea:user-invalid,
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 1px var(--color-danger);
+}
+
+/* Autofill styling that preserves theme colors */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-text);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+    transition: background-color 5000s ease-in-out 0s;
 }
 
 textarea {
+    height: auto;
+    min-height: 100px;
+    padding: var(--input-padding-y) var(--input-padding-x);
     resize: vertical;
-    min-height: 120px;
 }
 
 select {
     cursor: pointer;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232fddcc' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2320c5b5' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.75rem center;
     background-repeat: no-repeat;
     background-size: 1rem;
-    padding-right: 2.5rem;
-    transition: all 0.3s ease;
+    padding-right: 2.25rem;
 }
 
 /* Modern Scrollbar */
@@ -724,7 +838,7 @@ select {
 
 /* Modern Focus States */
 *:focus-visible {
-    outline: 2px solid rgba(32, 197, 181, 0.6);
+    outline: 2px solid var(--color-outline-focus);
     outline-offset: 2px;
     border-radius: 4px;
 }
@@ -831,9 +945,23 @@ select {
     --btn-info-bg: color-mix(in srgb, var(--color-info) 55%, #0d2532);
     --btn-info-bg-hover: var(--color-info);
     --btn-info-border: color-mix(in srgb, var(--btn-info-bg) 48%, transparent);
+
+    /* Dark Form Control Tokens */
+    --input-bg: rgba(10, 32, 30, 0.65);
+    --input-border: rgba(207, 228, 226, 0.16);
+    --input-border-hover: rgba(32, 197, 181, 0.45);
+    --input-focus-border: var(--color-accent-400);
+    --input-focus-ring: 0 0 0 1px var(--color-accent-400), 0 1px 3px rgba(32, 197, 181, 0.2);
+
+    /* Dark Chip Tokens */
+    --chip-bg: rgba(12, 28, 27, 0.7);
+    --chip-border: rgba(207, 228, 226, 0.14);
+    --chip-selected-bg: rgba(32, 197, 181, 0.16);
+    --chip-selected-border: var(--color-accent-400);
+    --chip-selected-fg: var(--color-accent-200);
 }
 
-/* Base button using token indirection - Modern Glassmorphic */
+/* Base button using token indirection — Sleek Precision */
 .btn {
     --btn-bg: var(--btn-primary-bg);
     --btn-bg-hover: var(--btn-primary-bg-hover);
@@ -842,24 +970,39 @@ select {
     --btn-bg-hover-auto: rgba(32, 197, 181, 0.1);
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: .6ch;
+    height: var(--input-height);
     background: var(--btn-bg);
     color: var(--btn-fg);
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: clamp(0.9rem, 2vw, 1rem);
-    padding: clamp(0.8rem, 2vw, 1.2rem) clamp(1.4rem, 3vw, 2.4rem);
-    border-radius: clamp(0.8rem, 2vw, 1.4rem);
+    font-size: var(--input-font-size);
+    padding: 0 1.25rem;
+    border-radius: var(--radius-md);
     cursor: pointer;
     position: relative;
-    line-height: 1.2;
-    box-shadow:
-        0 4px 16px -4px rgba(49, 67, 72, 0.1),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    line-height: 1;
     text-decoration: none;
     border: 1px solid var(--btn-border);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.btn-sm {
+    height: var(--input-height-sm);
+    padding: 0 0.875rem;
+    font-size: var(--input-font-size-sm);
+    border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+    height: var(--input-height-lg);
+    padding: 0 1.5rem;
+    font-size: 1rem;
+    border-radius: var(--radius-md);
 }
 
 .btn::before {
@@ -1024,103 +1167,126 @@ select {
     border: 1px solid color-mix(in srgb, var(--_bg) 65%, transparent);
 }
 
-/* Chips (assist / filter) */
+/* Chips — Precision Tactical Filter & Selection Nodes */
 .chip {
-    --_bg: var(--color-surface-container-low);
+    --_bg: var(--chip-bg);
     --_fg: var(--color-on-surface-variant);
-    --_border: var(--color-outline-variant);
+    --_border: var(--chip-border);
     display: inline-flex;
     align-items: center;
-    gap: .5ch;
+    justify-content: center;
+    gap: 0.45rem;
     font-family: var(--font-sans);
-    font-size: .8rem;
-    padding: .55rem .9rem;
-    border-radius: var(--radius-full);
+    font-size: var(--chip-font-size);
+    font-weight: 500;
+    line-height: 1;
+    height: var(--chip-height);
+    padding: 0 var(--chip-padding-x);
+    border-radius: var(--chip-radius);
     background: var(--_bg);
     color: var(--_fg);
     border: 1px solid var(--_border);
-    line-height: 1;
     cursor: pointer;
-    position: relative;
-    transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base);
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+    box-sizing: border-box;
+    transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
 }
 
-.chip[data-selected=true] {
-    --_bg: var(--color-secondary-container);
-    --_fg: var(--color-on-secondary-container);
-    --_border: color-mix(in srgb, var(--color-secondary) 35%, transparent);
+.chip:hover {
+    border-color: var(--color-accent-400);
+    color: var(--color-text);
+    background: var(--color-surface);
+    transform: translateY(-1px);
 }
 
-/* Waitlist form extras */
+.chip:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.chip[data-selected="true"],
+.chip[aria-pressed="true"],
+.chip.selected {
+    --_bg: var(--chip-selected-bg);
+    --_fg: var(--chip-selected-fg);
+    --_border: var(--chip-selected-border);
+    border-color: var(--_border);
+    background: var(--_bg);
+    color: var(--_fg);
+    font-weight: 600;
+}
+
+/* Compact chip (e.g. metadata tags, inline filters) */
+.chip[data-size="sm"],
+.chip-sm {
+    height: var(--chip-height-sm);
+    padding: 0 0.5rem;
+    font-size: 0.72rem;
+    border-radius: var(--radius-sm);
+}
+
+/* Large / Choice chip (e.g. Waitlist interest selector, option tiles) */
+.chip[data-size="lg"],
+.chip[data-variant="choice"],
+.form-interests .chip {
+    height: var(--chip-height-lg);
+    padding: 0 0.875rem;
+    font-size: 0.85rem;
+    border-radius: var(--chip-radius);
+}
+
+/* Chip icon & status dot */
+.chip .icon,
+.chip svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.chip[data-selected="true"] .icon,
+.chip[data-selected="true"] svg {
+    opacity: 1;
+}
+
+.chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent-400);
+    flex-shrink: 0;
+}
+
+/* Tabular numeral counters inside chips */
+.chip-count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.05);
+    color: inherit;
+    font-variant-numeric: tabular-nums;
+}
+
+:root[data-theme="dark"] .chip-count {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Waitlist interest picker cluster */
 .form-interests {
     margin: 0;
-    animation: slideInUp 0.6s ease-out 0.3s both;
 }
 
 .form-interests .cluster {
     justify-content: center;
+    gap: 0.5rem;
 }
 
 @media (min-width: 900px) {
     .form-interests .cluster {
         justify-content: flex-start;
     }
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.form-interests .chip {
-    padding: 0.75rem 1.2rem;
-    font-size: 0.95rem;
-    border-radius: 999px;
-    border: 2px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px) saturate(150%);
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
-    color: var(--color-on-surface-variant);
-    font-family: var(--font-sans);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 4px 16px -4px rgba(49, 67, 72, 0.08);
-}
-
-.form-interests .chip::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg,
-        transparent,
-        rgba(32, 197, 181, 0.1),
-        transparent);
-    transition: left 0.5s ease;
-}
-
-.form-interests .chip.selected,
-.form-interests .chip[data-selected="true"] {
-    background: linear-gradient(135deg, 
-        rgba(32,197,181,0.15) 0%, 
-        rgba(47,221,204,0.12) 50%,
-        rgba(56,228,213,0.15) 100%);
-    border-color: rgba(32,197,181,0.5);
-    color: var(--color-accent-200);
-    transform: translateY(-3px);
-    box-shadow: 
-        0 12px 32px -12px rgba(32,197,181,0.3),
-        0 0 0 1px rgba(47,221,204,0.2) inset;
 }
 
 
@@ -1692,7 +1858,7 @@ select {
 }
 
 .theme-toggle:focus-visible {
-    outline: 2px solid var(--color-accent-300);
+    outline: 2px solid var(--color-outline-focus);
     outline-offset: 2px;
 }
 
@@ -3669,9 +3835,10 @@ select {
     .form-input {
         min-width: auto;
         flex: 1 1 100%;
-        font-size: 1rem;
-        padding: 1.2rem 1.4rem;
-        border-radius: 1rem;
+        height: var(--input-height);
+        font-size: var(--input-font-size);
+        padding: 0 var(--input-padding-x);
+        border-radius: var(--input-radius);
     }
     
     .form-interests {
@@ -3680,8 +3847,9 @@ select {
     }
     
     .form-interests .chip {
-        padding: 0.65rem 1rem;
-        font-size: 0.9rem;
+        height: var(--chip-height);
+        padding: 0 var(--chip-padding-x);
+        font-size: var(--chip-font-size);
     }
     
     .form-note {
@@ -3774,8 +3942,9 @@ select {
     }
     
     .form-input {
-        padding: 1.1rem 1.25rem;
-        font-size: 0.95rem;
+        height: var(--input-height);
+        padding: 0 var(--input-padding-x);
+        font-size: var(--input-font-size);
     }
     
     .form-interests {
@@ -3783,8 +3952,9 @@ select {
     }
     
     .form-interests .chip {
-        padding: 0.6rem 0.9rem;
-        font-size: 0.85rem;
+        height: var(--chip-height);
+        padding: 0 var(--chip-padding-x);
+        font-size: var(--chip-font-size);
     }
     
     .social-proof {
@@ -4124,8 +4294,9 @@ select {
     background-size: 200% 200%;
     background-clip: text;
     -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     color: transparent;
-    animation: gradientShift 4s ease-in-out infinite;
+    animation: gradientShift 6s ease-in-out infinite;
 }
 
 /* Alternative gradient without animation for static titles */
@@ -4134,6 +4305,7 @@ select {
     background: var(--gradient-title);
     background-clip: text;
     -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     color: transparent;
 }
 

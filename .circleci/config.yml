@@ -1,10 +1,10 @@
 version: 2.1
 
-# Define reusable executors
+# Bun-first executors (Node 24 LTS inside via bun; TS 7 native, oxlint)
 executors:
-  node-executor:
+  bun-executor:
     docker:
-      - image: cimg/node:20.18.1
+      - image: oven/bun:1.3.14
     working_directory: ~/project
 
 # Define reusable commands
@@ -14,7 +14,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - backend-deps-v1-{{ checksum "backend/package-lock.json" }}
+            - backend-deps-v1-{{ checksum "backend/bun.lock" }}
             - backend-deps-v1-
   
   restore-frontend-cache:
@@ -22,14 +22,14 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - frontend-deps-v1-{{ checksum "frontend/package-lock.json" }}
+            - frontend-deps-v1-{{ checksum "frontend/bun.lock" }}
             - frontend-deps-v1-
 
 # Define jobs
 jobs:
   # Backend jobs
   backend-install:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - restore-backend-cache
@@ -37,9 +37,9 @@ jobs:
           name: Install backend dependencies
           command: |
             cd backend
-            npm ci
+            bun install --frozen-lockfile
       - save_cache:
-          key: backend-deps-v1-{{ checksum "backend/package-lock.json" }}
+          key: backend-deps-v1-{{ checksum "backend/bun.lock" }}
           paths:
             - backend/node_modules
       - persist_to_workspace:
@@ -48,31 +48,31 @@ jobs:
             - backend/node_modules
 
   backend-lint:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
-          name: Lint backend code
+          name: Lint backend code (oxlint)
           command: |
             cd backend
-            npm run lint
+            bun run lint
 
   backend-typecheck:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
-          name: TypeScript type check (backend)
+          name: TypeScript 7 type check (backend)
           command: |
             cd backend
-            npm run typecheck
+            bun run typecheck
 
   backend-test:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
@@ -81,10 +81,10 @@ jobs:
           name: Run backend tests
           command: |
             cd backend
-            npm test
+            bun test
 
   backend-build:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
@@ -93,7 +93,7 @@ jobs:
           name: Build backend
           command: |
             cd backend
-            npm run build
+            bun run build
       - persist_to_workspace:
           root: .
           paths:
@@ -101,7 +101,7 @@ jobs:
 
   # Frontend jobs
   frontend-install:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - restore-frontend-cache
@@ -109,9 +109,9 @@ jobs:
           name: Install frontend dependencies
           command: |
             cd frontend
-            npm ci
+            bun install --frozen-lockfile
       - save_cache:
-          key: frontend-deps-v1-{{ checksum "frontend/package-lock.json" }}
+          key: frontend-deps-v1-{{ checksum "frontend/bun.lock" }}
           paths:
             - frontend/node_modules
       - persist_to_workspace:
@@ -120,40 +120,40 @@ jobs:
             - frontend/node_modules
 
   frontend-lint:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
-          name: Lint frontend code
+          name: Lint frontend code (oxlint)
           command: |
             cd frontend
-            npm run lint
+            bun run lint
 
   frontend-typecheck:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
-          name: Astro type check (frontend)
+          name: TypeScript 7 type check (frontend)
           command: |
             cd frontend
-            npm run check
+            bun run typecheck
 
   frontend-build:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
-          name: Build frontend for production
+          name: Build frontend for production (SSG)
           command: |
             cd frontend
-            npm run build
+            bun run build
       - persist_to_workspace:
           root: .
           paths:
@@ -161,7 +161,7 @@ jobs:
 
   # Security scanning job
   security-scan:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
@@ -170,13 +170,13 @@ jobs:
           name: Run security audit
           command: |
             echo "Running security audit..."
-            npm --prefix backend audit --audit-level=moderate || true
-            npm --prefix frontend audit --audit-level=moderate || true
+            bun audit --cwd backend || true
+            bun audit --cwd frontend || true
             echo "✓ Security audit complete"
 
   # Deploy to staging environment
   deploy-staging:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
@@ -195,7 +195,7 @@ jobs:
 
   # Deploy to production environment
   deploy-production:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - checkout
       - attach_workspace:
@@ -217,7 +217,7 @@ jobs:
 
   # Smoke tests after deployment
   smoke-tests:
-    executor: node-executor
+    executor: bun-executor
     steps:
       - run:
           name: Run smoke tests

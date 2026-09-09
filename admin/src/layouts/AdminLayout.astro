@@ -57,7 +57,7 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
       (function() {
         function isLocalhostOrigin(origin) {
           try {
-            var url = new URL(origin);
+            const url = new URL(origin);
             if (url.hostname === "localhost") {
               return true;
             }
@@ -79,7 +79,7 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
           return "https://api.whyknot.live/api";
         }
 
-        var adminBaseURL;
+        let adminBaseURL;
         try {
           adminBaseURL = resolveApiBaseUrl();
         } catch (error) {
@@ -93,49 +93,42 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
         window.adminAPI = {
           baseURL: adminBaseURL,
 
-          getToken: function() {
+          getToken() {
             return null; // Cookie-based auth, no token
           },
 
-          setToken: function() {
+          setToken() {
             // No-op for cookie-based auth
           },
 
-          clearToken: function() {
+          clearToken() {
             // No-op for cookie-based auth
           },
 
           // Check if authenticated by verifying with backend (graceful - no 401 errors)
-          isAuthenticated: function() {
-            var self = this;
-            return fetch(self.baseURL + "/admin/check", {
+          isAuthenticated() {
+            return fetch(`${this.baseURL}/admin/check`, {
               method: "GET",
               credentials: "include"
             })
-              .then(function(response) {
+              .then((response) => {
                 if (!response.ok) return false;
                 return response.json();
               })
-              .then(function(data) {
-                return data && data.authenticated === true;
-              })
-              .catch(function() {
-                return false;
-              });
+              .then((data) => data && data.authenticated === true)
+              .catch(() => false);
           },
 
-          fetch: function(endpoint, options) {
-            var self = this;
-            options = options || {};
-            var headers = Object.assign(
+          fetch(endpoint, options = {}) {
+            const headers = Object.assign(
               { "Content-Type": "application/json" },
               options.headers || {}
             );
 
-            return fetch(self.baseURL + endpoint, Object.assign({}, options, {
+            return fetch(this.baseURL + endpoint, Object.assign({}, options, {
               headers: headers,
               credentials: "include"
-            })).then(function(response) {
+            })).then((response) => {
               if (response.status === 401) {
                 window.location.href = "/";
                 throw new Error("Unauthorized");
@@ -144,13 +137,12 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
             });
           },
 
-          logout: function() {
-            var self = this;
-            return self.fetch("/admin/logout", { method: "POST" })
-              .catch(function() {
+          logout() {
+            return this.fetch("/admin/logout", { method: "POST" })
+              .catch(() => {
                 // Ignore errors
               })
-              .then(function() {
+              .then(() => {
                 window.location.href = "/";
               });
           }

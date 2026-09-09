@@ -1,0 +1,49 @@
+---
+/* /launches/week — the last seven days of launches, newest first. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import LaunchCard from '../../components/LaunchCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import { getFlatLaunches, launchDayBounds } from '../../lib/content';
+
+const title = "This week's launches | WhyKnot";
+const description = 'Every launch from the last seven days, newest first.';
+
+const launches = await getFlatLaunches();
+const { weekAgo } = launchDayBounds(launches);
+const board = launches
+    .filter((launch) => launch.publishedAt.valueOf() >= weekAgo.valueOf())
+    .sort((a, b) => b.publishedAt.valueOf() - a.publishedAt.valueOf());
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Launches', href: '/launches' }, { label: 'This week' }]} />
+        <SectionHeader eyebrow="Launch board" title="This week" description={description} />
+        <div class="tabs" role="navigation" aria-label="Launch boards">
+            <a class="tab" href="/launches">Today</a>
+            <a class="tab" href="/launches/week" aria-current="page">This week</a>
+            <a class="tab" href="/launches/month">Month</a>
+            <a class="tab" href="/launches/rising">Rising</a>
+            <a class="tab" href="/launches/upcoming">Upcoming</a>
+            <a class="tab" href="/launches/winners">Winners</a>
+        </div>
+        <div style="margin-top: var(--space-5)">
+            {board.length > 0 ? (
+                <div class="card-grid" data-cols="2">
+                    {board.map((launch) => <LaunchCard launch={launch} />)}
+                </div>
+            ) : (
+                <EmptyState
+                    title="Quiet week"
+                    body="No launches in the last seven days. Check today's board or submit your own."
+                    actionHref="/submit"
+                    actionLabel="How launching works"
+                    note="quiet weeks make loud launches."
+                    punSeed="week-empty"
+                />
+            )}
+        </div>
+    </div>
+</Layout>

@@ -1,0 +1,140 @@
+---
+/* /pricing — plans and the money rules. Razorpay-first, INR-only at launch (C1).
+   Paid tiers checkout via backend-created orders; frontend never sees secrets.
+   The trust rule is stated twice because it matters twice. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import CheckoutButton from '../../components/CheckoutButton.astro';
+
+const title = 'Pricing | WhyKnot';
+const description = 'Free discovery forever. Paid tiers for makers who want verification, analytics, distribution, and API access.';
+
+const TIERS = [
+    {
+        name: 'Explorer',
+        price: 'Free',
+        period: 'forever',
+        blurb: 'The full library, the full evidence.',
+        features: ['Unlimited discovery & search', 'Full site profiles & reports', 'Screener public reports', 'Collections & topics'],
+        cta: 'Start discovering',
+        href: '/discover',
+        featured: false,
+    },
+    {
+        name: 'Verified',
+        price: '₹999',
+        period: 'one-time',
+        blurb: 'Prove ownership, own your profile.',
+        features: ['Domain verification badge', 'Claimed profile + corrections', 'Launch eligibility', 'Screener history'],
+        cta: 'Get Verified',
+        plan: 'verified',
+        featured: true,
+    },
+    {
+        name: 'Pro',
+        price: '₹1,499',
+        period: 'per month',
+        blurb: 'Measure everything you launch.',
+        features: ['Everything in Verified', 'Maker analytics dashboard', 'Scheduled rescans + alerts', 'Screener credits included'],
+        cta: 'Start Pro',
+        plan: 'pro',
+        featured: false,
+    },
+    {
+        name: 'Team',
+        price: '₹3,999',
+        period: 'per month',
+        blurb: 'Ship the whole portfolio together.',
+        features: ['Everything in Pro', '5 seats, unlimited products', 'API access + webhooks', 'Priority review queue'],
+        cta: 'Start Team',
+        plan: 'team',
+        featured: false,
+    },
+];
+
+const ENTITLEMENTS = [
+    ['Discovery, profiles, public reports', 'Yes', 'Yes', 'Yes', 'Yes'],
+    ['Claimed profile', 'No', 'Yes', 'Yes', 'Yes'],
+    ['Launch eligibility', 'No', 'Yes', 'Yes', 'Yes'],
+    ['Maker analytics', 'No', 'Basics', 'Full', 'Full + team'],
+    ['Screener credits / month', '3 public', '25', '200', 'Unlimited*'],
+    ['API + webhooks', 'No', 'No', 'Add-on', 'Yes'],
+    ['Seats', '1', '1', '1', '5'],
+];
+
+const FAQS = [
+    ['Does paying improve my score?', 'No. Scores come from editorial judgment and automated screening. Paid placement is labeled Sponsored and cannot touch scores, ranks, or badges. The ranking inputs have no field for it.'],
+    ['What does Verified actually prove?', 'Domain ownership at a point in time, rechecked continuously. Not revenue, not quality, not endorsement.'],
+    ['Can I cancel?', 'Monthly plans cancel anytime; one-time verification never expires while the token resolves.'],
+    ['Can I relaunch?', 'Yes: paid, major-version only (1.x → 2.0), once per major version. The original stays archived and the badge shows the relaunch count.'],
+    ['What happens to my data?', 'Exports ship with every paid tier. Leaving takes your content with you.'],
+];
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Pricing' }]} />
+        <SectionHeader
+            eyebrow="Pricing"
+            title="Free to explore. Fair to build on."
+            description={description}
+        />
+        <div class="card-grid" data-cols="2">
+            {TIERS.map((tier) => (
+                <article class="card spot-card" data-tone={tier.featured ? 'accent' : undefined}>
+                    <div class="card-meta-row">
+                        <h3 style="margin: 0">{tier.name}</h3>
+                        {tier.featured && <span class="badge badge-pick">Most chosen</span>}
+                    </div>
+                    <p><strong style="font-size: var(--text-2xl)">{tier.price}</strong> <span class="card-tagline">{tier.period}</span></p>
+                    <p class="card-tagline">{tier.blurb}</p>
+                    <ul>
+                        {tier.features.map((feature) => <li>{feature}</li>)}
+                    </ul>
+                    <div class="card-foot">
+                        {'plan' in tier && tier.plan ? (
+                            <CheckoutButton plan={tier.plan} label={tier.cta} />
+                        ) : (
+                            <a class="btn" href={tier.href}>{tier.cta}</a>
+                        )}
+                    </div>
+                </article>
+            ))}
+        </div>
+
+        <h2 style="margin-top: var(--space-10)">Compare everything</h2>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr><th scope="col">Capability</th><th scope="col">Explorer</th><th scope="col">Verified</th><th scope="col">Pro</th><th scope="col">Team</th></tr>
+                </thead>
+                <tbody>
+                    {ENTITLEMENTS.map((row) => (
+                        <tr>
+                            <th scope="row">{row[0]}</th>
+                            <td>{row[1]}</td>
+                            <td>{row[2]}</td>
+                            <td>{row[3]}</td>
+                            <td>{row[4]}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+        <p class="card-tagline">* Unlimited within fair-use screening quotas. API metering is per-call with monthly statements.</p>
+
+        <h2 style="margin-top: var(--space-8)">Questions</h2>
+        {FAQS.map((faq) => (
+            <details>
+                <summary><strong>{faq[0]}</strong></summary>
+                <p>{faq[1]}</p>
+            </details>
+        ))}
+
+        <p class="method-note" style="margin-top: var(--space-8)">
+            Money never buys a score, a rank, or a badge. Paid placement is always labeled Sponsored.
+            <a href="/legal/methodology">The money rules</a>
+        </p>
+    </div>
+</Layout>

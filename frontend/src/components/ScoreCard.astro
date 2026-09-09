@@ -1,0 +1,20 @@
+---
+/* ScoreCard — overall ring plus supporting line. Leaderboards, dashboards,
+   and evidence panels. */
+import ScoreRing from './ScoreRing.astro';
+
+export interface Props {
+    score: number | null;
+    label: string;
+    detail?: string;
+    size?: 'sm' | 'md' | 'lg';
+}
+
+const { score, label, detail, size = 'md' } = Astro.props;
+---
+
+<div class="card spot-card">
+    <ScoreRing score={score} label={label} size={size} />
+    {detail && <p class="card-tagline">{detail}</p>}
+    <slot />
+</div>

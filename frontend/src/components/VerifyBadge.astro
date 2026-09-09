@@ -1,0 +1,29 @@
+---
+/* VerifyBadge — domain-ownership state. Never conflated with revenue or
+   editorial merit. Six states, always icon + text (never color alone). */
+export type VerifyState = 'verified' | 'pending' | 'unverified' | 'expired' | 'stale' | 'failed';
+
+export interface Props {
+    state: VerifyState;
+    date?: string;
+}
+
+const { state, date } = Astro.props;
+
+const META: Record<VerifyState, { glyph: string; label: string }> = {
+    verified: { glyph: '✓', label: 'Verified' },
+    pending: { glyph: '◷', label: 'Pending' },
+    unverified: { glyph: '○', label: 'Unverified' },
+    expired: { glyph: '!', label: 'Expired' },
+    stale: { glyph: '!', label: 'Stale' },
+    failed: { glyph: '✕', label: 'Failed' },
+};
+
+const meta = META[state];
+const text = date && (state === 'verified' || state === 'stale' || state === 'expired') ? `${meta.label} · ${date}` : meta.label;
+---
+
+<span class="verify-badge" data-state={state} title={`Domain ownership: ${text}`}>
+    <span class="verify-dot" aria-hidden="true">{meta.glyph}</span>
+    {text}
+</span>

@@ -1,0 +1,18 @@
+---
+/* FilterDrawer — mobile entry to any filter set. Desktop pages render their
+   filter-bar inline; this trigger opens the same controls in a bottom sheet. */
+import Drawer from './Drawer.astro';
+
+export interface Props {
+    id?: string;
+    title?: string;
+    triggerLabel?: string;
+}
+
+const { id = 'filters', title = 'Filters', triggerLabel = 'Filters' } = Astro.props;
+---
+
+<button type="button" class="btn btn-secondary" data-drawer-open={id}>{triggerLabel}</button>
+<Drawer id={id} title={title}>
+    <slot />
+</Drawer>

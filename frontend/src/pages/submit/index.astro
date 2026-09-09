@@ -1,0 +1,55 @@
+---
+/* /submit — how launching works: the ten stages, what reviewers check, and
+   what makers can expect at each state. Submissions open with accounts;
+   until then this page is the honest contract, not a fake form. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import SubmitForm from '../../components/SubmitForm.astro';
+
+const title = 'Submit a launch | WhyKnot';
+const description = 'How launching on WhyKnot works: the ten stages from account to public board, and what reviewers check.';
+
+const STAGES = [
+    { name: 'Account', detail: 'Makers sign up and create a public profile: the identity behind every launch.' },
+    { name: 'Product information', detail: 'Name, tagline (60 characters), description, maker comment, topics, and gallery assets.' },
+    { name: 'URL', detail: 'The public site. Normalized and validated before anything else runs.' },
+    { name: 'Preflight screening', detail: 'An automatic Screener pass: reachable, safe, measurable. Failures get reasons, not silence.' },
+    { name: 'Ownership verification', detail: 'DNS, file, or meta-tag proof that the maker controls the domain.' },
+    { name: 'Assets', detail: 'Screenshots, gallery, and copy that meet the presentation bar.' },
+    { name: 'Launch details', detail: 'Date reservation, first comment draft, and launch-day checklist.' },
+    { name: 'Review', detail: 'Makers confirm every field and preview the public page before submitting.' },
+    { name: 'Submit', detail: 'The launch enters the editorial queue with a visible position.' },
+    { name: 'Editorial status', detail: 'Queued, in review, changes requested, approved, or rejected: always visible, always with reasons.' },
+];
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Launches', href: '/launches' }, { label: 'Submit' }]} />
+        <SectionHeader
+            eyebrow="Makers"
+            title="Submit a launch"
+            description="Ten stages, zero black boxes. Fill the form to enter the editorial queue with a permanent URL from day one."
+        />
+        <SubmitForm />
+        <h2 style="margin-top: var(--space-10)">How review works</h2>
+        <div class="scan-steps">
+            {STAGES.map((stage, i) => (
+                <div class="scan-step" data-reveal>
+                    <span class="step-index">Stage {String(i + 1).padStart(2, '0')}</span>
+                    <h3>{stage.name}</h3>
+                    <p>{stage.detail}</p>
+                </div>
+            ))}
+        </div>
+        <div class="card spot-card" data-tone="accent" style="margin-top: var(--space-8)" data-reveal>
+            <h3>Reviewers check four things</h3>
+            <p class="card-tagline">Useful, credible, novel, engaging: the same pillars behind featuring. Backing velocity and discussion quality decide the board; spam and vote rings get filtered, not featured.</p>
+            <div class="cluster" style="margin-top: var(--space-3)">
+                <a class="btn" href="/#waitlist">Join the maker list</a>
+                <a class="btn btn-ghost" href="/legal/methodology">Ranking rules</a>
+            </div>
+        </div>
+    </div>
+</Layout>

@@ -1,0 +1,80 @@
+---
+/* Tabs — accessible tablist with roving tabindex + arrow-key support.
+   Panels are written by the consumer right after the component, following the
+   id convention `{id}-panel-{tabId}` (first visible, rest `hidden`). The
+   script pairs tabs to panels via aria-controls, so markup stays flexible:
+   <Tabs id="demo" tabs={[{id:'a',label:'A'},{id:'b',label:'B'}]} />
+   <div role="tabpanel" id="demo-panel-a" aria-labelledby="demo-tab-a">…</div>
+   <div role="tabpanel" id="demo-panel-b" aria-labelledby="demo-tab-b" hidden>…</div> */
+export interface TabDef {
+    id: string;
+    label: string;
+}
+
+export interface Props {
+    id?: string;
+    tabs: TabDef[];
+}
+
+const { id = 'tabs', tabs } = Astro.props;
+---
+
+<div class="tabs" role="tablist" aria-label={id} data-tabs={id}>
+    {tabs.map((tab, i) => (
+        <button
+            type="button"
+            role="tab"
+            id={`${id}-tab-${tab.id}`}
+            aria-controls={`${id}-panel-${tab.id}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? '0' : '-1'}
+            class="tab"
+            data-tab
+        >
+            {tab.label}
+        </button>
+    ))}
+</div>
+
+<script>
+    function initTabs() {
+        document.querySelectorAll('[data-tabs]:not([data-tabs-done])').forEach((list) => {
+            list.setAttribute('data-tabs-done', 'true');
+            const tabs = [...list.querySelectorAll('[data-tab]')];
+            const panels = tabs.map((tab) => document.getElementById(tab.getAttribute('aria-controls') ?? ''));
+            const select = (next) => {
+                tabs.forEach((tab, i) => {
+                    const selected = tab === next;
+                    tab.setAttribute('aria-selected', String(selected));
+                    tab.tabIndex = selected ? 0 : -1;
+                    const panel = panels[i];
+                    if (panel) panel.hidden = !selected;
+                });
+            };
+            tabs.forEach((tab, i) => {
+                tab.addEventListener('click', () => {
+                    select(tab);
+                    tab.focus();
+                });
+                tab.addEventListener('keydown', (event) => {
+                    let next = i;
+                    if (event.key === 'ArrowRight') next = (i + 1) % tabs.length;
+                    else if (event.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+                    else if (event.key === 'Home') next = 0;
+                    else if (event.key === 'End') next = tabs.length - 1;
+                    else return;
+                    event.preventDefault();
+                    select(tabs[next]);
+                    tabs[next].focus();
+                });
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTabs);
+    } else {
+        initTabs();
+    }
+    document.addEventListener('astro:page-load', initTabs);
+</script>

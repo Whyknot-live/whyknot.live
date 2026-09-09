@@ -1,0 +1,225 @@
+---
+/* /sites/[slug] — the Verified Site Profile. Beauty (screenshot-led header),
+   Function (Screener-backed scores), Trust (verification + provenance on
+   every fact). Unknown slugs 404 via static paths. */
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ScoreRing from '../../components/ScoreRing.astro';
+import VerifyBadge from '../../components/VerifyBadge.astro';
+import SourceLine from '../../components/SourceLine.astro';
+import TechBadge from '../../components/TechBadge.astro';
+import SiteCard from '../../components/SiteCard.astro';
+import CollectionCard from '../../components/CollectionCard.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import ScoreBars from '../../components/ScoreBars.astro';
+import ScreenshotViewer from '../../components/ScreenshotViewer.astro';
+import {
+    getFlatSites,
+    getFlatCollections,
+    similarSites,
+    collectionsForSite,
+    formatDate,
+} from '../../lib/content';
+
+export async function getStaticPaths() {
+    const sites = await getFlatSites();
+    return sites.map((site) => ({ params: { slug: site.slug }, props: { site } }));
+}
+
+const { site } = Astro.props;
+const selfUrl = `https://www.whyknot.live/sites/${site.slug}`;
+const title = `${site.name}: ${site.tagline} | WhyKnot`;
+const description = `${site.name}: ${site.tagline} Scored ${site.score}/100 by WhyKnot editors with performance ${site.performance}/100.`;
+const published = formatDate(site.publishedAt);
+
+const categoryScores = [
+    { name: 'Performance', value: site.performance },
+    { name: 'Accessibility', value: site.accessibility ?? null },
+    { name: 'SEO', value: site.seo ?? null },
+    { name: 'Best practices', value: site.bestPractices ?? null },
+];
+
+const schema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+        {
+            '@type': 'WebApplication',
+            name: site.name,
+            url: site.url,
+            description: site.tagline,
+            applicationCategory: site.category,
+            operatingSystem: 'Web Browser',
+            datePublished: published,
+            mainEntityOfPage: selfUrl,
+            author: { '@type': 'Organization', name: 'WhyKnot', url: 'https://www.whyknot.live' },
+        },
+        {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.whyknot.live' },
+                { '@type': 'ListItem', position: 2, name: 'Discover', item: 'https://www.whyknot.live/discover' },
+                { '@type': 'ListItem', position: 3, name: site.name, item: selfUrl },
+            ],
+        },
+    ],
+};
+
+const allSites = await getFlatSites();
+const similar = similarSites(allSites, site, 3);
+const related = collectionsForSite(await getFlatCollections(), site.slug);
+---
+
+<Layout title={title} description={description} schema={schema} constrainContent>
+    <div class="container section">
+        <Breadcrumbs
+            trail={[
+                { label: 'Discover', href: '/discover' },
+                { label: site.category, href: `/categories/${site.category.toLowerCase()}` },
+                { label: site.name },
+            ]}
+        />
+        <article data-pagefind-filter={`category:${site.category}`} data-pagefind-filter-type={site.type}>
+            <div class="profile-hero">
+                <ScreenshotViewer name={site.name} accent={site.accent} />
+                <div class="profile-identity">
+                    <div class="card-meta-row">
+                        <span>{site.type}</span>
+                        <span class="meta-sep" aria-hidden="true">·</span>
+                        <span>{site.category}</span>
+                        <span class="meta-sep" aria-hidden="true">·</span>
+                        <VerifyBadge state={site.verified ? 'verified' : 'unverified'} />
+                    </div>
+                    <h1>{site.name}</h1>
+                    <p class="profile-tagline">{site.tagline}</p>
+                    <div class="card-meta-row">
+                        <SourceLine source="editor" timestamp={published} confidence={site.confidence} />
+                    </div>
+                    <div class="cluster">
+                        <a class="btn" href={site.url}>Visit website</a>
+                        <a class="btn btn-ghost" href="./report.md">Markdown report</a>
+                    </div>
+                </div>
+            </div>
+
+            <section aria-labelledby="profile-scores" style="margin-top: var(--space-8)">
+                <h2 id="profile-scores">WhyKnot score</h2>
+                <div class="profile-scores">
+                    <ScoreRing score={site.score} label="Overall" size="lg" />
+                    <ScoreBars rows={categoryScores} />
+                </div>
+                <p class="method-note">
+                    Overall blends editorial judgment with automated screening.
+                    {site.scannedAt
+                        ? ` Last scanned ${formatDate(site.scannedAt)}.`
+                        : ' Automated categories fill in after the first Screener run.'}
+                    <a href="/legal/methodology">How ranking works</a>
+                </p>
+            </section>
+
+            <section aria-labelledby="profile-facts" style="margin-top: var(--space-8)">
+                <h2 id="profile-facts">Facts</h2>
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead><tr><th scope="col">Fact</th><th scope="col">Value</th><th scope="col">Provenance</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>Website</td>
+                                <td><a href={site.url}>{site.url}</a></td>
+                                <td><SourceLine source="editor" timestamp={published} /></td>
+                            </tr>
+                            <tr>
+                                <td>Verification</td>
+                                <td><VerifyBadge state={site.verified ? 'verified' : 'unverified'} /></td>
+                                <td><SourceLine source={site.verified ? 'owner' : 'detected'} timestamp={published} /></td>
+                            </tr>
+                            {site.audience && (
+                                <tr><td>Who it is for</td><td>{site.audience}</td><td><SourceLine source="editor" timestamp={published} /></td></tr>
+                            )}
+                            {site.businessModel && (
+                                <tr><td>Business model</td><td>{site.businessModel}</td><td><SourceLine source="editor" timestamp={published} /></td></tr>
+                            )}
+                            {site.intent && (
+                                <tr><td>Intent</td><td>{site.intent}</td><td><SourceLine source="editor" timestamp={published} /></td></tr>
+                            )}
+                            {site.industry && (
+                                <tr><td>Industry</td><td>{site.industry}</td><td><SourceLine source="editor" timestamp={published} /></td></tr>
+                            )}
+                            {site.style && (
+                                <tr><td>Visual style</td><td>{site.style}</td><td><SourceLine source="editor" timestamp={published} /></td></tr>
+                            )}
+                            {site.stack.length > 0 && (
+                                <tr>
+                                    <td>Technology</td>
+                                    <td>
+                                        <span class="cluster">{site.stack.map((tech) => <TechBadge name={tech} />)}</span>
+                                    </td>
+                                    <td><SourceLine source="detected" timestamp={published} confidence="med" /></td>
+                                </tr>
+                            )}
+                            <tr>
+                                <td>Added to library</td>
+                                <td><time datetime={published}>{published}</time></td>
+                                <td><SourceLine source="editor" timestamp={published} /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {site.editorNote && (
+                <section aria-labelledby="profile-note" style="margin-top: var(--space-8)">
+                    <h2 id="profile-note">Editor's note</h2>
+                    <div class="callout"><p class="callout-description">{site.editorNote}</p></div>
+                    <div class="card-meta-row" style="margin-top: var(--space-2)">
+                        <SourceLine source="editor" timestamp={published} />
+                    </div>
+                </section>
+            )}
+
+            <section aria-labelledby="profile-history" style="margin-top: var(--space-8)">
+                <h2 id="profile-history">Scan history</h2>
+                <EmptyState
+                    title="No scans yet"
+                    body="Score history appears here once the Screener runs against this site."
+                    note="Initial audit establishes baseline telemetry."
+                    punSeed="scans-empty"
+                />
+            </section>
+
+            {similar.length > 0 && (
+                <section aria-labelledby="profile-similar" style="margin-top: var(--space-8)">
+                    <SectionHeader title="Similar sites" />
+                    <div class="card-grid" data-cols="3" id="profile-similar">
+                        {similar.map((entry) => <SiteCard site={entry} />)}
+                    </div>
+                </section>
+            )}
+
+            {related.length > 0 && (
+                <section aria-labelledby="profile-collections" style="margin-top: var(--space-8)">
+                    <SectionHeader title="Featured in collections" />
+                    <div class="card-grid" data-cols="3" id="profile-collections">
+                        {related.map((collection) => (
+                            <CollectionCard
+                                slug={collection.slug}
+                                name={collection.name}
+                                description={collection.description}
+                                count={collection.siteSlugs.length || collection.count}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            <section aria-labelledby="profile-machine" style="margin-top: var(--space-8)">
+                <h2 id="profile-machine">Machine-readable</h2>
+                <div class="cluster">
+                    <a class="btn btn-ghost" href="./report.md">Markdown report</a>
+                    <a class="btn btn-ghost" href="/llms.txt">llms.txt</a>
+                    <a class="btn btn-ghost" href="/llms-full.txt">llms-full.txt</a>
+                </div>
+            </section>
+        </article>
+    </div>
+</Layout>

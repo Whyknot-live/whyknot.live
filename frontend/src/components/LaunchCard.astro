@@ -1,0 +1,61 @@
+---
+/* LaunchCard: launch feed unit in WhyKnot's own language: no rank column,
+   no vote box. Editorial badge + maker up top, community backing at the foot.
+   Badge mapping keeps Sponsored neutral (never a merit color). */
+import BoostButton from './BoostButton.astro';
+import SponsoredTag from './SponsoredTag.astro';
+
+export type LaunchBadge = 'New' | 'Screened' | 'Verified' | "Editor's Pick" | 'Sponsored';
+
+export interface LaunchCardData {
+    slug: string;
+    name: string;
+    tagline: string;
+    maker: string;
+    votes: number;
+    comments: number;
+    rank: number;
+    badge: LaunchBadge;
+    publishedAt: Date;
+    sponsored?: boolean;
+}
+
+export interface Props {
+    launch: LaunchCardData;
+}
+
+const { launch } = Astro.props;
+
+function badgeVariant(badge: LaunchBadge): string {
+    if (badge === "Editor's Pick") return 'pick';
+    if (badge === 'Verified') return 'success';
+    if (badge === 'Screened') return 'info';
+    return '';
+}
+
+const shownBadge: LaunchBadge = launch.sponsored ? 'Sponsored' : launch.badge;
+const variant = badgeVariant(shownBadge);
+---
+
+<article class="card launch-card spot-card">
+    <div class="launch-card-body">
+        <div class="card-meta-row">
+            {shownBadge === 'Sponsored' ? (
+                <SponsoredTag />
+            ) : variant ? (
+                <span class={`badge badge-${variant}`}>{shownBadge}</span>
+            ) : (
+                <span class="badge">{shownBadge}</span>
+            )}
+            <span class="launch-maker">by <strong>{launch.maker}</strong></span>
+        </div>
+        <h3><a href={`/launches/${launch.slug}`}>{launch.name}</a></h3>
+        <p class="card-tagline">{launch.tagline}</p>
+        <div class="launch-foot">
+            <BoostButton boosts={launch.votes} slug={launch.slug} />
+            <a class="launch-comments" href={`/launches/${launch.slug}#comments`}>
+                {launch.comments} comment{launch.comments === 1 ? '' : 's'}
+            </a>
+        </div>
+    </div>
+</article>
