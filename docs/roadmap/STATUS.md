@@ -56,6 +56,21 @@ Update this block every working session; the roadmap README stays the scoreboard
     install breaks `astro sync` (and the content types with it). The box was also running another
     session's Flutter build during the frontend build: it took 36 minutes instead of the usual
     few. Compute stays off the Mac (owner rule 23).
+- COMMITTED AND PUSHED (2026-10-21): `337726e` (the whole tree + this session's fixes) and
+  `bcefad0` (privacy policy: waitlist -> loop, both places). Remote moved to the org:
+  `https://github.com/Whyknot-live/whyknot.live.git` (the old path still redirects).
+- DEPLOY STATE (checked on the live site, not assumed): the ADMIN static site DID auto-deploy my
+  commit — it serves the same content-hashed asset as the box build (`claims.CsdYvclT.css`) with
+  `last-modified` one minute after the push. The public site (www) and the API did NOT: after 45
+  minutes `/screener` is still 404 on www and every new API route is still 404 on
+  api.whyknot.live. Their auto-deploy is off or their builds are failing; a Render API key is
+  needed to see which and to trigger them.
+- Live facts worth keeping: the public build resolves the API base to `https://api.whyknot.live`
+  (baked in at build time, NOT from a repo file — `frontend/.env` is gitignored and irrelevant to
+  production). The admin resolves the same host. The live API currently runs with Redis DISABLED
+  (in-memory rate limiting) and without any Razorpay or Resend keys. The service
+  `whyknot-live-development-backend.onrender.com` has no server attached (`x-render-routing:
+  no-server`) — it is dead, and the local `frontend/.env` still points at it.
 - Still open, not fixed here: fonts still come from Google's CDN (Head.astro), velocity ranking
     is still not trust-weighted, screenshots still fall back to a placeholder, review/watchlist/
     stats-hub/API (P2) untouched, the abandoned-order rows in the live database are unknown until
