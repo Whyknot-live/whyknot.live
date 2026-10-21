@@ -1,5 +1,5 @@
 {
-  "quietly-excellent": {"name":"Quietly excellent","description":"Sites whose best decisions are easy to miss.","count":12,"siteSlugs":["arcade-atlas","northstar-studio","good-form"]},
-  "fast-by-default": {"name":"Fast by default","description":"Beautiful work that respects a user's time.","count":18,"siteSlugs":["field-notes","open-almanac","good-form"]},
-  "agent-ready": {"name":"Agent-ready","description":"Websites that machines can actually understand.","count":9,"siteSlugs":["field-notes","open-almanac","signal-garden"]}
+  "quietly-excellent": {"name":"Quietly excellent","description":"Sites whose best decisions are easy to miss.","count":3,"siteSlugs":["arcade-atlas","northstar-studio","good-form"]},
+  "fast-by-default": {"name":"Fast by default","description":"Beautiful work that respects a user's time.","count":3,"siteSlugs":["field-notes","open-almanac","good-form"]},
+  "agent-ready": {"name":"Agent ready","description":"Websites that machines can actually understand.","count":3,"siteSlugs":["field-notes","open-almanac","signal-garden"]}
 }

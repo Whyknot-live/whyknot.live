@@ -6,6 +6,11 @@ import { validateEnv } from '../utils/env'
 import { getClientAddress } from '../utils/request'
 import { apiLogger } from '../utils/logger'
 import {
+    signMakerSession,
+    verifyMakerSession,
+    type MakerSession
+} from '../utils/maker-session'
+import {
     normalizeUrl,
     slugify,
     TAGLINE_MAX_LENGTH,
@@ -33,9 +38,6 @@ const submitSchema = z.object({
     story: z.string().trim().max(MAX_STORY_LENGTH).optional()
 })
 
-// TODO(P1): require a maker-auth session here — free edits are open in P1
-// for frictionless alpha submits. Lock PATCH to the owning maker account
-// once maker-auth ships.
 const patchSchema = z
     .object({
         name: z.string().trim().min(1).max(MAX_NAME_LENGTH).optional(),
@@ -44,6 +46,48 @@ const patchSchema = z
         story: z.string().trim().max(MAX_STORY_LENGTH).optional()
     })
     .refine((obj) => Object.keys(obj).length > 0, { message: 'empty_patch' })
+
+// A maker session is minted when a listing is submitted and is scoped to that
+// one listing. PATCH requires it, so a listing can only be edited by the maker
+// who submitted it. The admin review queue keeps its own route and its own
+// admin token (routes/admin.ts), so this does not touch editorial review.
+export function makerSessionSecret(env: {
+    MAKER_SESSION_SECRET?: string
+    ADMIN_JWT_SECRET: string
+}): string {
+    return env.MAKER_SESSION_SECRET ?? env.ADMIN_JWT_SECRET
+}
+
+// Reads the bearer token from the Authorization header.
+export function extractBearerToken(header: string | undefined | null): string | null {
+    if (!header) return null
+    const match = /^Bearer\s+(.+)$/i.exec(header.trim())
+    return match ? match[1].trim() : null
+}
+
+export type PatchAuthorization =
+    | { ok: true; session: MakerSession }
+    | { ok: false; status: 401 | 403; error: 'unauthorized' | 'forbidden' }
+
+// Owner-scoped check: the session must belong to THIS submission. A valid
+// session for someone else's listing is a 403, not a 401 — the caller proved
+// who they are, they are just not the owner of this listing.
+export function authorizeSubmissionPatch(input: {
+    token: string | null
+    session: MakerSession | null
+    doc: { slug: string; makerHandle: string }
+}): PatchAuthorization {
+    if (!input.token || !input.session) {
+        return { ok: false, status: 401, error: 'unauthorized' }
+    }
+    if (input.session.slug !== input.doc.slug) {
+        return { ok: false, status: 403, error: 'forbidden' }
+    }
+    if (input.session.makerHandle !== input.doc.makerHandle) {
+        return { ok: false, status: 403, error: 'forbidden' }
+    }
+    return { ok: true, session: input.session }
+}
 
 // Local in-memory rate limit state (mirrors waitlist.ts fallback)
 type LocalRateEntry = { count: number; expiresAt: number }
@@ -201,7 +245,15 @@ router.post('/submit', async (c) => {
         })
 
         apiLogger.info('Submission queued', { slug, slotDate, ip })
-        return c.json({ slug, slotDate, url: `/launches/${slug}` }, 201)
+
+        // The maker session is handed to the maker, not stored: it is the only
+        // credential that can edit this listing later.
+        const editToken = await signMakerSession(
+            { slug, makerHandle: parsed.data.makerHandle },
+            makerSessionSecret(env)
+        )
+
+        return c.json({ slug, slotDate, url: `/launches/${slug}`, editToken }, 201)
     } catch (err: unknown) {
         if (err && typeof err === 'object' && 'code' in err && err.code === 11000) {
             return c.json({ error: 'already_submitted' }, 409)
@@ -223,18 +275,25 @@ router.get('/submissions/:slug', async (c) => {
         if (!doc) {
             return c.json({ error: 'not_found' }, 404)
         }
-        return c.json(
-            publicView({
-                slug: String(doc.slug),
-                name: String(doc.name),
-                tagline: String(doc.tagline),
-                topics: Array.isArray(doc.topics) ? doc.topics.map(String) : [],
-                makerHandle: String(doc.makerHandle),
-                slotDate: String(doc.slotDate),
-                status: String(doc.status),
-                url: String(doc.url)
-            })
-        )
+        const view = publicView({
+            slug: String(doc.slug),
+            name: String(doc.name),
+            tagline: String(doc.tagline),
+            topics: Array.isArray(doc.topics) ? doc.topics.map(String) : [],
+            makerHandle: String(doc.makerHandle),
+            slotDate: String(doc.slotDate),
+            status: String(doc.status),
+            url: String(doc.url)
+        })
+        // The maker story is only shown to the maker who submitted it. A valid
+        // maker session for THIS listing unlocks it; everyone else gets the
+        // public view, so the edit form can never wipe a story it never read.
+        const token = extractBearerToken(c.req.header('Authorization'))
+        const session = token ? await verifyMakerSession(token, makerSessionSecret(env)) : null
+        if (session && session.slug === view.slug && session.makerHandle === view.makerHandle) {
+            return c.json({ ...view, story: String(doc.story ?? '') })
+        }
+        return c.json(view)
     } catch (err) {
         apiLogger.error('Submission fetch failed', {
             error: err instanceof Error ? err.message : 'Unknown error'
@@ -258,6 +317,16 @@ router.patch('/submissions/:slug', async (c) => {
     }
 
     const env = validateEnv()
+
+    // Authenticate BEFORE any database work: an unauthenticated caller gets a
+    // 401 without the request ever reaching Mongo.
+    const token = extractBearerToken(c.req.header('Authorization'))
+    const session = token ? await verifyMakerSession(token, makerSessionSecret(env)) : null
+    if (!token || !session) {
+        apiLogger.warn('Submission patch without a valid maker session', { ip, slug })
+        return c.json({ error: 'unauthorized' }, 401)
+    }
+
     await connectMongo(env.MONGODB_URI, env.MONGODB_DB)
     const db = getDb()
 
@@ -265,6 +334,15 @@ router.patch('/submissions/:slug', async (c) => {
         const doc = await db.collection('submissions').findOne({ slug })
         if (!doc) {
             return c.json({ error: 'not_found' }, 404)
+        }
+        const authz = authorizeSubmissionPatch({
+            token,
+            session,
+            doc: { slug: String(doc.slug), makerHandle: String(doc.makerHandle) }
+        })
+        if (!authz.ok) {
+            apiLogger.warn('Submission patch by a non-owner maker session', { ip, slug })
+            return c.json({ error: authz.error }, authz.status)
         }
         if (doc.status !== 'queued') {
             return c.json({ error: 'locked' }, 409)

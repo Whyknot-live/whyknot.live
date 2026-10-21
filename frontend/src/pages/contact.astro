@@ -1,4 +1,5 @@
 ---
+import AccordionItem from '../components/AccordionItem.astro';
 // Redirect to main coming soon page during launch phase
 return Astro.redirect('/', 302);
 ---
@@ -88,7 +89,7 @@ return Astro.redirect('/', 302);
   hello@whyknot.live
   </button>
   <a class="chip" href="/#waitlist">
-  Join the waitlist
+  Join the loop
   </a>
  </div>
  </div>
@@ -217,35 +218,23 @@ return Astro.redirect('/', 302);
  <h2 class="section-title">Frequently Asked Questions</h2>
  <p class="text-muted">Quick answers to the most common questions about WhyKnot.</p>
  </div>
- <div class="faq-list">
- <details class="faq-item card reveal">
- <summary>
- <span>How fast do you respond?</span>
- <span class="faq-icon" aria-hidden="true">⌄</span>
- </summary>
- <div class="faq-content">
- We aim to respond within 24 hours on weekdays. Complex queries may take a little longer, but you’ll always get an acknowledgement first.
- </div>
- </details>
- <details class="faq-item card reveal">
- <summary>
- <span>Do you offer demos or calls?</span>
- <span class="faq-icon" aria-hidden="true">⌄</span>
- </summary>
- <div class="faq-content">
- Yes: for collaborations and partnership discussions, we’re happy to set up a short call or demo. Mention this in your message.
- </div>
- </details>
- <details class="faq-item card reveal">
- <summary>
- <span>Where are you based?</span>
- <span class="faq-icon" aria-hidden="true">⌄</span>
- </summary>
- <div class="faq-content">
- We’re a remote-first team with a core presence in India (IST). We accommodate global time zones for key conversations.
- </div>
- </details>
- </div>
+  <div class="faq-list">
+  <AccordionItem title="How fast do you respond?" class="faq-item card reveal" id="contact-faq-response">
+  <div class="faq-content">
+  We aim to respond within 24 hours on weekdays. Complex queries may take a little longer, but you’ll always get an acknowledgement first.
+  </div>
+  </AccordionItem>
+  <AccordionItem title="Do you offer demos or calls?" class="faq-item card reveal" id="contact-faq-demos">
+  <div class="faq-content">
+  Yes: for collaborations and partnership discussions, we’re happy to set up a short call or demo. Mention this in your message.
+  </div>
+  </AccordionItem>
+  <AccordionItem title="Where are you based?" class="faq-item card reveal" id="contact-faq-location">
+  <div class="faq-content">
+  We’re a remote-first team with a core presence in India (IST). We accommodate global time zones for key conversations.
+  </div>
+  </AccordionItem>
+  </div>
  </div>
  </section>
 
@@ -262,8 +251,8 @@ return Astro.redirect('/', 302);
  <a href="mailto:hello@whyknot.live" class="btn btn-lg">
  Email Us Directly
  </a>
- <a href="/#early-access" class="btn btn-ghost btn-lg">
- Join Our Waitlist
+ <a href="/#waitlist" class="btn btn-ghost btn-lg">
+ Join the loop
  </a>
  </div>
  </div>
@@ -367,29 +356,6 @@ function hideMessages() {
  formSuccess?.classList.add('is-hidden');
  formError?.classList.add('is-hidden');
 }
-
-// FAQ accordion functionality
-const faqItems = document.querySelectorAll('.faq-item');
-faqItems.forEach((item) => {
- const summary = item.querySelector('summary') as HTMLElement | null;
- const icon = item.querySelector('.faq-icon') as HTMLElement | null;
- if (!summary) return;
-
- summary.addEventListener('click', (e) => {
- // Prevent default behavior to handle it manually
- e.preventDefault();
- 
- // Toggle the open attribute
- const isOpen = item.hasAttribute('open');
- if (isOpen) {
- item.removeAttribute('open');
- if (icon) icon.style.transform = 'rotate(0deg)';
- } else {
- item.setAttribute('open', '');
- if (icon) icon.style.transform = 'rotate(180deg)';
- }
- });
-});
 
 // Reveal-on-scroll animations
 const revealEls = document.querySelectorAll('.reveal');

@@ -2,6 +2,7 @@
 /* Global product navigation. Items for unbuilt phases render with an honest
    "Soon" tag (aria-disabled) and flip to live links as phases land. */
 import Logo from './Logo.astro';
+import ThemeToggle from './ThemeToggle.astro';
 
 export interface Props {
     transparent?: boolean;
@@ -18,7 +19,6 @@ interface NavItem {
 
 const ITEMS: NavItem[] = [
     { label: 'Discover', href: '/discover', live: true },
-    { label: 'Screener', href: '/screener', live: true },
     { label: 'Launches', href: '/launches', live: true },
     { label: 'Collections', href: '/collections', live: true },
     { label: 'Topics', href: '/topics', live: true },
@@ -38,19 +38,18 @@ function isActive(href: string): boolean {
                 <Logo width={36} height={36} useImage={true} />
             </a>
         </div>
-        <div class="nav-links" role="list">
+        <div class="nav-links">
             {ITEMS.map((item) =>
                 item.live ? (
                     <a
                         href={item.href}
-                        role="listitem"
                         class={`nav-link${isActive(item.href) ? ' nav-link--active' : ''}`}
                         aria-current={isActive(item.href) ? 'page' : undefined}
                     >
                         {item.label}
                     </a>
                 ) : (
-                    <span role="listitem">
+                    <span>
                         <a
                             href={item.href}
                             class="nav-link"
@@ -64,11 +63,9 @@ function isActive(href: string): boolean {
                 ),
             )}
             <span class="nav-cta">
-                <a href="/#waitlist" class="btn">Get early access</a>
+                <a href="/#waitlist" class="btn">Join the loop</a>
             </span>
-            <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle color theme">
-                <span class="theme-toggle-icon" aria-hidden="true">◐</span>
-            </button>
+            <ThemeToggle />
         </div>
         <button
             type="button"
@@ -101,10 +98,10 @@ function isActive(href: string): boolean {
                 ),
             )}
             <div class="mobile-nav-cta">
-                <a href="/#waitlist" class="btn mobile-nav-btn">Get early access</a>
+                <a href="/#waitlist" class="btn mobile-nav-btn">Join the loop</a>
             </div>
             <div class="mobile-nav-cta">
-                <button type="button" class="btn btn-ghost mobile-nav-btn" data-theme-toggle>Toggle theme</button>
+                <ThemeToggle showLabel={true} className="mobile-nav-btn" />
             </div>
         </div>
     </div>
@@ -115,6 +112,12 @@ function isActive(href: string): boolean {
         const btn = document.querySelector('[data-menu-btn]');
         const panel = document.querySelector('[data-mobile-nav]');
         if (!(btn instanceof HTMLButtonElement) || !(panel instanceof HTMLElement)) return;
+        // Re-runs on astro:page-load — wire once (see data-wired guards below).
+        if (btn.hasAttribute('data-nav-wired')) {
+            syncThemeToggles();
+            return;
+        }
+        btn.setAttribute('data-nav-wired', 'true');
 
         const setOpen = (open) => {
             btn.setAttribute('aria-expanded', String(open));
@@ -127,6 +130,7 @@ function isActive(href: string): boolean {
         });
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
+                if (panel.getAttribute('aria-hidden') !== 'false') return;
                 setOpen(false);
                 btn.focus();
             }
@@ -143,17 +147,29 @@ function isActive(href: string): boolean {
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
 
-        document.querySelectorAll('[data-theme-toggle]').forEach((toggle) => {
+        document.querySelectorAll('[data-theme-toggle]:not([data-wired])').forEach((toggle) => {
+            toggle.setAttribute('data-wired', 'true');
             toggle.addEventListener('click', () => {
                 const current = document.documentElement.getAttribute('data-theme');
                 const next = current === 'dark' ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', next);
+                syncThemeToggles();
                 try {
                     localStorage.setItem('theme', next);
                 } catch {
                     /* storage unavailable — theme still applies for session */
                 }
             });
+        });
+        syncThemeToggles();
+    }
+
+    function syncThemeToggles() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const dark = current === 'dark';
+        document.querySelectorAll('[data-theme-toggle]').forEach((other) => {
+            other.setAttribute('aria-pressed', String(dark));
+            other.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
         });
     }
 

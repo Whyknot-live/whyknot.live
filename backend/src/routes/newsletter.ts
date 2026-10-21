@@ -7,6 +7,7 @@ import { validateEnv } from '../utils/env'
 import { connectRedis, rateLimitCheck } from '../utils/redis'
 import { getClientAddress } from '../utils/request'
 import { apiLogger } from '../utils/logger'
+import { getSiteBase, sendConfirmEmailIfEnabled } from '../utils/email'
 
 const router = new Hono()
 
@@ -204,9 +205,11 @@ router.post('/newsletter/subscribe', async (c) => {
             id: res.insertedId.toString(),
         })
 
-        // TODO(P1): send double-opt-in confirm email via Resend (stays on Resend
-        // for P1; Indian ESP later). Fire-and-forget so API never blocks on mail.
-        // Template: backend/src/templates/newsletter-531.ts confirm variant.
+        // Double opt-in: fire-and-forget confirm email. The API never blocks
+        // on the mail provider; a failed confirm just means the maker clicks
+        // again later (resend link lands here).
+        const confirmUrl = `${getSiteBase()}/newsletter/confirm?token=${encodeURIComponent(confirmToken)}`
+        sendConfirmEmailIfEnabled(email, confirmUrl)
 
         return c.json({ ok: true, pending: true, id: res.insertedId })
     } catch (err: unknown) {

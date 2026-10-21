@@ -157,3 +157,5 @@ backend/whyknot-backend
 *.map
 .sixth/
 .sixthrules/
+# Names the private build box; local tooling only, never committed (owner rule).
+scripts/mini-sync.sh

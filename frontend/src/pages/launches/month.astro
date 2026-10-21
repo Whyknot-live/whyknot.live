@@ -7,13 +7,15 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SectionHeader from '../../components/SectionHeader.astro';
 import LaunchCard from '../../components/LaunchCard.astro';
 import EmptyState from '../../components/EmptyState.astro';
-import { getFlatLaunches } from '../../lib/content';
+import { getFlatLaunches, liveOnly } from '../../lib/content';
 import { isIn30dWindow } from '../../lib/launch-events';
 
 const title = "This month's launches | WhyKnot";
 const description = 'Every launch from the last thirty days, newest first. The rolling board, not a 24-hour sprint.';
 
-const launches = await getFlatLaunches();
+// Scheduled entries never appear here: they would both show as live and push
+// the rolling window's anchor into the future (see /launches/upcoming).
+const launches = liveOnly(await getFlatLaunches());
 const now = launches.reduce((max, launch) => Math.max(max, launch.publishedAt.valueOf()), 0);
 const board = launches
     .filter((launch) => isIn30dWindow(launch.publishedAt, now))

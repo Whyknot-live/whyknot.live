@@ -1,5 +1,5 @@
 ---
-/* /launches/[slug] — one launch: story, maker, Screener evidence, backing,
+/* /launches/[slug] — one launch: story, maker, audit evidence, backing,
    discussion. Comments open with community accounts; until then the thread
    states its state honestly instead of faking activity. */
 import Layout from '../../layouts/Layout.astro';
@@ -48,17 +48,27 @@ const description = `${launch.name} by ${launch.maker}: ${launch.tagline} Backed
         />
         <article>
             <div class="card-meta-row">
-                <span class={`badge${launch.badge === "Editor's Pick" ? ' badge-pick' : launch.badge === 'Verified' ? ' badge-success' : launch.badge === 'Screened' ? ' badge-info' : ''}`}>
-                    {launch.badge}
-                </span>
+                {launch.status === 'scheduled' ? (
+                    <span class="badge badge-info">Scheduled</span>
+                ) : (
+                    <span class={`badge${launch.badge === "Editor's Pick" ? ' badge-pick' : launch.badge === 'Verified' ? ' badge-success' : launch.badge === 'Screened' ? ' badge-info' : ''}`}>
+                        {launch.badge}
+                    </span>
+                )}
                 {launch.sponsored && <SponsoredTag showWhy />}
                 <TimeStamp date={launch.publishedAt} />
             </div>
             <h1 style="margin: var(--space-3) 0 0">{launch.name}</h1>
             <p class="profile-tagline">{launch.tagline}</p>
+            {launch.status === 'scheduled' && (
+                <p class="card-tagline">
+                    Opens <TimeStamp date={launch.scheduledAt ?? launch.publishedAt} />. Backing and discussion open on launch day.
+                </p>
+            )}
             <div class="cluster" style="margin-top: var(--space-4)">
                 <BoostButton boosts={launch.votes} slug={launch.slug} />
                 <span class="card-tagline">{launch.comments} comments</span>
+                {launch.url && <a class="btn" href={launch.url}>Visit website</a>}
                 {maker && (
                     <a href={`/maker/${maker.slug}`} class="cluster" style="gap: 0.5rem">
                         <Avatar name={maker.name} size="sm" />
@@ -79,7 +89,7 @@ const description = `${launch.name} by ${launch.maker}: ${launch.tagline} Backed
 
             {site ? (
                 <section aria-labelledby="launch-evidence" style="margin-top: var(--space-8)">
-                    <h2 id="launch-evidence">Screener evidence</h2>
+                    <h2 id="launch-evidence">Audit evidence</h2>
                     <div class="card">
                         <div class="card-meta-row">
                             <ScoreRing score={site.score} label="WhyKnot" size="sm" />
@@ -87,13 +97,13 @@ const description = `${launch.name} by ${launch.maker}: ${launch.tagline} Backed
                             <a class="btn btn-ghost" href={`/sites/${site.slug}`}>Full profile</a>
                         </div>
                         <p class="card-tagline" style="margin-top: var(--space-3)">
-                            Screened {formatDate(site.publishedAt)}. Automated fields carry source and confidence on the profile.
+                            Audited {formatDate(site.publishedAt)}. Automated fields carry source and confidence on the profile.
                         </p>
                     </div>
                 </section>
             ) : (
                 <section aria-labelledby="launch-evidence" style="margin-top: var(--space-8)">
-                    <h2 id="launch-evidence">Screener evidence</h2>
+                    <h2 id="launch-evidence">Audit evidence</h2>
                     <p class="card-tagline">Evidence attaches during editorial review. This launch is still in the queue.</p>
                 </section>
             )}
@@ -131,6 +141,14 @@ const description = `${launch.name} by ${launch.maker}: ${launch.tagline} Backed
                     </div>
                 </section>
             )}
+
+            <section aria-labelledby="launch-embed" style="margin-top: var(--space-8)">
+                <h2 id="launch-embed">Share your rank</h2>
+                <p>Copy a zero-JS badge that links back here. Rank and editorial state only — never for sale.</p>
+                <div class="cluster">
+                    <a class="btn" href={`/badges?launch=${launch.slug}`}>Get embed badges</a>
+                </div>
+            </section>
         </article>
     </div>
 </Layout>

@@ -6,6 +6,7 @@ import Layout from '../../layouts/Layout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SectionHeader from '../../components/SectionHeader.astro';
 import SiteCard from '../../components/SiteCard.astro';
+import Select from '../../components/Select.astro';
 import EmptyState from '../../components/EmptyState.astro';
 import { getCollection } from 'astro:content';
 
@@ -46,12 +47,19 @@ const categories = [...new Set(sites.map((site) => site.category))].sort((a, b) 
                     </button>
                 ))}
             </div>
-            <label class="filter-label" for="discover-sort">Sort</label>
-            <select class="filter-select" id="discover-sort" data-sort>
-                <option value="score">WhyKnot score</option>
-                <option value="performance">Performance</option>
-                <option value="newest">Newest</option>
-            </select>
+            <label class="filter-label" for="discover-sort-btn">Sort</label>
+            <Select
+                id="discover-sort"
+                name="sort"
+                label="Sort discoveries"
+                value="score"
+                data-sort
+                options={[
+                    { value: 'score', label: 'WhyKnot score' },
+                    { value: 'performance', label: 'Performance' },
+                    { value: 'newest', label: 'Newest' },
+                ]}
+            />
             <span class="filter-label" aria-live="polite" data-result-count>{sites.length} sites</span>
         </div>
         <div class="card-grid" data-cols="3" data-site-grid>
@@ -95,8 +103,13 @@ const categories = [...new Set(sites.map((site) => site.category))].sort((a, b) 
         const cards = [...grid.querySelectorAll('[data-site-card]')];
         let active = 'all';
 
-        const apply = () => {
-            const sortKey = sort instanceof HTMLSelectElement ? sort.value : 'score';
+        const apply = (sortOverride) => {
+            const sortKey =
+                typeof sortOverride === 'string' && sortOverride
+                    ? sortOverride
+                    : sort instanceof HTMLElement
+                      ? (sort.dataset.value ?? 'score')
+                      : 'score';
             const visible = cards.filter((card) => {
                 const show = active === 'all' || card.getAttribute('data-category') === active;
                 card.hidden = !show;
@@ -124,7 +137,12 @@ const categories = [...new Set(sites.map((site) => site.category))].sort((a, b) 
                 apply();
             });
         });
-        if (sort instanceof HTMLSelectElement) sort.addEventListener('change', apply);
+        if (sort instanceof HTMLElement)
+            sort.addEventListener('wk-select-change', (event) => {
+                const detail = event instanceof CustomEvent ? event.detail : null;
+                const next = detail && typeof detail.value === 'string' ? detail.value : undefined;
+                apply(next);
+            });
         apply();
     }
 

@@ -7,30 +7,27 @@
   top: 0.75rem;
   left: 1rem;
   right: 1rem;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  /* Overlay: tinted with the page color so text stays legible; subtle blur is allowed here (owner 2026-09-29). */
+  background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid var(--color-border);
   border-radius: 1.25rem;
   z-index: 100;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 8px 32px -8px rgba(49, 67, 72, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  box-shadow: var(--shadow-sm);
 }
 
 .main-nav:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: color-mix(in srgb, var(--color-bg) 86%, transparent);
   transform: translateY(-1px);
-  box-shadow: 
-    0 12px 48px -12px rgba(32, 197, 181, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  box-shadow: var(--shadow-md);
 }
 
 /* Scroll state toggles (controlled by JS via class) */
 .main-nav.nav-scrolled {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+  border-color: var(--color-border);
 }
 
 .main-nav.nav-hidden {
@@ -89,7 +86,7 @@
   color: var(--color-text);
   text-decoration: none;
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   transition: all 0.25s ease;
   position: relative;
   padding: 0.5rem 0.6rem;
@@ -166,10 +163,10 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: color-mix(in srgb, var(--color-bg) 94%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid var(--color-border);
   border-top: none;
   border-radius: 0 0 1.5rem 1.5rem;
   opacity: 0;
@@ -250,7 +247,7 @@
   }
 
   .logo-text {
-    font-size: 1.25rem;
+    font-size: var(--text-title-sm);
   }
 }
 
@@ -290,26 +287,8 @@
   .nav-link,
   .mobile-nav,
   .hamburger-line,
-  .mobile-menu-btn {
+  .mobile-menu-btn,
+  .theme-toggle {
     transition: none !important;
   }
-}
-
-/* Dark Theme Adjustments */
-:root[data-theme="dark"] .main-nav {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-:root[data-theme="dark"] .main-nav:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-:root[data-theme="dark"] .mobile-nav {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-:root[data-theme="dark"] .main-nav.nav-scrolled {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.16);
 }

@@ -22,10 +22,47 @@ C1, C5.
   razorpay.com/blog (2026-05-05), small-bizsense.com Paddle-alternative review.
 
 ## Research before build
-- [ ] Razorpay Subscriptions + UPI Autopay integration docs (live)
-- [ ] Current RBI e-mandate limits for recurring thresholds
+- [x] Razorpay Subscriptions + UPI Autopay integration docs (live)
+- [x] Current RBI e-mandate limits for recurring thresholds
 - [ ] Razorpay international card success rates (test transactions)
 - [ ] GST invoicing requirements for SaaS exports (CA confirm)
+
+## Research findings
+Research finding (2026-10-08): Razorpay Subscriptions + UPI Autopay docs
+verified live: mandates up to Rs 1,00,000; frictionless debits up to
+Rs 15,000 (all merchants) with UPI shown only for plans at most Rs 15,000;
+card debits above Rs 15,000 need AFA each cycle with a 36-hour pre-debit
+notice; eNACH eMandate up to Rs 1,00,00,000; auto-invoicing, smart retries
+and webhooks included — the dunning/retry machinery in the build spec is
+native, not ours to build.
+— Source: https://razorpay.com/docs/payments/subscriptions/
+Research finding (2026-10-08): RBI e-mandate thresholds are set by the
+consolidated "Digital Payments - E-mandate Framework, 2026"
+(RBI/DPSS/2026-27/396, 21 April 2026): no-AFA limit Rs 15,000 per
+transaction, Rs 1,00,000 for insurance/mutual funds/credit-card bill pay;
+AFA on registration, first transaction, modification and opt-out; 24-hour
+pre-debit and post-debit notifications; no customer charges; repeals eight
+prior circulars. Design recurring flows against this circular, not the older
+per-product ones.
+— Source: https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=13374
+Research finding (2026-10-08, spec correction): current Razorpay docs
+document FIRS (Foreign Inward Remittance Statement) certificates, downloaded
+monthly from the Dashboard with a purpose code, usable as proof for GST
+refund/drawback claims — the earlier note's "auto-eFIRC per renewal" wording
+does not appear in the live docs. Whether FIRS is auto-generated per renewal
+for our account is a Dashboard check and stays open (owner).
+— Source: https://razorpay.com/docs/payments/international-payments/firs-automated-process/
+Research finding (2026-10-08, partial): Razorpay's international FAQ confirms
+default T+7 settlement (earlier settlement at extra charge) settled in INR.
+The 90-95% international card success rate is a Razorpay marketing claim,
+not an audited figure; real success rates need our own test transactions on
+a live account, so this checklist item stays open.
+— Source: https://razorpay.com/docs/payments/international-payments/faqs/
+Not verified (2026-10-08): GST export invoicing / LUT rules could not be
+confirmed from an official source in this pass — tutorial.gst.gov.in returned
+HTTP 503, cbic.gov.in failed TLS verification and indiacode.nic.in timed out.
+Per C5 this item stays unticked and needs a chartered accountant's sign-off
+plus an official gst.gov.in or cbic.gov.in source before build.
 
 ## Build spec
 - One-time: Verified ($12 equiv in INR) via Razorpay checkout.

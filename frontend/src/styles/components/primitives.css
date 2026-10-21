@@ -1,32 +1,8 @@
 /* WhyKnot Product Primitives
-   Shared UI system for Discovery, Screener, Launches, Maker, Verify, Admin.
+   Shared UI system for Discovery, Launches, Collections, Maker, Verify, Admin.
    Tokens first (extension of tokens.css), then primitives. Mobile-first. */
 
 :root {
-    /* Spacing scale (4pt) */
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.25rem;
-    --space-6: 1.5rem;
-    --space-8: 2rem;
-    --space-10: 2.5rem;
-    --space-12: 3rem;
-    --space-16: 4rem;
-
-    /* Type scale */
-    --text-xs: 0.72rem;
-    --text-sm: 0.82rem;
-    --text-md: 0.95rem;
-    --text-lg: 1.08rem;
-    --text-xl: 1.32rem;
-    --text-2xl: 1.7rem;
-    --text-3xl: 2.2rem;
-    --text-4xl: 2.9rem;
-    --leading-tight: 1.15;
-    --leading-base: 1.55;
-
     /* Score bands — brand hues only: teal (good), ocean blue (mid), coral red (poor) */
     --score-good: #0d9488;
     --score-good-bg: #cdfbf6;
@@ -134,7 +110,6 @@
 .score-ring svg {
     width: var(--ring-size);
     height: var(--ring-size);
-    transform: rotate(-90deg);
     flex-shrink: 0;
 }
 .score-ring .ring-track { stroke: var(--ring-track); }
@@ -144,8 +119,7 @@
     transition: stroke-dashoffset 0.6s ease;
 }
 .score-ring .ring-center {
-    transform: rotate(90deg);
-    transform-origin: center;
+    /* Anchored directly in SVG coordinate space without CSS rotation */
 }
 .score-ring .ring-num {
     font-size: var(--text-md);
@@ -215,7 +189,18 @@
     line-height: 1;
     white-space: nowrap;
 }
-.verify-badge .verify-dot { font-size: 0.85em; }
+
+.verify-badge .verify-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.verify-badge .verify-dot svg {
+    display: block;
+    width: 11px;
+    height: 11px;
+}
 .verify-badge[data-state="verified"] {
     color: var(--verify-verified); background: var(--verify-verified-bg); border-color: var(--verify-verified-border);
 }
@@ -691,7 +676,7 @@ a[aria-disabled="true"] { cursor: not-allowed; }
     border-radius: var(--radius-lg);
     background: var(--color-surface);
 }
-.empty-state .state-glyph, .error-state .state-glyph { font-size: 2rem; }
+.empty-state .state-glyph, .error-state .state-glyph { font-size: var(--text-title-lg); }
 .empty-state h3, .error-state h3 { margin: 0; font-size: var(--text-xl); }
 .empty-state p, .error-state p { margin: 0; color: var(--color-text-muted); max-width: 52ch; }
 .error-state { border-color: var(--color-danger-border); }
@@ -805,12 +790,24 @@ a[aria-disabled="true"] { cursor: not-allowed; }
     border-left: 1px solid var(--color-border);
     box-shadow: var(--shadow-lg);
     transform: translateX(100%);
-    transition: transform var(--transition-base);
+    visibility: hidden;
+    transition:
+        transform var(--transition-base),
+        visibility 0s var(--transition-base);
     z-index: var(--z-drawer);
     padding: var(--space-5);
     overflow-y: auto;
 }
-.drawer.open { transform: none; }
+.drawer.open {
+    transform: none;
+    visibility: visible;
+    transition:
+        transform var(--transition-base),
+        visibility 0s 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+    .drawer { transition: none; }
+}
 @media (max-width: 640px) {
     .drawer { left: 0; width: auto; top: auto; max-height: 82dvh; border-left: 0; border-top: 1px solid var(--color-border); border-radius: var(--radius-lg) var(--radius-lg) 0 0; transform: translateY(100%); }
     .drawer.open { transform: none; }
@@ -918,7 +915,7 @@ a.leaderboard-row:hover { border-color: var(--color-accent-400); }
 .field select[aria-invalid="true"] { border-color: var(--color-danger); box-shadow: 0 0 0 1px var(--color-danger); }
 
 /* ---------- Star rating (display) ---------- */
-.stars { display: inline-flex; gap: 0.15ch; font-size: 1rem; line-height: 1; }
+.stars { display: inline-flex; gap: 0.15ch; font-size: var(--text-base); line-height: 1; }
 .stars .star-on { color: var(--color-accent-600); }
 .stars .star-off { color: var(--color-accent-600); opacity: 0.28; }
 :root[data-theme="dark"] .stars .star-on { color: var(--color-accent-200); }
@@ -956,6 +953,11 @@ a.leaderboard-row:hover { border-color: var(--color-accent-400); }
     line-height: 1.6;
 }
 .dropdown-menu a:hover { background: color-mix(in srgb, var(--color-accent-400) 10%, transparent); }
+.dropdown-menu a:focus-visible {
+    background: color-mix(in srgb, var(--color-accent-400) 10%, transparent);
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+}
 
 /* ---------- Modal (native dialog) ---------- */
 dialog.modal {
@@ -1109,7 +1111,7 @@ dialog.modal::backdrop { background: rgba(9, 42, 40, 0.5); }
 @media (min-width: 1024px) {
     .card-grid[data-cols="3"] > .span-2 { grid-column: span 2; }
 }
-/* Sticky screener split */
+/* Sticky split */
 .sticky-split { display: grid; gap: var(--space-6); grid-template-columns: 1fr; }
 @media (min-width: 960px) {
     .sticky-split { grid-template-columns: 0.9fr 1.1fr; align-items: start; }
@@ -1278,6 +1280,14 @@ html.js [data-split].is-visible .ch { opacity: 1; transform: none; }
     box-shadow: 0 0 0 1px var(--color-accent-400), var(--shadow-sm);
     background: var(--color-surface);
 }
+.scan-bar .scan-icon {
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    transition: color var(--transition-fast);
+}
+.scan-bar:focus-within .scan-icon {
+    color: var(--color-accent-400);
+}
 .scan-bar input {
     flex: 1 1 auto;
     min-width: 0;
@@ -1288,7 +1298,7 @@ html.js [data-split].is-visible .ch { opacity: 1; transform: none; }
     height: auto;
     font-size: var(--input-font-size);
 }
-.scan-bar input::placeholder { font-size: 0.82rem; color: var(--color-text-muted); opacity: .8; }
+.scan-bar input::placeholder { font-size: var(--text-sm); color: var(--color-text-muted); opacity: .8; }
 .scan-bar input:focus { border: 0; box-shadow: none; background: transparent; }
 .scan-kbd {
     font-family: var(--font-mono);
@@ -1353,58 +1363,7 @@ html.js [data-split].is-visible .ch { opacity: 1; transform: none; }
 .marquee:focus-within .marquee-track { animation-play-state: paused; }
 @keyframes marquee-scroll { to { transform: translateX(-50%); } }
 
-/* Terminal window (Screener preview). */
-.terminal {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: #0a1a19;
-    color: #c5efe9;
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
-}
-.terminal-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.7rem 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: #7bd2c6;
-}
-.terminal-dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; }
-.terminal-dot[data-c="a"] { background: #20c5b5; }
-.terminal-dot[data-c="b"] { background: #3a9fd8; }
-.terminal-dot[data-c="c"] { background: #e06552; }
-.terminal-body {
-    padding: 1.1rem 1.2rem 1.3rem;
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    line-height: 1.9;
-    min-height: 13rem;
-}
-.terminal-line { display: flex; gap: 0.7ch; align-items: baseline; }
-.terminal-line .t-dim { color: #7bd2c6; }
-.terminal-line .t-ok { color: #2dd4bf; }
-.terminal-line .t-run { color: #4dafe6; }
-.terminal-line .t-run::after { content: ""; }
-.terminal-caret::after {
-    content: "▍";
-    color: #2dd4bf;
-    animation: caret-blink 1.1s steps(2, start) infinite;
-}
-@keyframes caret-blink { to { visibility: hidden; } }
-.terminal-scanbar {
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #2dd4bf, transparent);
-    background-size: 40% 100%;
-    background-repeat: no-repeat;
-    animation: terminal-scan 1.8s ease-in-out infinite;
-}
-@keyframes terminal-scan {
-    0% { background-position: -40% 0; }
-    100% { background-position: 140% 0; }
-}
+
 
 /* Cursor spotlight for cards. */
 .spot-card { position: relative; }
@@ -1568,7 +1527,7 @@ html.js [data-split].is-visible .ch { opacity: 1; transform: none; }
 .state-card > p { text-wrap: pretty; }
 .state-card .knot { margin-bottom: var(--space-1); }
 .state-card .state-glyph {
-    font-size: 1.5rem;
+    font-size: var(--text-title);
     color: var(--color-text-muted);
     line-height: 1;
 }

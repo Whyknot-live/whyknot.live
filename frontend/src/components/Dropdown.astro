@@ -1,5 +1,7 @@
 ---
 /* Dropdown — button menu for sorts, account actions, overflow menus. */
+import Icon from './Icon.astro';
+
 export interface DropdownItem {
     label: string;
     href: string;
@@ -15,7 +17,7 @@ const { label, items } = Astro.props;
 
 <div class="dropdown" data-dropdown>
     <button type="button" class="btn btn-ghost" aria-expanded="false" aria-haspopup="menu" data-dropdown-button>
-        {label} <span aria-hidden="true">▾</span>
+        {label} <Icon name="chevron-down" size="sm" />
     </button>
     <ul class="dropdown-menu" role="menu" data-dropdown-menu>
         {items.map((item) => (
@@ -39,12 +41,60 @@ const { label, items } = Astro.props;
         document.querySelectorAll('[data-dropdown]:not([data-wired])').forEach((root) => {
             root.setAttribute('data-wired', 'true');
             const button = root.querySelector('[data-dropdown-button]');
+            const links = () => [...root.querySelectorAll('[data-dropdown-menu] a')];
+            const setOpen = (willOpen, focusFirst) => {
+                const isOpen = root.classList.contains('open');
+                if (willOpen === isOpen) return;
+                closeAll(willOpen ? root : null);
+                root.classList.toggle('open', willOpen);
+                button?.setAttribute('aria-expanded', String(willOpen));
+                if (willOpen && focusFirst) {
+                    const first = links()[0];
+                    if (first instanceof HTMLElement) first.focus();
+                }
+            };
             button?.addEventListener('click', (event) => {
                 event.stopPropagation();
-                const willOpen = !root.classList.contains('open');
-                closeAll(root);
-                root.classList.toggle('open', willOpen);
-                button.setAttribute('aria-expanded', String(willOpen));
+                setOpen(!root.classList.contains('open'), true);
+            });
+            button?.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+                    if (!root.classList.contains('open')) {
+                        event.preventDefault();
+                        setOpen(true, true);
+                    }
+                }
+            });
+            root.addEventListener('keydown', (event) => {
+                if (!root.classList.contains('open')) return;
+                const items = links().filter((link) => link instanceof HTMLElement);
+                const at = items.indexOf(document.activeElement);
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    setOpen(false, false);
+                    if (button instanceof HTMLElement) button.focus();
+                } else if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    const next = items[(at + 1 + items.length) % items.length];
+                    if (next) next.focus();
+                } else if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    const prev = items[(at - 1 + items.length) % items.length];
+                    if (prev) prev.focus();
+                } else if (event.key === 'Home') {
+                    event.preventDefault();
+                    if (items[0]) items[0].focus();
+                } else if (event.key === 'End') {
+                    event.preventDefault();
+                    if (items[items.length - 1]) items[items.length - 1].focus();
+                } else if (event.key === 'Tab') {
+                    setOpen(false, false);
+                }
+            });
+            // Close once focus leaves the menu entirely.
+            root.addEventListener('focusout', (event) => {
+                const next = event.relatedTarget;
+                if (!(next instanceof Node) || !root.contains(next)) setOpen(false, false);
             });
             root.querySelectorAll('[data-dropdown-menu] a').forEach((link) => {
                 link.addEventListener('click', () => closeAll(null));

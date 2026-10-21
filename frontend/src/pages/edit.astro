@@ -1,0 +1,188 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+
+const title = 'Edit your listing | WhyKnot';
+const description = 'Correct your listing before it reaches review. Only the browser that submitted it holds the key.';
+---
+
+<Layout title={title} description={description} noindex constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Launches', href: '/launches' }, { label: 'Edit listing' }]} />
+        <div class="card">
+            <h1>Edit your listing</h1>
+            <p class="card-tagline" data-edit-intro>
+                The key to this listing lives in the browser that submitted it.
+            </p>
+
+            <p class="form-note" data-edit-status hidden></p>
+
+            <form data-edit-form hidden>
+                <div class="form-group">
+                    <label for="edit-name">Product name</label>
+                    <input type="text" class="form-input" id="edit-name" name="name" required maxlength="120" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-tagline">Tagline</label>
+                    <input type="text" class="form-input" id="edit-tagline" name="tagline" required maxlength="60" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-topics">Topics (comma-separated, up to 5)</label>
+                    <input type="text" class="form-input" id="edit-topics" name="topics" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-story">Maker story</label>
+                    <textarea class="form-input" id="edit-story" name="story" rows="5" maxlength="5000"></textarea>
+                </div>
+                <div class="cluster">
+                    <button type="submit" class="btn btn-primary" data-edit-save>Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { getApiBaseUrl } from '../lib/api-base';
+    import { readMakerSession } from '../lib/maker-session';
+
+    const form = document.querySelector('[data-edit-form]') as HTMLFormElement | null;
+    const status = document.querySelector('[data-edit-status]');
+    const intro = document.querySelector('[data-edit-intro]');
+    const save = document.querySelector('[data-edit-save]') as HTMLButtonElement | null;
+    const apiBase = getApiBaseUrl();
+
+    const slug = new URLSearchParams(window.location.search).get('slug')?.trim() ?? '';
+    const token = slug ? readMakerSession(slug) : null;
+
+    function say(message: string, tone: 'error' | 'success' | 'note' = 'note') {
+        if (!status) return;
+        status.textContent = message;
+        status.setAttribute('data-tone', tone);
+        status.hidden = false;
+    }
+
+    function field(id: string): HTMLInputElement | HTMLTextAreaElement | null {
+        return document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+    }
+
+    function fail(message: string) {
+        say(message, 'error');
+        if (form) form.hidden = true;
+    }
+
+    async function loadListing() {
+        if (!slug) {
+            fail('No listing was named. Open the edit link from your submission.');
+            return;
+        }
+        if (!token) {
+            fail(
+                `This browser holds no key for "${slug}". Submit the listing again from this browser, or write to us and we will sort it.`
+            );
+            return;
+        }
+        // Load the current listing so the maker edits real values, not guesses.
+        // The key travels with the read: the maker story is only returned to
+        // the maker who submitted it, so the form can never save over a story
+        // it never loaded.
+        try {
+            const res = await fetch(`${apiBase}/api/submissions/${encodeURIComponent(slug)}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.status === 404) {
+                fail('That listing does not exist.');
+                return;
+            }
+            if (!res.ok) {
+                fail('The listing could not be loaded. Try again in a minute.');
+                return;
+            }
+            const data = await res.json();
+            const name = field('edit-name');
+            const tagline = field('edit-tagline');
+            const topics = field('edit-topics');
+            const story = field('edit-story');
+            if (name) name.value = data.name ?? '';
+            if (tagline) tagline.value = data.tagline ?? '';
+            if (topics) topics.value = Array.isArray(data.topics) ? data.topics.join(', ') : '';
+            if (story) story.value = data.story ?? '';
+            if (intro) {
+                intro.textContent = `Listing ${slug}. Launch day ${data.slotDate ?? 'to be set'}.`;
+            }
+            if (form) form.hidden = false;
+        } catch {
+            fail('The listing could not be loaded. Try again in a minute.');
+        }
+    }
+
+    loadListing();
+
+    form?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const name = field('edit-name');
+        const tagline = field('edit-tagline');
+        const topics = field('edit-topics');
+        const story = field('edit-story');
+        if (!name || !tagline || !topics || !story || !token) return;
+
+        const payload = {
+            name: name.value.trim(),
+            tagline: tagline.value.trim(),
+            topics: topics.value
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean)
+                .slice(0, 5),
+            story: story.value.trim()
+        };
+
+        if (save) {
+            save.disabled = true;
+            save.textContent = 'Saving…';
+        }
+        try {
+            const res = await fetch(`${apiBase}/api/submissions/${encodeURIComponent(slug)}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                say('Saved. The listing now reads as you wrote it.', 'success');
+                return;
+            }
+            if (res.status === 401) {
+                fail('This browser no longer holds a valid key for the listing.');
+                return;
+            }
+            if (res.status === 403) {
+                fail('That key belongs to a different listing.');
+                return;
+            }
+            if (res.status === 404) {
+                fail('That listing does not exist.');
+                return;
+            }
+            if (res.status === 409) {
+                fail('This listing has left the queue, so edits are closed.');
+                return;
+            }
+            if (res.status === 429) {
+                fail('Too many attempts. Try again in a minute.');
+                return;
+            }
+            fail('The change was not saved. Try again in a minute.');
+        } catch {
+            fail('The change was not saved. Try again in a minute.');
+        } finally {
+            if (save) {
+                save.disabled = false;
+                save.textContent = 'Save changes';
+            }
+        }
+    });
+</script>

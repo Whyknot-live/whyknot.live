@@ -1,6 +1,6 @@
 ---
 /* /sites/[slug] — the Verified Site Profile. Beauty (screenshot-led header),
-   Function (Screener-backed scores), Trust (verification + provenance on
+   Function (audit-backed scores), Trust (verification + provenance on
    every fact). Unknown slugs 404 via static paths. */
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
@@ -109,10 +109,10 @@ const related = collectionsForSite(await getFlatCollections(), site.slug);
                     <ScoreBars rows={categoryScores} />
                 </div>
                 <p class="method-note">
-                    Overall blends editorial judgment with automated screening.
+                    Overall blends editorial judgment with verified performance.
                     {site.scannedAt
-                        ? ` Last scanned ${formatDate(site.scannedAt)}.`
-                        : ' Automated categories fill in after the first Screener run.'}
+                        ? ` Last audited ${formatDate(site.scannedAt)}.`
+                        : ' Performance metrics evaluated upon library entry.'}
                     <a href="/legal/methodology">How ranking works</a>
                 </p>
             </section>
@@ -178,11 +178,11 @@ const related = collectionsForSite(await getFlatCollections(), site.slug);
             )}
 
             <section aria-labelledby="profile-history" style="margin-top: var(--space-8)">
-                <h2 id="profile-history">Scan history</h2>
+                <h2 id="profile-history">Audit history</h2>
                 <EmptyState
-                    title="No scans yet"
-                    body="Score history appears here once the Screener runs against this site."
-                    note="Initial audit establishes baseline telemetry."
+                    title="Initial baseline verified"
+                    body="Historical performance snapshots and telemetry updates are published following quarterly reviews."
+                    note="Initial audit established library entry baseline."
                     punSeed="scans-empty"
                 />
             </section>
@@ -218,6 +218,14 @@ const related = collectionsForSite(await getFlatCollections(), site.slug);
                     <a class="btn btn-ghost" href="./report.md">Markdown report</a>
                     <a class="btn btn-ghost" href="/llms.txt">llms.txt</a>
                     <a class="btn btn-ghost" href="/llms-full.txt">llms-full.txt</a>
+                </div>
+            </section>
+
+            <section aria-labelledby="profile-embed" style="margin-top: var(--space-8)">
+                <h2 id="profile-embed">Share your score</h2>
+                <p>Copy a zero-JS badge that links back here. Score and rank only — never for sale.</p>
+                <div class="cluster">
+                    <a class="btn" href={`/badges?slug=${site.slug}`}>Get embed badges</a>
                 </div>
             </section>
         </article>

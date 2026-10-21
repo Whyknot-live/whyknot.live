@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "slug": "context-canvas",
+      "name": "Context Canvas",
+      "tagline": "Already a key in launches.json — this doc must be skipped by the promote script.",
+      "makerHandle": "maya-chen",
+      "url": "https://context-canvas.example",
+      "story": "This story belongs to an already promoted launch and must never replace the hand edited entry.",
+      "slotDate": "2026-09-09",
+      "status": "approved"
+    },
+    {
+      "slug": "nova-pad",
+      "name": "Nova Pad",
+      "tagline": "A scratchpad that thinks in outlines.",
+      "makerHandle": "nova-maker",
+      "url": "https://nova-pad.example",
+      "story": "Nova Pad began as a weekend tool for mapping release notes and grew into a shared outline space for small teams.",
+      "slotDate": "2027-01-05",
+      "status": "approved"
+    },
+    {
+      "slug": "zeta-clock",
+      "name": "Zeta Clock",
+      "tagline": "A world clock that respects the dark.",
+      "makerHandle": "zeta-maker",
+      "url": "https://zeta-clock.example",
+      "story": "Zeta Clock started as a spreadsheet for tracking teammates across time zones before becoming a proper application.",
+      "slotDate": "2026-09-25",
+      "status": "approved"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 200,
+    "total": 3,
+    "pages": 1
+  },
+  "queued": 0
+}

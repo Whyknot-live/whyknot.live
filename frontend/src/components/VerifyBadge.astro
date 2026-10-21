@@ -10,20 +10,50 @@ export interface Props {
 
 const { state, date } = Astro.props;
 
-const META: Record<VerifyState, { glyph: string; label: string }> = {
-    verified: { glyph: '✓', label: 'Verified' },
-    pending: { glyph: '◷', label: 'Pending' },
-    unverified: { glyph: '○', label: 'Unverified' },
-    expired: { glyph: '!', label: 'Expired' },
-    stale: { glyph: '!', label: 'Stale' },
-    failed: { glyph: '✕', label: 'Failed' },
+const LABELS: Record<VerifyState, string> = {
+    verified: 'Verified',
+    pending: 'Pending',
+    unverified: 'Unverified',
+    expired: 'Expired',
+    stale: 'Stale',
+    failed: 'Failed',
 };
 
-const meta = META[state];
-const text = date && (state === 'verified' || state === 'stale' || state === 'expired') ? `${meta.label} · ${date}` : meta.label;
+const label = LABELS[state] || 'Unverified';
+const text = date && (state === 'verified' || state === 'stale' || state === 'expired') ? `${label} · ${date}` : label;
 ---
 
 <span class="verify-badge" data-state={state} title={`Domain ownership: ${text}`}>
-    <span class="verify-dot" aria-hidden="true">{meta.glyph}</span>
+    <span class="verify-dot" aria-hidden="true">
+        {state === 'verified' && (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        )}
+        {state === 'pending' && (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+        )}
+        {state === 'unverified' && (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+            </svg>
+        )}
+        {(state === 'expired' || state === 'stale') && (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        )}
+        {state === 'failed' && (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        )}
+    </span>
     {text}
 </span>

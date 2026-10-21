@@ -11,7 +11,7 @@ const siteSchema = z.object({
   accent: z.enum(['coral', 'blue', 'green', 'yellow']).default('coral'),
   score: z.number().int().min(0).max(100),
   performance: z.number().int().min(0).max(100),
-  // Screener-backed category scores (null until a scan exists)
+  // Verified category scores (null until an audit exists)
   accessibility: z.number().int().min(0).max(100).nullish(),
   seo: z.number().int().min(0).max(100).nullish(),
   bestPractices: z.number().int().min(0).max(100).nullish(),
@@ -36,6 +36,7 @@ const launchSchema = z.object({
   maker: z.string(),
   makerHandle: z.string().optional(),
   siteSlug: z.string().optional(),
+  url: z.string().url().regex(/^https?:\/\//i, 'url must be http or https').optional(),
   votes: z.number().int().nonnegative(),
   comments: z.number().int().nonnegative(),
   rank: z.number().int().positive(),

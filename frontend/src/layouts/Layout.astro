@@ -152,7 +152,7 @@ const currentYear = new Date().getFullYear();
   <a href="/about" class="footer-link" data-astro-prefetch>About</a>
   <a href="/blog" class="footer-link" data-astro-prefetch>Blog</a>
   <a href="/newsletter" class="footer-link" data-astro-prefetch>Newsletter</a>
-  <a href="#waitlist" class="footer-link">Join Waitlist</a>
+  <a href="#waitlist" class="footer-link">Join the loop</a>
  </nav>
  </div>
  
@@ -193,7 +193,7 @@ const currentYear = new Date().getFullYear();
  <div class="footer-copyright">
  <p>© {currentYear} WhyKnot Live. All rights reserved.</p>
  <p class="footer-tagline-small">
- Made with 🪢 for curious humans
+ Tied together by curious humans
  </p>
  </div>
  
@@ -229,10 +229,15 @@ const currentYear = new Date().getFullYear();
  initialTheme = systemPrefersDark ? 'dark' : 'light';
  }
  
- // Apply theme
- function applyTheme(theme) {
- document.documentElement.setAttribute('data-theme', theme);
- }
+  // Apply theme + keep toggle buttons' pressed state honest
+  function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const dark = theme === 'dark';
+  document.querySelectorAll('[data-theme-toggle]').forEach((toggle) => {
+  toggle.setAttribute('aria-pressed', String(dark));
+  toggle.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+  });
+  }
  
  // Set initial theme
  applyTheme(initialTheme);
@@ -351,12 +356,22 @@ const currentYear = new Date().getFullYear();
  
  if (!banner) return;
  
- const analyticsCheckbox = document.getElementById('cookie-analytics');
- const preferencesCheckbox = document.getElementById('cookie-preferences');
- const marketingCheckbox = document.getElementById('cookie-marketing');
- const acceptAllBtn = document.getElementById('cookie-accept-all');
- const rejectAllBtn = document.getElementById('cookie-reject-all');
- const saveBtn = document.getElementById('cookie-save');
+  const analyticsSwitch = document.getElementById('cookie-analytics');
+  const preferencesSwitch = document.getElementById('cookie-preferences');
+  const marketingSwitch = document.getElementById('cookie-marketing');
+  const essentialSwitch = document.getElementById('cookie-essential');
+  const acceptAllBtn = document.getElementById('cookie-accept-all');
+  const rejectAllBtn = document.getElementById('cookie-reject-all');
+  const saveBtn = document.getElementById('cookie-save');
+
+  // Switch helpers (custom role="switch" buttons expose state via aria-checked)
+  function isSwitchOn(el) {
+  return el ? el.getAttribute('aria-checked') === 'true' : false;
+  }
+
+  function setSwitch(el, on) {
+  if (el) el.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
  
  // Check existing consent
  function hasConsent() {
@@ -389,53 +404,113 @@ const currentYear = new Date().getFullYear();
  }
  }
  
- // Show/hide banner
- function showBanner() {
- banner.setAttribute('aria-hidden', 'false');
- }
+  // Show/hide banner (modal-lite: focus in, trap Tab, restore on hide)
+  let cookieReturnFocus = null;
+  const COOKIE_FOCUSABLE = 'button:not([disabled])';
+
+  function cookieFocusables() {
+  return Array.from(banner.querySelectorAll(COOKIE_FOCUSABLE)).filter(
+  (el) => el.getClientRects().length > 0
+  );
+  }
+
+  function showBanner() {
+  if (banner.getAttribute('aria-hidden') === 'false') return;
+  cookieReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  banner.setAttribute('aria-hidden', 'false');
+  banner.removeAttribute('inert');
+  const first = cookieFocusables()[0];
+  if (first) first.focus({ preventScroll: true });
+  }
+
+  function hideBanner(restoreFocus) {
+  if (banner.getAttribute('aria-hidden') === 'true') return;
+  banner.setAttribute('aria-hidden', 'true');
+  banner.setAttribute('inert', '');
+  if (restoreFocus !== false && cookieReturnFocus && cookieReturnFocus.isConnected) {
+  cookieReturnFocus.focus({ preventScroll: true });
+  }
+  cookieReturnFocus = null;
+  }
+
+  banner.setAttribute('inert', '');
+  banner.addEventListener('keydown', (event) => {
+  if (banner.getAttribute('aria-hidden') === 'true') return;
+  if (event.key === 'Escape') {
+  event.preventDefault();
+  saveConsent({
+  essential: true,
+  analytics: isSwitchOn(analyticsSwitch),
+  preferences: isSwitchOn(preferencesSwitch),
+  marketing: isSwitchOn(marketingSwitch)
+  });
+  hideBanner();
+  return;
+  }
+  if (event.key !== 'Tab') return;
+  const items = cookieFocusables();
+  if (items.length === 0) {
+  event.preventDefault();
+  return;
+  }
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+  event.preventDefault();
+  last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+  event.preventDefault();
+  first.focus();
+  }
+  });
  
- function hideBanner() {
- banner.setAttribute('aria-hidden', 'true');
- }
- 
- // Load saved preferences into checkboxes
- function loadPreferences() {
- const consent = getConsent();
- if (consent) {
- if (analyticsCheckbox) analyticsCheckbox.checked = consent.analytics || false;
- if (preferencesCheckbox) preferencesCheckbox.checked = consent.preferences || false;
- if (marketingCheckbox) marketingCheckbox.checked = consent.marketing || false;
- }
- }
- 
- // Accept all
- if (acceptAllBtn) {
- acceptAllBtn.addEventListener('click', () => {
- saveConsent({ essential: true, analytics: true, preferences: true, marketing: true });
- hideBanner();
- });
- }
- 
- // Reject all (except essential)
- if (rejectAllBtn) {
- rejectAllBtn.addEventListener('click', () => {
- saveConsent({ essential: true, analytics: false, preferences: false, marketing: false });
- hideBanner();
- });
- }
- 
- // Save preferences
- if (saveBtn) {
- saveBtn.addEventListener('click', () => {
- saveConsent({
- essential: true,
- analytics: analyticsCheckbox ? analyticsCheckbox.checked : false,
- preferences: preferencesCheckbox ? preferencesCheckbox.checked : false,
- marketing: marketingCheckbox ? marketingCheckbox.checked : false
- });
- hideBanner();
- });
- }
+  // Load saved preferences into switches
+  function loadPreferences() {
+  const consent = getConsent();
+  setSwitch(essentialSwitch, true);
+  if (consent) {
+  setSwitch(analyticsSwitch, consent.analytics || false);
+  setSwitch(preferencesSwitch, consent.preferences || false);
+  setSwitch(marketingSwitch, consent.marketing || false);
+  }
+  }
+
+  // Accept all
+  if (acceptAllBtn) {
+  acceptAllBtn.addEventListener('click', () => {
+  setSwitch(essentialSwitch, true);
+  setSwitch(analyticsSwitch, true);
+  setSwitch(preferencesSwitch, true);
+  setSwitch(marketingSwitch, true);
+  saveConsent({ essential: true, analytics: true, preferences: true, marketing: true });
+  hideBanner();
+  });
+  }
+
+  // Reject all (except essential)
+  if (rejectAllBtn) {
+  rejectAllBtn.addEventListener('click', () => {
+  setSwitch(essentialSwitch, true);
+  setSwitch(analyticsSwitch, false);
+  setSwitch(preferencesSwitch, false);
+  setSwitch(marketingSwitch, false);
+  saveConsent({ essential: true, analytics: false, preferences: false, marketing: false });
+  hideBanner();
+  });
+  }
+
+  // Save preferences
+  if (saveBtn) {
+  saveBtn.addEventListener('click', () => {
+  saveConsent({
+  essential: true,
+  analytics: isSwitchOn(analyticsSwitch),
+  preferences: isSwitchOn(preferencesSwitch),
+  marketing: isSwitchOn(marketingSwitch)
+  });
+  hideBanner();
+  });
+  }
  
  // Global function to open cookie settings
  window.openCookieSettings = function() {
@@ -597,7 +672,7 @@ const currentYear = new Date().getFullYear();
 		if (document.documentElement.hasAttribute('data-knot-eggs')) return;
 		document.documentElement.setAttribute('data-knot-eggs', 'true');
 		console.log(
-			'%cWhyKnot 🪢\nYou opened the developer console. Our kind of curious.\nTry typing "knot" anywhere on the page, then pull gently.\nTied together by the WhyKnot crew (humans, mostly untangled).',
+			'%cWhyKnot // Scored · Verified · Untangled\nYou opened the developer console. Our kind of curious.\nTry typing "knot" anywhere on the page, then pull gently.\nTied together by the WhyKnot crew (humans, mostly untangled).',
 			'font-size: 12px; color: #20c5b5; font-family: monospace;'
 		);
 		let buffer = '';

@@ -14,7 +14,9 @@
     "astro": "astro",
     "check": "astro check",
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint",
+    "lint": "oxlint && bun scripts/sync-tokens.mjs --check",
+    "tokens:check": "bun scripts/sync-tokens.mjs --check",
+    "tokens:sync": "bun scripts/sync-tokens.mjs --write",
     "lint:fix": "oxlint --fix"
   },
   "dependencies": {

@@ -1,0 +1,529 @@
+---
+/* Admin submissions review queue (P1 submit flow).
+   Copies claims.astro exactly: auth gate, stats cards, filter controls,
+   paginated table, loading/empty/error states, decision buttons that call the
+   backend and reload so the outcome is visible in the refreshed row.
+   Endpoints (backend/src/routes/admin.ts):
+     GET  /api/admin/submissions?page&limit&status -> { ok, data, pagination, queued }
+     POST /api/admin/submissions/:slug { decision, reason? } -> { ok, status }
+   Decisions: approved | changes_requested | rejected. */
+import AdminLayout from '../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Submissions review queue" description="WhyKnot submit-flow review">
+  <style is:global>
+    @import "../styles/submissions.css";
+  </style>
+  <div class="admin-container">
+    <div class="floating-particles" aria-hidden="true">
+      <div class="particle particle-1"></div>
+      <div class="particle particle-2"></div>
+      <div class="particle particle-3"></div>
+      <div class="particle particle-4"></div>
+      <div class="particle particle-5"></div>
+      <div class="particle particle-6"></div>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+
+    <div class="admin-header">
+      <h1><span class="gradient-text">Submissions</span> review queue</h1>
+      <p>Submit to launch · approve, request changes, or reject</p>
+    </div>
+
+    <div id="notice" class="review-notice" role="status" aria-live="polite" style="display: none;"></div>
+
+    <div id="statsContainer" class="stats-grid" style="display: none;">
+      <div class="stat-card">
+        <div class="stat-label">Queued</div>
+        <div class="stat-value" id="statQueued">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value" id="statApproved">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Changes requested</div>
+        <div class="stat-value" id="statChanges">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rejected</div>
+        <div class="stat-value" id="statRejected">-</div>
+      </div>
+    </div>
+
+    <div id="controlPanel" class="dashboard-controls" style="display: none;">
+      <div class="filter-group">
+        <span class="filter-label" id="statusFilterLabel">Filter by status</span>
+        <div class="status-filters" role="group" aria-labelledby="statusFilterLabel">
+          <button type="button" class="status-filter" data-status="" aria-pressed="true">All</button>
+          <button type="button" class="status-filter" data-status="queued" aria-pressed="false">Queued</button>
+          <button type="button" class="status-filter" data-status="approved" aria-pressed="false">Approved</button>
+          <button type="button" class="status-filter" data-status="changes_requested" aria-pressed="false">Changes requested</button>
+          <button type="button" class="status-filter" data-status="rejected" aria-pressed="false">Rejected</button>
+        </div>
+      </div>
+
+      <div class="control-actions">
+        <span id="resultCount" class="result-count">&nbsp;</span>
+        <button id="refreshBtn" class="control-button" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <div id="loadingState" class="loading">Loading submissions…</div>
+
+    <div id="errorState" class="empty-state" role="alert" style="display: none;">
+      <h3>Could not load submissions</h3>
+      <p id="errorDetail">The review queue failed to load.</p>
+      <button id="retryBtn" class="control-button" type="button">Retry</button>
+    </div>
+
+    <div id="tableContainer" style="display: none;">
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Site</th>
+              <th>URL</th>
+              <th>Maker</th>
+              <th>Topics</th>
+              <th>Status</th>
+              <th>Slot date</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="pagination">
+        <button id="prevBtn" disabled>Previous</button>
+        <span class="pagination-info" id="pageInfo">Page 1</span>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <h3 id="emptyTitle">No submissions yet</h3>
+      <p id="emptyText">When makers submit a site, it lands here for review.</p>
+    </div>
+  </div>
+
+  <script>
+    window.adminAPI.isAuthenticated().then((isAuth) => {
+      if (!isAuth) window.location.href = '/';
+      return isAuth;
+    });
+
+    type Decision = 'approved' | 'changes_requested' | 'rejected';
+
+    type SubmissionRow = {
+      slug: string;
+      url: string;
+      name: string;
+      tagline?: string;
+      topics?: string[];
+      makerHandle?: string;
+      status: string;
+      slotDate?: string;
+      reviewReason?: string | null;
+      createdAt?: string;
+    };
+
+    const STATUS_LABELS: Record<string, string> = {
+      queued: 'Queued',
+      approved: 'Approved',
+      changes_requested: 'Changes requested',
+      rejected: 'Rejected',
+    };
+
+    const STATUS_BADGE_CLASS: Record<string, string> = {
+      queued: 'is-queued',
+      approved: 'is-approved',
+      changes_requested: 'is-changes',
+      rejected: 'is-rejected',
+    };
+
+    let currentPage = 1;
+    const limit = 50;
+    let totalPages = 1;
+    let currentStatus = '';
+
+    let activeReason: {
+      tr: HTMLTableRowElement;
+      decision: Decision;
+      slug: string;
+      name: string;
+      input: HTMLInputElement;
+      error: HTMLParagraphElement;
+      confirmBtn: HTMLButtonElement;
+      cancelBtn: HTMLButtonElement;
+      trigger: HTMLButtonElement;
+    } | null = null;
+
+    const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
+    const loadingState = document.getElementById('loadingState') as HTMLDivElement;
+    const errorState = document.getElementById('errorState') as HTMLDivElement;
+    const errorDetail = document.getElementById('errorDetail') as HTMLParagraphElement;
+    const retryBtn = document.getElementById('retryBtn') as HTMLButtonElement;
+    const notice = document.getElementById('notice') as HTMLDivElement;
+    const statsContainer = document.getElementById('statsContainer') as HTMLDivElement;
+    const tableContainer = document.getElementById('tableContainer') as HTMLDivElement;
+    const emptyState = document.getElementById('emptyState') as HTMLDivElement;
+    const emptyTitle = document.getElementById('emptyTitle') as HTMLHeadingElement;
+    const emptyText = document.getElementById('emptyText') as HTMLParagraphElement;
+    const tableBody = document.getElementById('tableBody') as HTMLTableSectionElement;
+    const prevBtn = document.getElementById('prevBtn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('nextBtn') as HTMLButtonElement;
+    const pageInfo = document.getElementById('pageInfo') as HTMLSpanElement;
+    const resultCount = document.getElementById('resultCount') as HTMLSpanElement;
+    const controlPanel = document.getElementById('controlPanel') as HTMLDivElement;
+    const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement;
+    const statusFilters = Array.from(document.querySelectorAll<HTMLButtonElement>('.status-filter'));
+
+    logoutBtn.addEventListener('click', async () => {
+      await window.adminAPI.logout();
+    });
+
+    function formatDate(dateString: string): string {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+      });
+    }
+
+    function hostOf(rawUrl: string): string {
+      try {
+        return new URL(rawUrl).hostname.replace(/^www\./, '');
+      } catch {
+        return rawUrl;
+      }
+    }
+
+    function showNotice(message: string, kind: 'success' | 'error') {
+      notice.textContent = message;
+      notice.className = `review-notice review-notice--${kind}`;
+      notice.style.display = 'block';
+    }
+
+    function hideNotice() {
+      notice.style.display = 'none';
+      notice.textContent = '';
+    }
+
+    function updateResultCount(total: number, currentRows: number) {
+      if (total === 0 || currentRows === 0) { resultCount.textContent = '0 results'; return; }
+      const start = (currentPage - 1) * limit + 1;
+      resultCount.textContent = `${start.toLocaleString()}-${(start + currentRows - 1).toLocaleString()} of ${total.toLocaleString()}`;
+    }
+
+    async function countByStatus(status: string): Promise<number> {
+      const params = new URLSearchParams({ page: '1', limit: '1' });
+      if (status) params.set('status', status);
+      const response = await window.adminAPI.fetch(`/admin/submissions?${params.toString()}`);
+      const data = await response.json();
+      if (!data.ok) throw new Error('stats_failed');
+      return Number(data.pagination?.total ?? 0);
+    }
+
+    async function loadStats() {
+      try {
+        const [queued, approved, changes, rejected] = await Promise.all([
+          countByStatus('queued'),
+          countByStatus('approved'),
+          countByStatus('changes_requested'),
+          countByStatus('rejected'),
+        ]);
+        document.getElementById('statQueued')!.textContent = queued.toLocaleString();
+        document.getElementById('statApproved')!.textContent = approved.toLocaleString();
+        document.getElementById('statChanges')!.textContent = changes.toLocaleString();
+        document.getElementById('statRejected')!.textContent = rejected.toLocaleString();
+        statsContainer.style.display = 'grid';
+      } catch (error) {
+        console.error('Failed to load submission stats:', error);
+      }
+    }
+
+    function setEmptyState() {
+      if (currentStatus) {
+        emptyTitle.textContent = `No ${STATUS_LABELS[currentStatus]?.toLowerCase() ?? currentStatus} submissions`;
+        emptyText.textContent = 'Switch the filter to see the other statuses.';
+      } else {
+        emptyTitle.textContent = 'No submissions yet';
+        emptyText.textContent = 'When makers submit a site, it lands here for review.';
+      }
+    }
+
+    function makeActionButton(label: string, kind: string, decision: Decision, sub: SubmissionRow): HTMLButtonElement {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `action-btn action-btn--${kind}`;
+      btn.textContent = label;
+      btn.disabled = sub.status === decision;
+      btn.addEventListener('click', () => {
+        if (decision === 'approved') {
+          void decide(sub, 'approved');
+        } else {
+          openReasonRow(sub, decision, btn);
+        }
+      });
+      return btn;
+    }
+
+    function renderRow(sub: SubmissionRow): HTMLTableRowElement {
+      const row = document.createElement('tr');
+      row.dataset.slug = sub.slug;
+
+      const siteCell = document.createElement('td');
+      const nameStrong = document.createElement('strong');
+      nameStrong.textContent = sub.name || sub.slug;
+      siteCell.appendChild(nameStrong);
+      if (sub.tagline) {
+        const tagline = document.createElement('div');
+        tagline.className = 'cell-sub';
+        tagline.textContent = sub.tagline;
+        siteCell.appendChild(tagline);
+      }
+
+      const urlCell = document.createElement('td');
+      if (sub.url) {
+        const link = document.createElement('a');
+        link.className = 'sub-url';
+        link.href = sub.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = hostOf(sub.url);
+        link.title = sub.url;
+        urlCell.appendChild(link);
+      } else {
+        urlCell.textContent = '-';
+      }
+
+      const makerCell = document.createElement('td');
+      makerCell.textContent = sub.makerHandle ? `@${sub.makerHandle}` : '-';
+
+      const topicsCell = document.createElement('td');
+      const topics = Array.isArray(sub.topics) ? sub.topics : [];
+      topics.forEach((topic) => {
+        const badge = document.createElement('span');
+        badge.className = 'interest-badge';
+        badge.textContent = topic;
+        topicsCell.appendChild(badge);
+      });
+
+      const statusCell = document.createElement('td');
+      const statusKey = sub.status || 'queued';
+      const badge = document.createElement('span');
+      badge.className = `status-badge ${STATUS_BADGE_CLASS[statusKey] ?? 'is-queued'}`;
+      badge.textContent = STATUS_LABELS[statusKey] ?? statusKey;
+      statusCell.appendChild(badge);
+      if (sub.reviewReason) {
+        const reason = document.createElement('div');
+        reason.className = 'cell-sub';
+        reason.textContent = sub.reviewReason;
+        statusCell.appendChild(reason);
+      }
+
+      const slotCell = document.createElement('td');
+      slotCell.textContent = sub.slotDate ?? '-';
+
+      const dateCell = document.createElement('td');
+      dateCell.textContent = sub.createdAt ? formatDate(sub.createdAt) : '';
+
+      const actionsCell = document.createElement('td');
+      const group = document.createElement('div');
+      group.className = 'action-group';
+      group.appendChild(makeActionButton('Approve', 'approve', 'approved', sub));
+      group.appendChild(makeActionButton('Request changes', 'changes', 'changes_requested', sub));
+      group.appendChild(makeActionButton('Reject', 'reject', 'rejected', sub));
+      actionsCell.appendChild(group);
+
+      row.append(siteCell, urlCell, makerCell, topicsCell, statusCell, slotCell, dateCell, actionsCell);
+      return row;
+    }
+
+    async function loadSubmissions(page = 1) {
+      try {
+        errorState.style.display = 'none';
+        loadingState.style.display = 'flex';
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'none';
+
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (currentStatus) params.set('status', currentStatus);
+
+        const response = await window.adminAPI.fetch(`/admin/submissions?${params.toString()}`);
+        const data = await response.json();
+        if (!data.ok) throw new Error('load_failed');
+
+        currentPage = data.pagination.page;
+        totalPages = data.pagination.pages;
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+        tableBody.innerHTML = '';
+        closeReasonRow();
+        controlPanel.style.display = 'grid';
+
+        const items: SubmissionRow[] = Array.isArray(data.data) ? data.data : [];
+        if (items.length === 0) {
+          loadingState.style.display = 'none';
+          setEmptyState();
+          emptyState.style.display = 'block';
+          updateResultCount(0, 0);
+          return;
+        }
+
+        items.forEach((sub) => tableBody.appendChild(renderRow(sub)));
+
+        updateResultCount(data.pagination.total ?? 0, items.length);
+        loadingState.style.display = 'none';
+        tableContainer.style.display = 'block';
+      } catch (error) {
+        console.error('Failed to load submissions:', error);
+        loadingState.style.display = 'none';
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'none';
+        errorDetail.textContent = 'The review queue failed to load. Check the API and retry.';
+        errorState.style.display = 'block';
+      }
+    }
+
+    function setReasonBusy(busy: boolean) {
+      if (!activeReason) return;
+      activeReason.input.disabled = busy;
+      activeReason.cancelBtn.disabled = busy;
+      activeReason.confirmBtn.disabled = busy;
+      activeReason.confirmBtn.textContent = busy ? 'Saving…' : 'Confirm';
+    }
+
+    function closeReasonRow(restoreFocus = false) {
+      if (!activeReason) return;
+      const { tr, trigger } = activeReason;
+      activeReason = null;
+      tr.remove();
+      if (restoreFocus && trigger.isConnected) trigger.focus();
+    }
+
+    function openReasonRow(sub: SubmissionRow, decision: Decision, trigger: HTMLButtonElement) {
+      closeReasonRow();
+      const row = Array.from(tableBody.querySelectorAll('tr')).find((r) => r.dataset.slug === sub.slug);
+      if (!row) return;
+
+      const tr = document.createElement('tr');
+      tr.className = 'reason-row';
+      const td = document.createElement('td');
+      td.colSpan = 8;
+
+      const form = document.createElement('div');
+      form.className = 'reason-form';
+
+      const label = document.createElement('label');
+      label.className = 'filter-label';
+      label.htmlFor = 'reasonInput';
+      label.textContent = decision === 'changes_requested'
+        ? `Reason for changes to ${sub.name || sub.slug} (required)`
+        : `Reason for rejecting ${sub.name || sub.slug} (optional)`;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = 'reasonInput';
+      input.className = 'reason-input';
+      input.maxLength = 500;
+      input.placeholder = decision === 'changes_requested'
+        ? 'What should the maker change? (500 characters max)'
+        : 'Optional note kept with the review (500 characters max)';
+
+      const error = document.createElement('p');
+      error.className = 'reason-error';
+      error.textContent = 'Add a reason so the maker knows what to change.';
+      error.hidden = true;
+
+      const actions = document.createElement('div');
+      actions.className = 'reason-actions';
+      const confirmBtn = document.createElement('button');
+      confirmBtn.type = 'button';
+      confirmBtn.className = 'action-btn action-btn--approve';
+      confirmBtn.textContent = 'Confirm';
+      const cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'action-btn';
+      cancelBtn.textContent = 'Cancel';
+      actions.append(confirmBtn, cancelBtn);
+
+      form.append(label, input, error, actions);
+      td.appendChild(form);
+      tr.appendChild(td);
+      row.after(tr);
+
+      activeReason = { tr, decision, slug: sub.slug, name: sub.name || sub.slug, input, error, confirmBtn, cancelBtn, trigger };
+      input.focus();
+
+      cancelBtn.addEventListener('click', () => closeReasonRow(true));
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeReasonRow(true);
+      });
+      confirmBtn.addEventListener('click', () => {
+        if (!activeReason) return;
+        const reason = activeReason.input.value.trim();
+        if (activeReason.decision === 'changes_requested' && reason.length === 0) {
+          activeReason.error.hidden = false;
+          activeReason.input.focus();
+          return;
+        }
+        activeReason.error.hidden = true;
+        setReasonBusy(true);
+        void decide(sub, activeReason.decision, reason || undefined);
+      });
+    }
+
+    async function decide(sub: SubmissionRow, decision: Decision, reason?: string): Promise<void> {
+      hideNotice();
+      try {
+        const body: { decision: Decision; reason?: string } = { decision };
+        if (reason) body.reason = reason;
+        const response = await window.adminAPI.fetch(`/admin/submissions/${encodeURIComponent(sub.slug)}`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.ok === false) throw new Error(data.error ?? 'decision_failed');
+
+        closeReasonRow();
+        const newStatus = STATUS_LABELS[data.status ?? decision] ?? decision;
+        showNotice(`${STATUS_LABELS[decision] ?? decision}: “${sub.name || sub.slug}”. Status is now ${newStatus.toLowerCase()}.`, 'success');
+        await Promise.all([loadStats(), loadSubmissions(currentPage)]);
+      } catch (error) {
+        console.error('Submission decision failed:', error);
+        showNotice('Unable to save the decision. Nothing changed. Please try again.', 'error');
+        setReasonBusy(false);
+        activeReason?.input.focus();
+      }
+    }
+
+    prevBtn.addEventListener('click', () => { if (currentPage > 1) void loadSubmissions(currentPage - 1); });
+    nextBtn.addEventListener('click', () => { if (currentPage < totalPages) void loadSubmissions(currentPage + 1); });
+
+    refreshBtn.addEventListener('click', () => {
+      void Promise.all([loadStats(), loadSubmissions(currentPage)]);
+    });
+
+    retryBtn.addEventListener('click', () => {
+      void loadSubmissions(currentPage);
+    });
+
+    statusFilters.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        currentStatus = btn.dataset.status ?? '';
+        statusFilters.forEach((other) => other.setAttribute('aria-pressed', String(other === btn)));
+        hideNotice();
+        closeReasonRow();
+        void loadSubmissions(1);
+      });
+    });
+
+    Promise.all([loadStats(), loadSubmissions()]).catch((error) => {
+      console.error('Submissions initialization error:', error);
+    });
+  </script>
+</AdminLayout>

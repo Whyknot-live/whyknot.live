@@ -1,0 +1,32 @@
+---
+/* ThemeToggle — knot sun/moon morph button. Pure-CSS icon swap driven by
+   :root[data-theme] so it works with the existing theme system in
+   layouts/Layout.astro + Navigation wiring ([data-theme-toggle]).
+   `showLabel` keeps the mobile-nav text variant on-brand. */
+import Icon from './Icon.astro';
+
+export interface Props {
+    showLabel?: boolean;
+    className?: string;
+}
+
+const { showLabel = false, className = '' } = Astro.props;
+---
+
+<button
+    type="button"
+    class={`theme-toggle wk-theme ${className}`.trim()}
+    data-theme-toggle
+    aria-label="Toggle color theme"
+    aria-pressed="false"
+>
+    <span class="wk-theme-icons" aria-hidden="true">
+        <span class="wk-theme-icon wk-theme-icon--sun">
+            <Icon name="sun" size="lg" />
+        </span>
+        <span class="wk-theme-icon wk-theme-icon--moon">
+            <Icon name="moon" size="lg" />
+        </span>
+    </span>
+    {showLabel && <span class="theme-toggle-text">Theme</span>}
+</button>

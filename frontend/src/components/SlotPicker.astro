@@ -12,7 +12,7 @@ const { inputName = 'slotDate', days = 14 } = Astro.props;
 
 <div class="slot-picker" data-slot-picker data-days={days} data-input-name={inputName}>
     <p class="form-note" data-slot-status>Scanning launch queue availability…</p>
-    <div class="slot-options-grid" data-slot-options></div>
+    <div class="slot-options-grid" data-slot-options role="radiogroup" aria-label="Available launch dates"></div>
 </div>
 
 <script>
@@ -54,35 +54,85 @@ const { inputName = 'slotDate', days = 14 } = Astro.props;
 
             options.textContent = '';
             let checkedFirst = false;
+            const cards: HTMLButtonElement[] = [];
+
+            const choose = (card: HTMLButtonElement, moveFocus: boolean) => {
+                if (card.disabled) return;
+                // Re-clicking the selected card is a no-op (no duplicate event).
+                if (card.getAttribute('aria-checked') === 'true') {
+                    if (moveFocus && document.activeElement !== card) card.focus();
+                    return;
+                }
+                cards.forEach((other) => {
+                    const on = other === card;
+                    other.classList.toggle('is-selected', on);
+                    other.setAttribute('aria-checked', String(on));
+                    other.tabIndex = on ? 0 : -1;
+                });
+                (root as HTMLElement).dataset.value = card.value;
+                options.dispatchEvent(
+                    new CustomEvent('wk-radio-change', { bubbles: true, detail: { name: inputName, value: card.value } })
+                );
+                if (moveFocus) card.focus();
+            };
+
+            const enabledCards = () => cards.filter((card) => !card.disabled);
+
+            const move = (current: HTMLButtonElement, delta: number) => {
+                const enabled = enabledCards();
+                if (enabled.length === 0) return;
+                const at = enabled.indexOf(current);
+                const base = at === -1 ? (delta > 0 ? -1 : 0) : at;
+                choose(enabled[(base + delta + enabled.length) % enabled.length], true);
+            };
+
+            const jump = (which: string) => {
+                const enabled = enabledCards();
+                if (enabled.length === 0) return;
+                choose(which === 'first' ? enabled[0] : enabled[enabled.length - 1], true);
+            };
 
             slots.forEach((slot) => {
-                const card = document.createElement('label');
+                const card = document.createElement('button');
+                card.type = 'button';
                 card.className = 'slot-option-card';
+                card.setAttribute('role', 'radio');
+                card.value = slot.date;
+                card.tabIndex = -1;
+                card.setAttribute('aria-checked', 'false');
 
                 const isFull = slot.available <= 0;
                 if (isFull) {
                     card.classList.add('is-disabled');
+                    card.disabled = true;
+                    card.setAttribute('aria-disabled', 'true');
                 }
-
-                const radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = inputName;
-                radio.value = slot.date;
-                radio.disabled = isFull;
-                radio.style.position = 'absolute';
-                radio.style.opacity = '0';
-                radio.style.pointerEvents = 'none';
 
                 if (!isFull && !checkedFirst) {
-                    radio.checked = true;
                     card.classList.add('is-selected');
+                    card.setAttribute('aria-checked', 'true');
+                    card.tabIndex = 0;
                     checkedFirst = true;
+                    (root as HTMLElement).dataset.value = slot.date;
                 }
 
-                radio.addEventListener('change', () => {
-                    options.querySelectorAll('.slot-option-card').forEach((c) => c.classList.remove('is-selected'));
-                    if (radio.checked) {
-                        card.classList.add('is-selected');
+                card.addEventListener('click', () => {
+                    choose(card, false);
+                });
+
+                card.addEventListener('keydown', (event) => {
+                    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        move(card, 1);
+                    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        move(card, -1);
+                    } else if (event.key === 'Home') {
+                        event.preventDefault();
+                        jump('first');
+                    } else if (event.key === 'End') {
+                        event.preventDefault();
+                        jump('last');
                     }
                 });
 
@@ -94,10 +144,10 @@ const { inputName = 'slotDate', days = 14 } = Astro.props;
                 badge.className = `slot-card-badge ${isFull ? 'is-full' : ''}`;
                 badge.textContent = isFull ? 'Full' : `${slot.available} left`;
 
-                card.appendChild(radio);
                 card.appendChild(dateSpan);
                 card.appendChild(badge);
                 options.appendChild(card);
+                cards.push(card);
             });
 
             if (status) {

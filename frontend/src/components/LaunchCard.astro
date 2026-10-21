@@ -1,9 +1,12 @@
 ---
 /* LaunchCard: launch feed unit in WhyKnot's own language: no rank column,
    no vote box. Editorial badge + maker up top, community backing at the foot.
-   Badge mapping keeps Sponsored neutral (never a merit color). */
+   Badge mapping keeps Sponsored neutral (never a merit color).
+   A scheduled launch wears a Scheduled badge + its open date instead of the
+   editorial badge, so it never reads as live on any board. */
 import BoostButton from './BoostButton.astro';
 import SponsoredTag from './SponsoredTag.astro';
+import TimeStamp from './TimeStamp.astro';
 
 export type LaunchBadge = 'New' | 'Screened' | 'Verified' | "Editor's Pick" | 'Sponsored';
 
@@ -18,6 +21,8 @@ export interface LaunchCardData {
     badge: LaunchBadge;
     publishedAt: Date;
     sponsored?: boolean;
+    status?: 'scheduled' | 'live' | 'archived';
+    scheduledAt?: Date | string;
 }
 
 export interface Props {
@@ -35,12 +40,16 @@ function badgeVariant(badge: LaunchBadge): string {
 
 const shownBadge: LaunchBadge = launch.sponsored ? 'Sponsored' : launch.badge;
 const variant = badgeVariant(shownBadge);
+const scheduled = launch.status === 'scheduled';
+const opensAt = launch.scheduledAt ? new Date(launch.scheduledAt) : launch.publishedAt;
 ---
 
 <article class="card launch-card spot-card">
     <div class="launch-card-body">
         <div class="card-meta-row">
-            {shownBadge === 'Sponsored' ? (
+            {scheduled ? (
+                <span class="badge badge-info">Scheduled</span>
+            ) : shownBadge === 'Sponsored' ? (
                 <SponsoredTag />
             ) : variant ? (
                 <span class={`badge badge-${variant}`}>{shownBadge}</span>
@@ -48,6 +57,7 @@ const variant = badgeVariant(shownBadge);
                 <span class="badge">{shownBadge}</span>
             )}
             <span class="launch-maker">by <strong>{launch.maker}</strong></span>
+            {scheduled && <span class="launch-maker">opens <TimeStamp date={opensAt} /></span>}
         </div>
         <h3><a href={`/launches/${launch.slug}`}>{launch.name}</a></h3>
         <p class="card-tagline">{launch.tagline}</p>

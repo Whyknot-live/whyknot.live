@@ -1,0 +1,24 @@
+{
+  "repeat": {
+    "ok": true,
+    "data": [
+      {
+        "slug": "loop-app",
+        "name": "Loop App",
+        "tagline": "A short but valid tagline for testing.",
+        "makerHandle": "loop-maker",
+        "url": "https://loop-app.example",
+        "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+        "slotDate": "2026-09-25",
+        "status": "approved"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 200,
+      "total": 999999,
+      "pages": 999999
+    },
+    "queued": 0
+  }
+}

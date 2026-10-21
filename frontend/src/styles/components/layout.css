@@ -70,7 +70,7 @@
 }
 
 .page-subtitle {
-  font-size: 1.25rem;
+  font-size: var(--text-title-sm);
   opacity: 0.9;
   margin: 0;
   max-width: 600px;
@@ -95,7 +95,7 @@
 }
 
 .section-description {
-  font-size: 1.125rem;
+  font-size: var(--text-lead);
   color: var(--color-text-muted);
   margin: 0;
   max-width: 600px;
@@ -167,12 +167,12 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 1rem;
-  font-size: 1.5rem;
+  font-size: var(--text-title);
   color: var(--color-accent-700);
 }
 
 .feature-title {
-  font-size: 1.25rem;
+  font-size: var(--text-title-sm);
   font-weight: 600;
   margin: 0 0 0.75rem;
   color: var(--color-on-surface);
@@ -199,7 +199,7 @@
 }
 
 .value-number {
-  font-size: 2rem;
+  font-size: var(--text-title-lg);
   font-weight: 700;
   color: var(--color-accent-500);
   margin-bottom: 0.5rem;

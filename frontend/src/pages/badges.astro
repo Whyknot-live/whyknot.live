@@ -1,0 +1,262 @@
+---
+/* /badges — embed badge gallery (feature 04). Makers land here from their
+   site or launch profile with ?slug= or ?launch=, pick a theme and size, and
+   copy a zero-JS snippet. Every snippet links back with UTM so embed
+   click-throughs are measurable. */
+import Layout from '../layouts/Layout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import { getFlatSites, getFlatLaunches } from '../lib/content';
+import {
+    buildEditorsPickBadgeHtml,
+    buildRankBadgeHtml,
+    buildScoreBadgeHtml,
+    buildVerifiedBadgeHtml,
+    type EmbedOptions,
+} from '../lib/embed-badges';
+
+const title = 'Embed badges — put WhyKnot on your site';
+const description =
+    'Copy-paste badges that link back to your WhyKnot profile. Zero JavaScript, light and dark, three sizes. Score and rank only — never for sale.';
+
+const siteSlug = Astro.url.searchParams.get('slug') ?? '';
+const launchSlug = Astro.url.searchParams.get('launch') ?? '';
+
+const sites = await getFlatSites();
+const launches = await getFlatLaunches();
+const site = siteSlug ? sites.find((s) => s.id === siteSlug) : undefined;
+const launch = launchSlug ? launches.find((l) => l.id === launchSlug) : undefined;
+
+const exampleSite = sites[0];
+const exampleLaunch = launches.find((l) => l.badge === "Editor's Pick") ?? launches[0];
+
+const THEMES = ['light', 'dark', 'auto'] as const;
+const SIZES = ['sm', 'md', 'lg'] as const;
+
+interface BadgeCard {
+    id: string
+    title: string
+    blurb: string
+    snippets: Record<string, string> // key: `${theme}-${size}`
+}
+
+function cardSnippets(build: (opts: EmbedOptions) => string): Record<string, string> {
+    const out: Record<string, string> = {}
+    for (const theme of THEMES) {
+        for (const size of SIZES) {
+            out[`${theme}-${size}`] = build({ theme, size })
+        }
+    }
+    return out
+}
+
+const cards: BadgeCard[] = []
+if (site) {
+    cards.push({
+        id: 'score',
+        title: 'Score badge',
+        blurb: `Your live WhyKnot score, linked back to your profile. Updates when the audit does.`,
+        snippets: cardSnippets((opts) => buildScoreBadgeHtml({ slug: site.id, name: site.name, score: site.score }, opts)),
+    })
+    if (site.verified) {
+        cards.push({
+            id: 'verified',
+            title: 'Verified badge',
+            blurb: 'Domain ownership, proven by our DNS check. Trust your visitors can see.',
+            snippets: cardSnippets((opts) => buildVerifiedBadgeHtml({ slug: site.id, name: site.name }, opts)),
+        })
+    }
+}
+if (launch) {
+    if (launch.badge === "Editor's Pick") {
+        cards.push({
+            id: 'editors-pick',
+            title: "Editor's Pick badge",
+            blurb: 'The editorial pick, linked back to your launch page.',
+            snippets: cardSnippets((opts) => buildEditorsPickBadgeHtml({ slug: launch.id, name: launch.name, rank: launch.rank, badge: launch.badge }, opts)),
+        })
+    }
+    cards.push({
+        id: 'rank',
+        title: 'Rank badge',
+        blurb: `Your board rank (#${launch.rank}), linked back to your launch page.`,
+        snippets: cardSnippets((opts) => buildRankBadgeHtml({ slug: launch.id, name: launch.name, rank: launch.rank, badge: launch.badge }, opts)),
+    })
+}
+
+const usingExample = cards.length === 0
+if (usingExample) {
+    cards.push({
+        id: 'score',
+        title: 'Score badge',
+        blurb: 'Your live WhyKnot score, linked back to your profile. Updates when the audit does.',
+        snippets: cardSnippets((opts) => buildScoreBadgeHtml({ slug: exampleSite.id, name: exampleSite.name, score: exampleSite.score }, opts)),
+    })
+    if (exampleSite.verified) {
+        cards.push({
+            id: 'verified',
+            title: 'Verified badge',
+            blurb: 'Domain ownership, proven by our DNS check. Trust your visitors can see.',
+            snippets: cardSnippets((opts) => buildVerifiedBadgeHtml({ slug: exampleSite.id, name: exampleSite.name }, opts)),
+        })
+    }
+    if (exampleLaunch) {
+        if (exampleLaunch.badge === "Editor's Pick") {
+            cards.push({
+                id: 'editors-pick',
+                title: "Editor's Pick badge",
+                blurb: 'The editorial pick, linked back to your launch page.',
+                snippets: cardSnippets((opts) => buildEditorsPickBadgeHtml({ slug: exampleLaunch.id, name: exampleLaunch.name, rank: exampleLaunch.rank, badge: exampleLaunch.badge }, opts)),
+            })
+        }
+        cards.push({
+            id: 'rank',
+            title: 'Rank badge',
+            blurb: `Your board rank (#${exampleLaunch.rank}), linked back to your launch page.`,
+            snippets: cardSnippets((opts) => buildRankBadgeHtml({ slug: exampleLaunch.id, name: exampleLaunch.name, rank: exampleLaunch.rank, badge: exampleLaunch.badge }, opts)),
+        })
+    }
+}
+
+const contextName = site?.name ?? launch?.name ?? ''
+---
+
+<Layout title={title} description={description} constrainContent>
+    <div class="container section">
+        <Breadcrumbs trail={[{ label: 'Badges' }]} />
+        <SectionHeader
+            eyebrow="Badges that travel"
+            title="Put WhyKnot on your site"
+            aside="Zero JavaScript. Light and dark. Three sizes. Score and rank only — never for sale."
+        />
+
+        {siteSlug && !site && (
+            <div class="empty-state" role="alert">
+                <h3>No site with that slug</h3>
+                <p>Check the link from your profile and try again.</p>
+            </div>
+        )}
+        {launchSlug && !launch && (
+            <div class="empty-state" role="alert">
+                <h3>No launch with that slug</h3>
+                <p>Check the link from your launch page and try again.</p>
+            </div>
+        )}
+
+        {usingExample && (
+            <p class="badge-example-note">
+                Showing an <strong>example</strong> so you can see every variant. Add
+                <code>?slug=your-site-slug</code> (from your site profile) or
+                <code>?launch=your-launch-slug</code> (from your launch page) to see your own badges.
+            </p>
+        )}
+        {!usingExample && contextName && (
+            <p class="badge-example-note">Badges for <strong>{contextName}</strong> — each links back to your profile with embed tracking.</p>
+        )}
+
+        {cards.map((card) => (
+            <section class="badge-card" aria-labelledby={`badge-${card.id}-title`} data-badge-card data-card-id={card.id}>
+                <h2 id={`badge-${card.id}-title`}>{card.title}</h2>
+                <p>{card.blurb}</p>
+
+                <div class="badge-config" role="group" aria-label={`Variants for ${card.title}`}>
+                    <span class="badge-config-label">Theme</span>
+                    {THEMES.map((theme) => (
+                        <button
+                            type="button"
+                            class="badge-variant-btn"
+                            data-variant-theme={theme}
+                            aria-pressed={theme === 'auto'}
+                        >
+                            {theme === 'auto' ? 'Auto' : theme === 'light' ? 'Light' : 'Dark'}
+                        </button>
+                    ))}
+                    <span class="badge-config-label">Size</span>
+                    {SIZES.map((size) => (
+                        <button
+                            type="button"
+                            class="badge-variant-btn"
+                            data-variant-size={size}
+                            aria-pressed={size === 'md'}
+                        >
+                            {size === 'sm' ? 'Small' : size === 'md' ? 'Medium' : 'Large'}
+                        </button>
+                    ))}
+                </div>
+
+                <div class="badge-preview" data-preview></div>
+
+                <pre class="badge-code"><code data-code></code></pre>
+
+                <button type="button" class="btn badge-copy" data-copy>Copy snippet</button>
+            </section>
+        ))}
+
+        <section aria-labelledby="badge-how">
+            <h2 id="badge-how">How embedding works</h2>
+            <ol class="method-list">
+                <li>Pick a theme. <strong>Auto</strong> follows the reader's system theme — no script involved.</li>
+                <li>Pick a size. The snippet is pure HTML and CSS; it works pasted into any page.</li>
+                <li>Copy and paste. The badge links back to your profile with embed tracking, so you can measure click-throughs.</li>
+            </ol>
+            <p>Badges reflect score, rank and editorial state only. They are never for sale, and money never changes what they show.</p>
+        </section>
+    </div>
+
+    <script is:inline define:vars={{ cards }}>
+        // Variant picker: show/hide pre-rendered snippets, copy to clipboard.
+        // Snippets are pre-rendered server-side; this only toggles and copies.
+        document.querySelectorAll('[data-badge-card]').forEach((cardEl) => {
+            const card = cards.find((c) => c.id === cardEl.getAttribute('data-card-id'));
+            if (!card) return;
+
+            const preview = cardEl.querySelector('[data-preview]');
+            const code = cardEl.querySelector('[data-code]');
+            const copyBtn = cardEl.querySelector('[data-copy]');
+            let theme = 'auto';
+            let size = 'md';
+
+            const render = () => {
+                const snippet = card.snippets[`${theme}-${size}`] ?? '';
+                if (preview) preview.innerHTML = snippet;
+                if (code) code.textContent = snippet;
+            };
+
+            cardEl.querySelectorAll('[data-variant-theme]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    theme = btn.getAttribute('data-variant-theme') ?? 'auto';
+                    cardEl.querySelectorAll('[data-variant-theme]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+                    render();
+                });
+            });
+            cardEl.querySelectorAll('[data-variant-size]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    size = btn.getAttribute('data-variant-size') ?? 'md';
+                    cardEl.querySelectorAll('[data-variant-size]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+                    render();
+                });
+            });
+
+            if (copyBtn) {
+                copyBtn.addEventListener('click', async () => {
+                    const snippet = card.snippets[`${theme}-${size}`] ?? '';
+                    try {
+                        await navigator.clipboard.writeText(snippet);
+                        copyBtn.textContent = 'Copied';
+                    } catch {
+                        const ta = document.createElement('textarea');
+                        ta.value = snippet;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        ta.remove();
+                        copyBtn.textContent = 'Copied';
+                    }
+                    setTimeout(() => { copyBtn.textContent = 'Copy snippet'; }, 2000);
+                });
+            }
+
+            render();
+        });
+    </script>
+</Layout>

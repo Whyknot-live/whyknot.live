@@ -25,17 +25,59 @@ const description =
         <section aria-labelledby="method-scoring">
             <h2 id="method-scoring">How scoring works</h2>
             <p>
-                Every site carries a <strong>WhyKnot score (0–100)</strong>, representing an overall
-                editorial judgment informed by automated screening. Category scores for performance,
-                accessibility, SEO, and best practices follow standard Lighthouse bands:
-                90 and above is good, 50 to 89 needs work, below 50 is poor. Category scores populate
-                once the Screener runs. Until then the profile states its status plainly.
+                Every site carries a <strong>WhyKnot score (0–100)</strong>. It is
+                <strong>computed, not typed</strong>: a live technical audit of the site produces
+                four measurements, and the score is their weighted composite. No editor assigns
+                a number by opinion.
+            </p>
+            <p>
+                The audit runs on <code>backend/src/utils/screener.ts</code>. The composite is
+                <code>performance&times;0.3 + accessibility&times;0.25 + bestPractices&times;0.2 + seo&times;0.25</code>,
+                rounded. Each input starts at 100 and loses points for measured deficits, then is
+                clamped (performance and best practices floor at 30, SEO at 35, accessibility at 30)
+                so a single failure cannot zero a site.
+            </p>
+            <dl class="method-list">
+                <dt>Performance</dt>
+                <dd>
+                    Time to first byte, HTML weight, script and stylesheet count, estimated DOM
+                    size. A 250&nbsp;ms response costs 5 points, a 500&nbsp;KB document costs 25.
+                </dd>
+                <dt>Accessibility</dt>
+                <dd>
+                    Documented <code>lang</code>, a single <code>h1</code>, descriptive link text,
+                    images with <code>alt</code>, form labels. A missing title costs 20.
+                </dd>
+                <dt>Best practices</dt>
+                <dd>
+                    HTTPS, HSTS, Content-Security-Policy,
+                    <code>X-Content-Type-Options: nosniff</code>, a doctype, a declared charset.
+                    Plain HTTP costs 40.
+                </dd>
+                <dt>SEO</dt>
+                <dd>
+                    Title and meta description presence and length, canonical link, Open Graph
+                    title and image, heading structure, JSON-LD structured data.
+                </dd>
+            </dl>
+            <p>
+                A separate <strong>security score</strong> is reported alongside these four and
+                does not feed the composite: HTTPS 50, plus HSTS 15, CSP 15, nosniff 10,
+                <code>X-Frame-Options</code> 5, referrer policy 5.
+            </p>
+            <p>
+                Bands follow standard Lighthouse convention: 90 and above is good, 50 to 89 needs
+                work, below 50 is poor.
             </p>
             <div class="cluster">
                 <ScoreRing score={94} label="Good" size="sm" />
                 <ScoreRing score={72} label="Needs work" size="sm" />
                 <ScoreRing score={34} label="Poor" size="sm" />
             </div>
+            <p class="method-note" style="margin-top: var(--space-4)">
+                Scores are a snapshot of a measurement, not a permanent verdict. A site that
+                regresses scores lower on its next audit.
+            </p>
         </section>
 
         <section aria-labelledby="method-verification" style="margin-top: var(--space-8)">

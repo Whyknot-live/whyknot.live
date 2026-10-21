@@ -30,6 +30,7 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
     <link rel="apple-touch-icon" href="/images/logo-y-knot-transparent.png" />
     <style is:global>
       @import "../styles/admin.css";
+      @import "../styles/admin-nav.css";
     </style>
   </head>
   <body>
@@ -147,6 +148,33 @@ const { title = "Admin Dashboard", description = "WhyKnot Admin Panel" } =
               });
           }
         };
+      })();
+    </script>
+
+    <!-- Section nav: hidden by default, un-hidden below on every route except
+         the login screen, so unauthenticated visitors never see it. -->
+    <nav id="adminNav" class="admin-nav" aria-label="Admin sections" hidden>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/claims">Claims</a>
+      <a href="/submissions">Submissions</a>
+    </nav>
+
+    <script is:inline>
+      (function () {
+        const path = window.location.pathname
+          .replace(/\/index\.html$/, "")
+          .replace(/\.html$/, "")
+          .replace(/\/$/, "");
+        if (path === "" || path === "/") return; // login route
+        const nav = document.getElementById("adminNav");
+        if (!nav) return;
+        const links = nav.querySelectorAll("a");
+        for (let i = 0; i < links.length; i++) {
+          if (links[i].getAttribute("href") === path) {
+            links[i].setAttribute("aria-current", "page");
+          }
+        }
+        nav.hidden = false;
       })();
     </script>
 

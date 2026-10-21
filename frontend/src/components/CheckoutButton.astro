@@ -2,8 +2,10 @@
 /* CheckoutButton — Razorpay-first (C1), INR-only at launch.
    Backend creates orders; frontend only receives keyId + orderId.
    Props: plan ('verified' | 'pro' | 'team'), label, email (optional prefill).
-   Uses native accessible <dialog> modal for email input instead of window.prompt(),
+   Uses the custom accessible div dialog (wk-modal-root contract, see
+   dialog.css) for email input instead of window.prompt(),
    and WhyKnotToast for clean non-blocking feedback. */
+import Icon from './Icon.astro';
 
 interface Props {
     plan: 'verified' | 'pro' | 'team';
@@ -20,14 +22,14 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
 
 <button class="btn" id={btnId} data-plan={plan} type="button">{label}</button>
 
-<dialog class="modal" id={modalId} aria-labelledby={`${modalId}-title`} data-modal>
+<div class="wk-modal-root" data-modal-root hidden>
+    <div class="wk-modal-overlay" data-modal-overlay aria-hidden="true"></div>
+    <div class="wk-modal" role="dialog" aria-modal="true" aria-labelledby={`${modalId}-title`} id={modalId} data-modal tabindex="-1">
     <div class="modal-head">
         <h3 id={`${modalId}-title`}>
             {plan === 'verified' ? 'Verify Domain Ownership' : `Subscribe to ${plan.toUpperCase()}`}
         </h3>
-        <form method="dialog">
-            <button class="modal-x" value="close" aria-label="Close dialog">×</button>
-        </form>
+        <button type="button" class="modal-x" data-modal-close aria-label="Close dialog"><Icon name="close" size="sm" /></button>
     </div>
     <div class="modal-body">
         <p class="field-hint" style="margin-bottom: var(--space-4)">
@@ -48,18 +50,20 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
                     value={email}
                     placeholder="architect@domain.com"
                     autocomplete="email"
+                    data-modal-autofocus
                 />
             </div>
             <div id={`${modalId}-error`} class="field-error" role="alert" style="display: none;"></div>
             <div class="cluster" style="justify-content: flex-end; margin-top: var(--space-2)">
                 <button type="button" class="btn btn-ghost" data-dialog-cancel>Cancel</button>
                 <button type="submit" class="btn btn-primary" id={`${modalId}-submit`}>
-                    Proceed to Payment →
+                    Proceed to Payment <Icon name="arrow-right" size="sm" />
                 </button>
             </div>
         </form>
     </div>
-</dialog>
+    </div>
+</div>
 
 <script>
     import { getApiBaseUrl } from '../lib/api-base';
@@ -68,6 +72,10 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
         interface Window {
             Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
             WhyKnotToast?: { show: (message: string, tone?: string) => void };
+            WhyKnotModal?: {
+                open: (panelId: string, trigger?: Element | null) => void;
+                close: (panelId: string) => void;
+            };
         }
     }
 
@@ -79,6 +87,35 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
             s.onload = () => resolve(true);
             s.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
             document.head.appendChild(s);
+        });
+    }
+
+    /* Fallback scroll lock mirrors Modal.astro: reference-counted in a shared
+       attribute so stacked modals restore scrolling only after the last close. */
+    function lockCheckoutScroll() {
+        const count = Number(document.documentElement.getAttribute('data-wk-locks') ?? '0');
+        document.documentElement.setAttribute('data-wk-locks', String(count + 1));
+        document.documentElement.style.overflow = 'hidden';
+    }
+
+    function unlockCheckoutScroll() {
+        const count = Number(document.documentElement.getAttribute('data-wk-locks') ?? '0');
+        if (count <= 1) {
+            document.documentElement.removeAttribute('data-wk-locks');
+            document.documentElement.style.overflow = '';
+        } else {
+            document.documentElement.setAttribute('data-wk-locks', String(count - 1));
+        }
+    }
+
+    function checkoutPrefersReducedMotion() {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function setCheckoutBackgroundInert(on: boolean) {
+        document.querySelectorAll('main, footer.site-footer').forEach((el) => {
+            if (on) el.setAttribute('inert', '');
+            else if (!document.documentElement.hasAttribute('data-wk-locks')) el.removeAttribute('inert');
         });
     }
 
@@ -95,15 +132,86 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
         const btn = button as HTMLButtonElement;
         const plan = btn.getAttribute('data-plan') || 'verified';
         const modalId = btn.id.replace('rzp-btn-', 'rzp-modal-');
-        const dialog = document.getElementById(modalId) as HTMLDialogElement | null;
+        const dialog = document.getElementById(modalId) as HTMLElement | null;
         const form = document.getElementById(`${modalId}-form`) as HTMLFormElement | null;
         const emailInput = document.getElementById(modalId.replace('rzp-modal-', 'rzp-email-')) as HTMLInputElement | null;
         const errorDiv = document.getElementById(`${modalId}-error`);
-        const cancelBtn = dialog?.querySelector('[data-dialog-cancel]');
+        const root = dialog?.closest('[data-modal-root]') as HTMLElement | null;
 
-        cancelBtn?.addEventListener('click', () => {
-            dialog?.close();
-        });
+        /* Custom-dialog open/close through the shared Modal controller so
+           trigger, focus, Escape, overlay, and scroll-lock stay in one
+           contract. The plan button keeps its prefill branch (valid email
+           goes straight to checkout), so it must not use data-modal-open.
+           Local fallback covers pages rendering CheckoutButton without Modal. */
+        function openCheckoutModal() {
+            if (window.WhyKnotModal) {
+                window.WhyKnotModal.open(modalId, btn);
+                return;
+            }
+            if (!root || root.getAttribute('data-modal-state') === 'open') return;
+            root.setAttribute('data-modal-state', 'open');
+            root.hidden = false;
+            lockCheckoutScroll();
+            setCheckoutBackgroundInert(true);
+            if (checkoutPrefersReducedMotion()) root.classList.add('open');
+            else requestAnimationFrame(() => root.classList.add('open'));
+            (emailInput ?? dialog)?.focus({ preventScroll: true });
+        }
+
+        function closeCheckoutModal() {
+            if (window.WhyKnotModal) {
+                window.WhyKnotModal.close(modalId);
+                return;
+            }
+            if (!root || root.getAttribute('data-modal-state') !== 'open') return;
+            root.removeAttribute('data-modal-state');
+            root.classList.remove('open');
+            if (checkoutPrefersReducedMotion()) root.hidden = true;
+            else {
+                window.setTimeout(() => {
+                    if (root.getAttribute('data-modal-state') !== 'open') root.hidden = true;
+                }, 180);
+            }
+            unlockCheckoutScroll();
+            setCheckoutBackgroundInert(false);
+            btn.focus({ preventScroll: true });
+        }
+
+        /* Fallback wiring only when the shared controller is absent; the
+           shared data-wired guard keeps Modal.astro from double-wiring. */
+        if (!window.WhyKnotModal && root && !root.hasAttribute('data-wired')) {
+            root.setAttribute('data-wired', 'true');
+            root.querySelector('[data-modal-overlay]')?.addEventListener('click', closeCheckoutModal);
+            root.querySelectorAll('[data-modal-close], [data-dialog-cancel]').forEach((el) => {
+                el.addEventListener('click', closeCheckoutModal);
+            });
+            root.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeCheckoutModal();
+                    return;
+                }
+                if (event.key !== 'Tab' || !dialog) return;
+                const items = Array.from(
+                    dialog.querySelectorAll(
+                        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                    )
+                ).filter((el) => el instanceof HTMLElement && !el.hidden && el.getClientRects().length > 0);
+                if (items.length === 0) {
+                    event.preventDefault();
+                    dialog.focus({ preventScroll: true });
+                    return;
+                }
+                const first = items[0] as HTMLElement;
+                const last = items[items.length - 1] as HTMLElement;
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            });
+        }
 
         async function startCheckout(targetEmail: string) {
             btn.disabled = true;
@@ -155,7 +263,7 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
                             }
                         }
                     });
-                    dialog?.close();
+                    closeCheckoutModal();
                     rzp.open();
                 } else {
                     const res = await fetch(`${apiBase}/api/payments/create-subscription`, {
@@ -166,7 +274,7 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
                     const data = await res.json();
                     if (!res.ok) {
                         if (data.error === 'subscription_plan_not_configured') {
-                            throw new Error('Subscriptions open soon. Join the waitlist for priority access.');
+                            throw new Error('Subscriptions open soon. Join the loop for priority access.');
                         }
                         throw new Error(data.error ?? 'Subscription initiation failed');
                     }
@@ -189,7 +297,7 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
                             }
                         }
                     });
-                    dialog?.close();
+                    closeCheckoutModal();
                     rzp.open();
                 }
             } catch (err: unknown) {
@@ -209,7 +317,7 @@ const emailInputId = `rzp-email-${plan}-${uniqueId}`;
             if (currentEmail && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(currentEmail)) {
                 startCheckout(currentEmail);
             } else {
-                dialog?.showModal();
+                openCheckoutModal();
             }
         });
 

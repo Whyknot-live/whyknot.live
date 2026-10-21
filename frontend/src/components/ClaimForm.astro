@@ -4,6 +4,7 @@
    verbatim from /verify). Step 3: owner email. Step 4: place token, Verify now.
    Calls POST /api/claim/start then POST /api/claim/check, polls status.
    No <style> blocks: global utility classes only. */
+import RadioGroup from './RadioGroup.astro';
 import Tabs from './Tabs.astro';
 
 export interface Props {
@@ -50,6 +51,16 @@ const { initialHandle = '' } = Astro.props;
                     { id: 'meta', label: 'Meta tag' },
                 ]}
             />
+            <RadioGroup
+                name="method"
+                label="Verification method"
+                value="dns"
+                options={[
+                    { value: 'dns', title: 'DNS record', description: 'Strongest method: survives redeploys and covers the whole domain.' },
+                    { value: 'file', title: 'HTML file', description: 'Simple when you control hosting; breaks if the file is removed.' },
+                    { value: 'meta', title: 'Meta tag', description: 'Fastest when you edit markup; theme changes can remove it.' },
+                ]}
+            />
             <div role="tabpanel" id="claim-methods-panel-dns" aria-labelledby="claim-methods-tab-dns">
                 <p>Add a TXT record at your DNS provider. Strongest method: survives redeploys and covers the whole domain.</p>
                 <div class="table-scroll">
@@ -62,9 +73,6 @@ const { initialHandle = '' } = Astro.props;
                         </tbody>
                     </table>
                 </div>
-                <label class="form-label" style="margin-top: var(--space-3)">
-                    <input type="radio" name="method" value="dns" checked /> Use DNS record
-                </label>
             </div>
             <div role="tabpanel" id="claim-methods-panel-file" aria-labelledby="claim-methods-tab-file" hidden>
                 <p>Upload a verification file to your site root. Simple when you control hosting; breaks if the file is removed.</p>
@@ -77,9 +85,6 @@ const { initialHandle = '' } = Astro.props;
                         </tbody>
                     </table>
                 </div>
-                <label class="form-label" style="margin-top: var(--space-3)">
-                    <input type="radio" name="method" value="file" /> Use HTML file
-                </label>
             </div>
             <div role="tabpanel" id="claim-methods-panel-meta" aria-labelledby="claim-methods-tab-meta" hidden>
                 <p>Add a meta tag to your homepage <code>&lt;head&gt;</code>. Fastest when you edit markup; theme changes can remove it.</p>
@@ -92,9 +97,6 @@ const { initialHandle = '' } = Astro.props;
                         </tbody>
                     </table>
                 </div>
-                <label class="form-label" style="margin-top: var(--space-3)">
-                    <input type="radio" name="method" value="meta" /> Use meta tag
-                </label>
             </div>
             <div class="cluster" style="margin-top: var(--space-4)">
                 <button type="button" class="btn btn-ghost" data-prev="1">Back</button>
@@ -133,10 +135,10 @@ const { initialHandle = '' } = Astro.props;
         </fieldset>
     </form>
 
-    <div class="form-success" id="claim-success">
+    <div class="form-success" id="claim-success" role="status" aria-live="polite">
         <span id="claim-success-text">Claim started. Check your email for the token.</span>
     </div>
-    <div class="form-error" id="claim-error">
+    <div class="form-error" id="claim-error" role="alert">
         <span id="claim-error-text">Something went wrong. Please try again.</span>
     </div>
 </div>
@@ -169,8 +171,8 @@ const { initialHandle = '' } = Astro.props;
     }
 
     function selectedMethod(): string {
-        const checked = document.querySelector('input[name="method"]:checked') as HTMLInputElement | null;
-        return checked?.value ?? 'dns';
+        const group = document.querySelector('[data-radiogroup][data-name="method"]');
+        return group?.getAttribute('data-value') ?? 'dns';
     }
 
     function goToStep(step: number) {
@@ -183,6 +185,11 @@ const { initialHandle = '' } = Astro.props;
             if (n === step) el.setAttribute('aria-current', 'step');
             else el.removeAttribute('aria-current');
         });
+        // Move focus into the new step — the activating Back/Continue button
+        // is inside the now-hidden fieldset.
+        const panel = document.querySelector(`[data-step="${step}"]`);
+        const first = panel?.querySelector('input, button');
+        if (first instanceof HTMLElement) first.focus();
     }
 
     function renderToken(token: string) {
@@ -236,16 +243,46 @@ const { initialHandle = '' } = Astro.props;
         });
     });
 
-    document.querySelectorAll('input[name="method"]').forEach((radio) => {
-        radio.addEventListener('change', () => {
-            if (claimToken) renderToken(claimToken);
-            else {
-                const method = selectedMethod();
-                document.querySelectorAll('[data-instruction]').forEach((el) => {
-                    (el as HTMLElement).hidden = el.getAttribute('data-instruction') !== method;
-                });
-            }
+    const methodGroup = document.querySelector('[data-radiogroup][data-name="method"]');
+
+    function syncRadioToMethod(method: string) {
+        if (!methodGroup) return;
+        if (methodGroup.getAttribute('data-value') === method) return;
+        methodGroup.setAttribute('data-value', method);
+        methodGroup.querySelectorAll('[data-radio-option]').forEach((option) => {
+            const on = option.getAttribute('data-radio-value') === method;
+            option.setAttribute('aria-checked', String(on));
+            (option as HTMLElement).tabIndex = on ? 0 : -1;
+            option.classList.toggle('is-selected', on);
         });
+        document.querySelectorAll('[data-instruction]').forEach((el) => {
+            (el as HTMLElement).hidden = el.getAttribute('data-instruction') !== method;
+        });
+    }
+
+    // Two-way sync: tab clicks drive the radio group (silently — the Tabs
+    // component owns panel visibility; no event re-dispatch, so no loop).
+    document.querySelector('[data-tabs="claim-methods"]')?.addEventListener('click', () => {
+        const active = document.querySelector('[data-tabs="claim-methods"] [data-tab][aria-selected="true"]');
+        const method = active?.id?.replace('claim-methods-tab-', '') ?? 'dns';
+        syncRadioToMethod(method);
+    });
+    methodGroup?.addEventListener('wk-radio-change', (event) => {
+        const detail = (event as CustomEvent).detail as { name?: string; value?: string } | undefined;
+        if (detail?.name && detail.name !== 'method') return;
+        const method = detail?.value ?? selectedMethod();
+        if (claimToken) renderToken(claimToken);
+        else {
+            document.querySelectorAll('[data-instruction]').forEach((el) => {
+                (el as HTMLElement).hidden = el.getAttribute('data-instruction') !== method;
+            });
+        }
+        const tab = document.getElementById(`claim-methods-tab-${method}`);
+        if (tab && tab.getAttribute('aria-selected') !== 'true') {
+            (tab as HTMLButtonElement).click();
+            const active = methodGroup?.querySelector(`[data-radio-value="${method}"]`);
+            if (active instanceof HTMLElement) active.focus();
+        }
     });
 
     form?.addEventListener('submit', async (e) => {

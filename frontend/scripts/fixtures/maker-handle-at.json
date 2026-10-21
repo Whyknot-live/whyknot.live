@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "slug": "at-handle-app",
+      "name": "At Handle App",
+      "tagline": "A short but valid tagline for testing.",
+      "makerHandle": "@jane-doe",
+      "url": "https://at-handle-app.example",
+      "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+      "slotDate": "2026-09-25",
+      "status": "approved"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 200,
+    "total": 1,
+    "pages": 1
+  },
+  "queued": 0
+}

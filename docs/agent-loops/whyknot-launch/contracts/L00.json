@@ -1,0 +1,78 @@
+{
+ "unit": "L00",
+ "done_when": "docs/roadmap/STATUS.md exists with: a resume-here heading that states this file supersedes the stale status column of docs/roadmap/README.md and carries an open question for Jay on who refreshes that column; a 14-row feature truth table with distinct zero-padded indices 01-14, all 14 feature names from docs/roadmap/README.md present, every verdict cell exactly one of built / partly built / spec only / parked (never compound), and every row carrying at least one code citation (ts, astro, mjs, json or css file with :line, 20 or more distinct citations overall); a launch-critical heading with exactly six flow rows (Submit, Claim, Pricing and checkout, Sponsor booking, Newsletter, Loop/waitlist) each carrying a test path or NOT RUN; a gate heading with eight rows naming backend/frontend admin typecheck/lint/test/build, each with a non-empty reason cell and PASS, FAIL or NOT RUN; a findings heading naming the five known defects with file:line; at most 200 lines; no emoji; no loop codes; all checks below pass.",
+ "files": [
+  "docs/roadmap/STATUS.md"
+ ],
+ "checks": [
+  "test -f docs/roadmap/STATUS.md",
+  "grep -Eqi '^#+ .*resume' docs/roadmap/STATUS.md",
+  "grep -Eqi '^#+ .*launch-critical' docs/roadmap/STATUS.md",
+  "grep -Eqi '^#+ .*gate' docs/roadmap/STATUS.md",
+  "grep -Eqi '^#+ .*find' docs/roadmap/STATUS.md",
+  "grep -qi 'open question' docs/roadmap/STATUS.md",
+  "test \"$(grep -cE '^\\| ?[0-9]{2} ?\\|[^|]+\\| ?(built|partly built|spec only|parked) ?\\|' docs/roadmap/STATUS.md)\" -eq 14",
+  "test \"$(grep -oE '^\\| ?[0-9]{2}' docs/roadmap/STATUS.md | sort -u | wc -l | tr -d ' ')\" -eq 14",
+  "test \"$(grep -cE '^\\| ?[0-9]{2} ?\\|[^|]+\\| ?(built|partly built|spec only|parked) ?\\|.*\\.(ts|astro|mjs|json|css):[0-9]+' docs/roadmap/STATUS.md)\" -eq 14",
+  "test \"$(grep -oE '[A-Za-z0-9_./-]+\\.(ts|astro|mjs|json|css):[0-9]+' docs/roadmap/STATUS.md | sort -u | wc -l | tr -d ' ')\" -ge 20",
+  "test \"$(grep -oE 'submit-flow|ranking-velocity|site-page-seo|embed-badges|launch-events|sponsored-slots|payments-india|maker-claim|watchlists-alerts|newsletter-531|stats-hub|alternatives-graph|verification-badges|reviews' docs/roadmap/STATUS.md | sort -u | wc -l | tr -d ' ')\" -eq 14",
+  "test \"$(grep -cE '^\\| (Submit|Claim|Pricing and checkout|Sponsor booking|Newsletter|Loop/waitlist) \\|.*(tests/|NOT RUN)' docs/roadmap/STATUS.md | tr -d ' ')\" -eq 6",
+  "test \"$(grep -cE '^\\| (backend|frontend|admin) (typecheck|lint|test|build) \\| [^|]*[^| ] \\| (PASS|FAIL|NOT RUN) \\|' docs/roadmap/STATUS.md | tr -d ' ')\" -eq 8",
+  "grep -qiE 'typecheck' docs/roadmap/STATUS.md && grep -qiE 'lint' docs/roadmap/STATUS.md && grep -qiE 'test' docs/roadmap/STATUS.md && grep -qiE 'build' docs/roadmap/STATUS.md",
+  "test \"$(wc -l < docs/roadmap/STATUS.md | tr -d ' ')\" -le 200",
+  "python3 -c \"import sys; s=open('docs/roadmap/STATUS.md',encoding='utf-8').read(); sys.exit(1 if any(ord(c)>=0x1F000 or c in '\\u2705\\u274c\\u26a0\\u2b50\\u2764\\u2747\\u276e\\u2770\\u2772\\u2774\\u2716\\u2718\\u2714' for c in s) else 0)\"",
+  "! grep -nE '[Ll][0-9][0-9]|[Kk][0-9][0-9]' docs/roadmap/STATUS.md"
+ ],
+ "steps": [
+  "Re-derive each of the 14 verdicts from the research lead at docs/agent-loops/whyknot-launch/research/l00-truth-table.md (written by this planning run; scratch fallback /Users/jay/.hermes/cache/scratch/whyknot-launch-L00-research.md) - a lead only, never a citation source: open each docs/roadmap/features/*.md for what it promises, then the code that would deliver it. Known correction to carry: the lead marks site-page-seo built although docs/roadmap/features/site-page-seo.md promises UTM click stats with no code, so the ladder regrades it.",
+  "Apply exactly one verdict per feature with this ladder (bottom to top: parked < spec only < partly built < built) and no compound verdicts: parked = deferred by a locked constraint or owner decision (constraint C4); spec only = no code implements any promised surface, where a presentational component appearing only in the design-system gallery does not count as code for the feature; partly built = at least one promised surface runs end to end in code and at least one promised surface has none; built = every promised surface in the feature md has working code (page, route, job or script), each cited. A row graded two ways takes the lower verdict.",
+  "Re-verify every file:line citation live before writing it - the working tree is dirty and stale line numbers are the main failure mode; never cite the research file itself; citations containing square brackets (dynamic routes like frontend/src/pages/sites/[slug].astro) do not count toward the 20-distinct-citation check, so include at least 20 citations without brackets.",
+  "Write docs/roadmap/STATUS.md with these exact section shapes so the checks bind (mkdir -p is not needed; the file sits in docs/roadmap/): a heading containing 'resume' carrying the resume-here block - what this pass verified, where to pick up, a statement that this file supersedes the stale status column of docs/roadmap/README.md, an open question asking Jay who refreshes that column, plus the other open questions for Jay; the feature table as | 01 | feature-name | verdict | evidence with code file:line | gap | where feature-name is the exact file stem from docs/roadmap/README.md:29-42 (submit-flow, ranking-velocity, site-page-seo, embed-badges, launch-events, sponsored-slots, payments-india, maker-claim, reviews, watchlists-alerts, newsletter-531, stats-hub, alternatives-graph, verification-badges), the zero-padded index 01-14 first, no pipe inside any cell; a heading containing 'launch-critical' with exactly six flow rows named | Submit |, | Claim |, | Pricing and checkout |, | Sponsor booking |, | Newsletter |, | Loop/waitlist |, each row containing either a tests/ path or NOT RUN with its reason in the same row; a heading containing 'gate' with exactly the eight rows | backend typecheck |, | backend lint |, | backend test |, | frontend typecheck |, | frontend lint |, | frontend build |, | admin typecheck |, | admin lint | in the form | <gate> | <verdict line or reason, non-empty, no pipe> | PASS|FAIL|NOT RUN | - all eight NOT RUN with the reason while the box is blocked; a heading containing 'find' with the five defects named with file:line - the sponsor slot 'paid' transition that never happens, the screener pages deleted in the working tree while backend/src/routes/screener.ts remains, the unauthenticated PATCH /api/submissions/:slug, the newsletter send stub, the claim owner-email TODO. Keep the whole file at or under 200 lines.",
+  "Never restore deleted files, never edit the protected files for this unit: AGENTS.md, README.md (root), docs/roadmap/README.md (its stale status column stays as-is until Jay answers the open question), docs/roadmap/features/*, docs/roadmap/phases/*, docs/roadmap/CONSTRAINTS.md, docs/roadmap/DECISIONS.md.",
+  "Never claim a gate is green that did not run; every gate row carries a real verdict line or NOT RUN with the reason.",
+  "Keep loop and unit codes (any letter L or K followed by two digits) out of the project doc - they belong in the loop books; docs tone addresses 'users', not 'you'; zero emojis.",
+  "Re-read the finished file once for second-person tone and for emoji below U+1F000 that the codepoint scan cannot see, then run every check in the checks array and read their output; record in RESUME.md the exact file list from the build commit for verify to read back with git show --stat."
+ ],
+ "risks": [
+  "Dirty tree makes line numbers stale: every citation is re-read at build time, never copied from the research lead unverified.",
+  "Verdict drift: the roadmap status column is stale for all 14 rows, so the column is never the source - the feature md's promises against the code are; the ladder with its lower-verdict tie-break keeps two agents on the same table.",
+  "A doc that overstates readiness is a defect: anything not actually run is written as NOT RUN with the reason, including all eight gate rows while the box is blocked.",
+  "The checks pin structure, not truth: a row can satisfy the regex and still cite a wrong line, and the eight gate rows can in principle repeat a name - the build step's live re-verification and the pinned exact row names in step 4 are the real controls.",
+  "The screener deletion and the README column refresh are Jay's (gate 12): the file records them as open questions, it does not act on them."
+ ],
+ "review": {
+  "risk": "small",
+  "reviews": [
+   {
+    "kind": "independent",
+    "by": "helper",
+    "verdict": "fail",
+    "findings": "Round 1: 7 findings - research path pointed at a nonexistent file; inverted verdict ladder made spec only and parked unreachable; presentational-component and compound-verdict ambiguity; first-column index missing from the step text; six checks passed a zero-byte probe (proven); protected-path wording ambiguous and orphaned the stale README status column; tone/length rules prose-only. All fixed in revision 2."
+   },
+   {
+    "kind": "independent",
+    "by": "helper",
+    "verdict": "fail",
+    "findings": "Round 2: all 7 round-1 fixes confirmed quote-by-quote with its own compliant/gaming/empty probe matrix; 5 new findings - findings section and open question unchecked; gate rows unbound to names or reasons; citation check counted duplicates and not per row; feature-row identity unbound; six flow rows unchecked. All fixed in revision 3 with cell-bound regexes, distinct-index and per-row citation checks, the 14-feature-name check and the six-flow-row check."
+   },
+   {
+    "kind": "adversarial",
+    "by": "helper",
+    "verdict": "fail",
+    "findings": "Round 3: 5 findings adjudicated INVALID in-session by the planner - STATUS.md absence and todo/no-record queue rows are the design of a PLAN run (the unit creates the file and records land at run end); queue.json is the loop's own book; scratch clutter does not affect shell checks; the claim that checks live in docs/roadmap/README.md is false (README.md read in full this run, 48 lines, no check text) and its fix would edit a protected script; remaining item is meta-commentary. Tooling reported fine."
+   },
+   {
+    "kind": "adversarial",
+    "by": "helper",
+    "verdict": "fail",
+    "findings": "Round 4: 5 findings adjudicated INVALID - again demands the not-yet-built STATUS.md exist and its checks be run against it (by design); garbled citation claims; a nonexistent second loop owning the file; AGENTS.md path claim unrelated to this unit. The reviewer did confirm the twelve prior findings match the files and that tooling probes ran clean."
+   },
+   {
+    "kind": "independent",
+    "by": "in-session",
+    "verdict": "pass",
+    "findings": "Mechanical half executed in-session by the planner (17-check probe matrix, scratch L00-closeout-probe): compliant file passes 17/17, gaming file caught by 7/17 (checks 5,6,8,10,11,12,13), zero-byte caught by 13/17, no emoji or loop-code hits, all regexes run on the host BSD grep and python3. OWNER rule 3 for small risk met: mechanical checks plus one substantive helper reviewer (rounds 1-2 each engaged with their own probes and quote-by-quote confirmation)."
+   }
+  ]
+ }
+}

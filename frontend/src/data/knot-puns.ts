@@ -29,7 +29,7 @@ export function knotPun(seed = "whyknot"): KnotPun {
 
 /** Console signature, celebrating human curiosity without em-dashes. */
 export const KNOT_CONSOLE_EGG = [
-    "%cWhyKnot 🪢",
+    "%cWhyKnot",
     "You opened the developer console. Our kind of curious.",
     "Try typing \"knot\" anywhere on the page, then pull gently.",
     "Tied together by the WhyKnot crew (humans, mostly untangled)."

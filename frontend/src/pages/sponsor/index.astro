@@ -4,8 +4,10 @@
    Booking posts to /api/sponsor/order (backend creates the Razorpay order),
    then opens Razorpay checkout (the CheckoutButton pattern, inline). */
 import Layout from '../../layouts/Layout.astro';
+import AccordionItem from '../../components/AccordionItem.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SectionHeader from '../../components/SectionHeader.astro';
+import Select from '../../components/Select.astro';
 import SponsoredTag from '../../components/SponsoredTag.astro';
 
 const title = 'Sponsor: Buy attention, never rank | WhyKnot';
@@ -91,25 +93,37 @@ const TIERS = [
         <form id="sponsor-form" class="card spot-card" style="margin-top: var(--space-4); display: grid; gap: var(--space-3);">
             <div>
                 <label for="sponsor-email"><strong>Receipt email</strong></label>
-                <input id="sponsor-email" name="email" type="email" required autocomplete="email" placeholder="maker@example.com" style="width: 100%" />
+                <input id="sponsor-email" name="email" type="email" required autocomplete="email" placeholder="maker@example.com" class="form-input" />
             </div>
             <div>
                 <label for="sponsor-url"><strong>Launch URL</strong></label>
-                <input id="sponsor-url" name="url" type="url" required placeholder="https://your-launch.whyknot.live/launches/yours" style="width: 100%" />
+                <input id="sponsor-url" name="url" type="url" required placeholder="https://your-launch.whyknot.live/launches/yours" class="form-input" />
             </div>
             <div style="display: grid; gap: var(--space-3); grid-template-columns: 1fr 1fr;">
                 <div>
-                    <label for="sponsor-slot"><strong>Slot</strong></label>
-                    <select id="sponsor-slot" name="slot" style="width: 100%">
-                        <option value="launch-boost">Boost (₹2,500/day)</option>
-                        <option value="newsletter">Newsletter (₹15,000/issue)</option>
-                    </select>
+                    <label for="sponsor-slot-btn"><strong>Slot</strong></label>
+                    <Select
+                        id="sponsor-slot"
+                        name="slot"
+                        label="Slot"
+                        showLabel={false}
+                        value="launch-boost"
+                        options={[
+                            { value: 'launch-boost', label: 'Boost (₹2,500/day)' },
+                            { value: 'newsletter', label: 'Newsletter (₹15,000/issue)' },
+                        ]}
+                    />
                 </div>
                 <div>
-                    <label for="sponsor-date"><strong>Date</strong></label>
-                    <select id="sponsor-date" name="date" style="width: 100%">
-                        <option value="">Loading availability…</option>
-                    </select>
+                    <label for="sponsor-date-btn"><strong>Date</strong></label>
+                    <Select
+                        id="sponsor-date"
+                        name="date"
+                        label="Date"
+                        showLabel={false}
+                        value=""
+                        options={[{ value: '', label: 'Loading availability…' }]}
+                    />
                 </div>
             </div>
             <p class="card-tagline" id="sponsor-availability-note">Next 30 days, 1 slot/day per type. Taken dates are marked paid.</p>
@@ -120,18 +134,15 @@ const TIERS = [
         </form>
 
         <h2 style="margin-top: var(--space-8)">The money rules</h2>
-        <details open>
-            <summary><strong>Does paying improve my score or rank?</strong></summary>
+        <AccordionItem title="Does paying improve my score or rank?" open={true} id="sponsor-money-score">
             <p>No. Ranking inputs have no sponsored field. Label coverage is 100% and rank-input fields containing sponsored is 0, checked live in <a href="/legal/methodology#sponsored-metrics">slot metrics</a>.</p>
-        </details>
-        <details>
-            <summary><strong>Who can buy a slot?</strong></summary>
+        </AccordionItem>
+        <AccordionItem title="Who can buy a slot?" id="sponsor-money-eligibility">
             <p>Listed + screened launches only. If your launch is still in the review queue, <a href="/submit">submit it</a> first. Slots open once screening passes.</p>
-        </details>
-        <details>
-            <summary><strong>How do I pay?</strong></summary>
+        </AccordionItem>
+        <AccordionItem title="How do I pay?" id="sponsor-money-payment">
             <p>Razorpay invoice in INR. The backend creates the order; the frontend never sees secrets. GST receipt by email.</p>
-        </details>
+        </AccordionItem>
 
         <p class="method-note" style="margin-top: var(--space-8)">
             Paid placement is labeled <SponsoredTag /> in a neutral style, visually separate from editorial picks.
@@ -175,41 +186,91 @@ const TIERS = [
         errEl.textContent = msg;
     }
 
-    async function refreshAvailability() {
+    function getSelectValue(el, fallback) {
+        const fromData = el?.getAttribute?.('data-value');
+        if (fromData != null) return fromData;
+        return el?.value ?? fallback;
+    }
+
+    function getSlotValue() {
+        return getSelectValue(slotSel, 'launch-boost');
+    }
+
+    function getDateValue() {
+        return getSelectValue(dateSel, '');
+    }
+
+    function chooseDateOption(root, value, label) {
+        root.setAttribute('data-value', value);
+        root.querySelectorAll('[data-select-option]').forEach((other) => {
+            other.setAttribute('aria-selected', String(other.getAttribute('data-value') === value));
+        });
+        const valueSlot = root.querySelector('[data-select-value]');
+        if (valueSlot) valueSlot.textContent = label;
+    }
+
+    function setDateOptions(items) {
+        if (!dateSel) return;
+        const list = dateSel.querySelector('[data-select-list]');
+        if (!list) {
+            dateSel.textContent = '';
+            for (const item of items) {
+                const opt = document.createElement('option');
+                opt.value = item.value;
+                opt.textContent = item.label;
+                opt.disabled = !!item.disabled;
+                dateSel.appendChild(opt);
+            }
+            return;
+        }
+        list.textContent = '';
+        items.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.setAttribute('role', 'option');
+            li.id = `sponsor-date-opt-${item.value || 'empty'}-${index}`;
+            li.className = 'wk-select-option';
+            li.setAttribute('data-select-option', '');
+            li.setAttribute('data-value', item.value);
+            li.setAttribute('data-label', item.label);
+            li.setAttribute('aria-selected', 'false');
+            li.tabIndex = -1;
+            if (item.disabled) li.setAttribute('aria-disabled', 'true');
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'wk-select-option-label';
+            labelSpan.textContent = item.label;
+            li.appendChild(labelSpan);
+            list.appendChild(li);
+        });
+        const firstAvailable = items.find((item) => !item.disabled) ?? items[0];
+        if (firstAvailable) chooseDateOption(dateSel, firstAvailable.value, firstAvailable.label);
+    }
+
+    async function refreshAvailability(slotOverride) {
         try {
             const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/sponsor/availability`);
             if (!res.ok) throw new Error('availability_failed');
             const data = await res.json();
-            const slot = slotSel?.value ?? 'launch-boost';
+            const slot = slotOverride ?? getSlotValue();
             if (!dateSel) return;
-            dateSel.textContent = '';
-            for (const day of data.days ?? []) {
-                const opt = document.createElement('option');
+            const items = (data.days ?? []).map((day) => {
                 const info = day.slots?.[slot];
-                opt.value = day.date;
-                opt.textContent = info?.available ? day.date : `${day.date} (taken)`;
-                opt.disabled = !info?.available;
-                dateSel.appendChild(opt);
-            }
-            if (dateSel.options.length === 0) {
-                const opt = document.createElement('option');
-                opt.value = '';
-                opt.textContent = 'No dates available';
-                dateSel.appendChild(opt);
+                const available = !!info?.available;
+                return { value: day.date, label: available ? day.date : `${day.date} (taken)`, disabled: !available };
+            });
+            if (items.length === 0) {
+                setDateOptions([{ value: '', label: 'No dates available', disabled: false }]);
+            } else {
+                setDateOptions(items);
             }
         } catch {
-            if (dateSel) {
-                dateSel.textContent = '';
-                const opt = document.createElement('option');
-                opt.value = '';
-                opt.textContent = 'Availability unavailable. Pick any date (YYYY-MM-DD)';
-                dateSel.appendChild(opt);
-            }
+            setDateOptions([{ value: '', label: 'Availability unavailable. Pick any date (YYYY-MM-DD)', disabled: false }]);
         }
     }
 
-    slotSel?.addEventListener('change', refreshAvailability);
+    slotSel?.addEventListener('wk-select-change', (e) => {
+        refreshAvailability(e?.detail?.value);
+    });
     refreshAvailability();
 
     form?.addEventListener('submit', async (e) => {
@@ -224,8 +285,8 @@ const TIERS = [
         try {
             const email = (document.getElementById('sponsor-email')?.value ?? '').trim();
             const url = (document.getElementById('sponsor-url')?.value ?? '').trim();
-            const slot = slotSel?.value ?? 'launch-boost';
-            const date = dateSel?.value ?? '';
+            const slot = getSlotValue();
+            const date = getDateValue();
             if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
                 throw new Error('A valid email is needed for the receipt.');
             }
@@ -242,8 +303,9 @@ const TIERS = [
             const data = await res.json();
             if (!res.ok) {
                 if (data.error === 'slot_taken') throw new Error('That date just sold. Pick another day.');
+                if (data.error === 'slot_pending') throw new Error('That date is being booked right now. Try again in a few minutes.');
                 if (data.error === 'invalid_date') throw new Error('That date is outside the 30-day window.');
-                if (data.error === 'payments_not_configured') throw new Error('Checkout opens soon. Join the waitlist and we will notify you.');
+                if (data.error === 'payments_not_configured') throw new Error('Checkout opens soon. Join the loop and we will notify you.');
                 throw new Error(data.error ?? 'Order failed');
             }
             await loadRazorpay();

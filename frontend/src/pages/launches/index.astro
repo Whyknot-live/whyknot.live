@@ -5,13 +5,15 @@ import Layout from '../../layouts/Layout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SectionHeader from '../../components/SectionHeader.astro';
 import LaunchCard from '../../components/LaunchCard.astro';
+import BoostSlot from '../../components/BoostSlot.astro';
 import EmptyState from '../../components/EmptyState.astro';
-import { getFlatLaunches, launchDayBounds } from '../../lib/content';
+import { getFlatLaunches, launchDayBounds, liveOnly } from '../../lib/content';
 
 const title = "Today's launches | WhyKnot";
 const description = 'What makers launched today: new tools and sites, backed by the community, screened by WhyKnot.';
 
-const launches = await getFlatLaunches();
+// Scheduled entries never appear on the day boards (they belong on /launches/upcoming).
+const launches = liveOnly(await getFlatLaunches());
 const { today } = launchDayBounds(launches);
 const board = launches.filter((launch) => launch.publishedAt.toISOString().slice(0, 10) === today);
 ---
@@ -34,6 +36,10 @@ const board = launches.filter((launch) => launch.publishedAt.toISOString().slice
         </div>
         <div class="cluster" style="margin: var(--space-4) 0 var(--space-5)">
             <a class="btn" href="/submit">Submit a launch</a>
+        </div>
+        <!-- Paid inventory: Sponsored-labeled, outside the ranked grid, zero rank input (C3). -->
+        <div class="mb-4">
+            <BoostSlot />
         </div>
         {board.length > 0 ? (
             <div class="card-grid" data-cols="2">

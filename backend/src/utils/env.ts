@@ -26,8 +26,15 @@ const envSchema = z.object({
   // Use different peppers for dev, staging, and production
   ADMIN_PASSWORD_PEPPER: z.string().optional(),
   ADMIN_JWT_SECRET: z.string().min(32, 'JWT secret must be at least 32 characters'),
+  // Maker sessions (the credential that lets a maker edit their own listing)
+  // are signed with their own key when one is set. Optional so existing
+  // deploys keep booting: without it the admin key signs maker sessions,
+  // separated by a distinct audience claim.
+  MAKER_SESSION_SECRET: z.string().min(32).optional(),
   // Razorpay payments (P1 revenue loops, C1 Razorpay-first, INR-only at launch)
   // Optional so existing deploys without payments still boot; payments routes 503 when missing.
+  // RAZORPAY_WEBHOOK_SECRET stays optional for the same reason, but the webhook
+  // fails CLOSED without it outside development (see routes/payments.ts).
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
   RAZORPAY_WEBHOOK_SECRET: z.string().optional(),

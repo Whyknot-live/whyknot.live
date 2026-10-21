@@ -1,6 +1,8 @@
 ---
 /* AlertPrefs — Notification preference panel for users, makers, and profile watchers.
    Clean accessible switches wired with token styling and local persistence. */
+import Switch from './Switch.astro';
+
 interface AlertOption {
     id: string;
     title: string;
@@ -15,8 +17,8 @@ interface Props {
 
 const defaultOptions: AlertOption[] = [
     {
-        id: 'pref_screener_regressions',
-        title: 'Screener Regressions',
+        id: 'pref_quality_regressions',
+        title: 'Quality Regressions',
         description: 'Instant notification when performance or security score drops below 80.',
         defaultChecked: true
     },
@@ -52,17 +54,12 @@ const { title = 'Alert Configurations', options = defaultOptions } = Astro.props
                     <h4>{opt.title}</h4>
                     <p>{opt.description}</p>
                 </div>
-                <label class="pref-toggle" for={opt.id}>
-                    <input
-                        type="checkbox"
-                        id={opt.id}
-                        name={opt.id}
-                        checked={opt.defaultChecked}
-                        data-pref-id={opt.id}
-                    />
-                    <span class="pref-slider" aria-hidden="true"></span>
-                    <span class="sr-only">Toggle {opt.title}</span>
-                </label>
+                <Switch
+                    id={opt.id}
+                    ariaLabel={`Toggle ${opt.title}`}
+                    checked={opt.defaultChecked}
+                    dataPrefId={opt.id}
+                />
             </div>
         ))}
     </div>
@@ -72,28 +69,31 @@ const { title = 'Alert Configurations', options = defaultOptions } = Astro.props
     function initAlertPrefs() {
         document.querySelectorAll('[data-alert-prefs]:not([data-prefs-wired])').forEach((card) => {
             card.setAttribute('data-prefs-wired', 'true');
-            card.querySelectorAll('input[type="checkbox"]').forEach((input) => {
-                const cb = input as HTMLInputElement;
-                const prefId = cb.dataset.prefId;
+            card.querySelectorAll('[data-switch][data-pref-id]').forEach((el) => {
+                const btn = el as HTMLButtonElement;
+                const prefId = btn.dataset.prefId;
                 if (!prefId) return;
 
                 // Restore saved preference
                 try {
                     const saved = localStorage.getItem(`whyknot_pref_${prefId}`);
                     if (saved !== null) {
-                        cb.checked = saved === 'true';
+                        btn.setAttribute('aria-checked', saved === 'true' ? 'true' : 'false');
                     }
                 } catch {
                     // storage disabled
                 }
+            });
 
-                cb.addEventListener('change', () => {
-                    try {
-                        localStorage.setItem(`whyknot_pref_${prefId}`, String(cb.checked));
-                    } catch {
-                        // storage disabled
-                    }
-                });
+            card.addEventListener('wk-switch-change', (event) => {
+                const custom = event as CustomEvent<{ id: string; checked: boolean }>;
+                const prefId = (custom.target as HTMLElement | null)?.dataset?.prefId;
+                if (!prefId) return;
+                try {
+                    localStorage.setItem(`whyknot_pref_${prefId}`, String(custom.detail.checked));
+                } catch {
+                    // storage disabled
+                }
             });
         });
     }

@@ -11,14 +11,40 @@ const { rating, count, size = 'md' } = Astro.props;
 const clamped = Math.min(5, Math.max(0, rating));
 const fullStars = Math.floor(clamped);
 const hasHalf = clamped - fullStars >= 0.5;
+const uid = Math.random().toString(36).slice(2, 8);
+const halfId = `half-star-${uid}`;
 ---
 
 <div class={`review-stars review-stars-${size}`} role="img" aria-label={`Rated ${clamped.toFixed(1)} out of 5 stars${count !== undefined ? ` across ${count} reviews` : ''}`}>
     <div class="review-stars-glyphs" aria-hidden="true">
+        <svg style="display: none;" aria-hidden="true">
+            <defs>
+                <linearGradient id={halfId} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="50%" stop-color="currentColor"></stop>
+                    <stop offset="50%" stop-color="currentColor" stop-opacity="0.25"></stop>
+                </linearGradient>
+            </defs>
+        </svg>
         {Array.from({ length: 5 }, (_, i) => {
-            if (i < fullStars) return <span>★</span>;
-            if (i === fullStars && hasHalf) return <span>⯨</span>;
-            return <span style="opacity: 0.25">★</span>;
+            if (i < fullStars) {
+                return (
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                );
+            }
+            if (i === fullStars && hasHalf) {
+                return (
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill={`url(#${halfId})`} aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                );
+            }
+            return (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" opacity="0.25" aria-hidden="true">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+            );
         })}
     </div>
     <span class="review-stars-val">{clamped.toFixed(1)}</span>

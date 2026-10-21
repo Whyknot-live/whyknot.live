@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "slug": "long-story-app",
+      "name": "Long Story App",
+      "tagline": "A short but valid tagline for testing.",
+      "makerHandle": "story-maker",
+      "url": "https://long-story-app.example",
+      "story": "This application started as a weekend experiment to help small teams share release notes, grew after ten early adopters gave sharp feedback, and became a calm place to draft, review and publish product updates without noise. This application started as a weekend experiment to help small teams share release notes, grew after ten early adopters gave sharp feedback, and became a calm place to draft, review and publish product updates without noise. This application started as a weekend experiment to help small teams share release notes, grew after ten early adopters gave sharp feedback, and became a calm place to draft, review and publish product updates without noise. This application started as a weekend experiment to help small teams share release notes, grew after ten early adopters gave sharp feedback, and became a calm place to draft, review and publish product updates without noise. This application started as a weekend experiment to help small teams share release notes, grew after ten early adopters gave sharp feedback, and became a calm place to draft, review and publish product updates without noise. This application started as a weekend experiment to help small teams share release notes, grew after ten early adopters gave sharp feedback, and became a calm place to draft, review and publish product updates without noise. This application started as a weekend experiment to help small teams share release notes, grew after ten early adopters gave sharp feedback, and became a calm place to draft, review and publish product updates without noise. This application started as a weekend experiment to help small teams share release notes, grew after ten early adopters gave sharp feedback, and became a calm place to draft, review and publish product updates without noise. ",
+      "slotDate": "2026-09-25",
+      "status": "approved"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 200,
+    "total": 1,
+    "pages": 1
+  },
+  "queued": 0
+}

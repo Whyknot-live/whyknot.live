@@ -1,0 +1,37 @@
+{
+  "pages": {
+    "1": {
+      "ok": true,
+      "data": [
+        {
+          "slug": "solo-one",
+          "name": "Solo One",
+          "tagline": "A short but valid tagline for testing.",
+          "makerHandle": "solo-maker",
+          "url": "https://solo-one.example",
+          "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+          "slotDate": "2026-09-25",
+          "status": "approved"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 200,
+        "total": 1,
+        "pages": 2
+      },
+      "queued": 0
+    },
+    "2": {
+      "ok": true,
+      "data": [],
+      "pagination": {
+        "page": 2,
+        "limit": 200,
+        "total": 1,
+        "pages": 2
+      },
+      "queued": 0
+    }
+  }
+}

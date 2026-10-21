@@ -1,28 +1,161 @@
 ---
 /* BoostSlot — the ONLY paid launch-surface wrapper.
    Distinct <aside data-ad-slot="launch-boost"> kept OUTSIDE the ranked grid:
-   never sorted into rank, never fed to scoring. Always renders SponsoredTag. */
+   never sorted into rank, never fed to scoring. Always renders SponsoredTag.
+   With no campaign it renders the honest open-slot state (links to /sponsor).
+   Static-site safe: the board is built without campaign knowledge, so the slot
+   reads GET /api/sponsor/boost client-side — paid campaign -> the sponsor's
+   link/title renders and beacons arm; no campaign -> the open-slot CTA stays
+   and ZERO beacons arm (an open slot must never inflate a sponsor's numbers).
+   Clicks on data-no-track links (SponsoredTag's "Why?" methodology link) are
+   never counted. Beacons are fire-and-forget and never block or break the page. */
 import SponsoredTag from './SponsoredTag.astro';
 
 interface Props {
     title?: string;
     href?: string;
     blurb?: string;
+    /** Disabled slot: label stays, link is inert (aria-disabled), no click beacon. */
+    disabled?: boolean;
 }
 
-const { title, href, blurb } = Astro.props;
+const { title, href, blurb, disabled = false } = Astro.props;
 const hasHeader = Boolean(title ?? href ?? blurb);
+const heading = hasHeader ? title : 'Sponsor this board';
+const body = hasHeader
+    ? blurb
+    : 'The boost slot above the board: one paid placement a day, labeled Sponsored, never ranked.';
+const linkHref = disabled ? null : hasHeader ? href ?? null : '/sponsor';
+const showHeader = Boolean(heading ?? body);
 ---
-<aside class="card spot-card boost-slot" data-ad-slot="launch-boost" aria-label="Sponsored placement (does not affect rank)">
+<aside class="card launch-card spot-card boost-slot" data-ad-slot="launch-boost" data-boost-render={hasHeader ? 'props' : 'open'} aria-label="Sponsored placement (does not affect rank)">
     <div class="card-meta-row">
         <SponsoredTag showWhy />
     </div>
-    {hasHeader && (
+    {showHeader && (
         <div class="boost-slot-body">
-            {title && (href ? <h3><a href={href}>{title}</a></h3> : <h3>{title}</h3>)}
-            {blurb && <p class="card-tagline">{blurb}</p>}
+            {heading && linkHref && <h3><a href={linkHref}>{heading}</a></h3>}
+            {heading && !linkHref && (
+                <h3>{disabled ? <a aria-disabled="true">{heading}</a> : heading}</h3>
+            )}
+            {body && <p class="card-tagline">{body}</p>}
         </div>
     )}
     <slot />
     <p class="card-tagline">Paid placement. Outside the ranked grid: it cannot change scores, ranks, or badges.</p>
 </aside>
+
+<script>
+    import { getApiBaseUrl } from '../lib/api-base';
+
+    const EVENT_PATH = '/api/sponsor/event';
+    const BOOST_PATH = '/api/sponsor/boost';
+
+    type SlotKind = 'impression' | 'click';
+    type BoostCampaign = { title: string; url: string };
+
+    // One campaign read per page view, shared by every slot. Any failure
+    // resolves to null — fail-safe means "open slot, zero beacons".
+    let campaignRead: Promise<BoostCampaign | null> | null = null;
+
+    function readBoostCampaign(): Promise<BoostCampaign | null> {
+        if (!campaignRead) {
+            campaignRead = fetch(`${getApiBaseUrl()}${BOOST_PATH}`, {
+                headers: { Accept: 'application/json' },
+            })
+                .then((res) => (res.ok ? res.json() : null))
+                .then((data: unknown): BoostCampaign | null => {
+                    const campaign = (data as { campaign?: Partial<BoostCampaign> } | null)?.campaign;
+                    if (campaign && typeof campaign.title === 'string' && typeof campaign.url === 'string') {
+                        return { title: campaign.title, url: campaign.url };
+                    }
+                    return null;
+                })
+                .catch(() => null);
+        }
+        return campaignRead;
+    }
+
+    function sendSlotEvent(slot: string, kind: SlotKind, keepalive = false) {
+        try {
+            void fetch(`${getApiBaseUrl()}${EVENT_PATH}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slot, kind }),
+                keepalive,
+            })
+                .catch(() => undefined);
+        } catch {
+            // Beacons are best-effort; they never block the page.
+        }
+    }
+
+    function armBeacons(slot: HTMLElement, name: string) {
+        // Impression: counted once, and only once genuinely on screen.
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    for (const entry of entries) {
+                        if (!entry.isIntersecting || entry.intersectionRatio < 0.5) continue;
+                        observer.disconnect();
+                        sendSlotEvent(name, 'impression');
+                    }
+                },
+                { threshold: 0.5 }
+            );
+            observer.observe(slot);
+        }
+
+        // Click: keepalive so the beacon survives the navigation it causes.
+        // data-no-track (SponsoredTag's "Why?" methodology link) never counts.
+        slot.querySelectorAll<HTMLAnchorElement>('a[href]:not([data-no-track])').forEach((anchor) => {
+            anchor.addEventListener('click', () => {
+                sendSlotEvent(name, 'click', true);
+            });
+        });
+    }
+
+    async function initBoostSlots() {
+        const pending: HTMLElement[] = [];
+        document
+            .querySelectorAll<HTMLElement>('[data-ad-slot]:not([data-boost-wired])')
+            .forEach((slot) => {
+                // Claim BEFORE awaiting the campaign read so a concurrent init
+                // (DOMContentLoaded + astro:page-load) cannot double-arm.
+                slot.setAttribute('data-boost-wired', 'true');
+                if (slot.dataset.adSlot) pending.push(slot);
+            });
+        if (pending.length === 0) return;
+
+        const campaign = await readBoostCampaign();
+        for (const slot of pending) {
+            const name = slot.dataset.adSlot;
+            if (!name) continue;
+            // No paid campaign (or the read failed): the honest open-slot CTA
+            // stays and ZERO beacons arm — the house "Sponsor this board" link
+            // must never count toward a sponsor's impressions or clicks.
+            if (!campaign) continue;
+            // Paid campaign: swap the open-slot heading/link for the sponsor's,
+            // then arm beacons. Props-rendered slots keep their given content.
+            if (slot.dataset.boostRender === 'open') {
+                const link = slot.querySelector<HTMLAnchorElement>('.boost-slot-body h3 a[href]');
+                if (link) {
+                    link.href = campaign.url;
+                    link.textContent = campaign.title;
+                }
+            }
+            armBeacons(slot, name);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            void initBoostSlots();
+        });
+    } else {
+        void initBoostSlots();
+    }
+    document.addEventListener('astro:page-load', () => {
+        void initBoostSlots();
+    });
+</script>

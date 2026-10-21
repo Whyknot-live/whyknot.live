@@ -133,12 +133,14 @@ import SlotPicker from './SlotPicker.astro';
         <p class="card-tagline" data-success-text></p>
         <div class="cluster">
             <a class="btn btn-primary" data-success-link href="/launches">View your launch page</a>
+            <a class="btn btn-ghost" data-edit-link href="/edit" hidden>Edit your listing</a>
             <a class="btn btn-ghost" href="/pricing">Skip the queue instead</a>
         </div>
     </div>
 </form>
 <script>
     import { getApiBaseUrl } from '../lib/api-base';
+    import { saveMakerSession } from '../lib/maker-session';
 
     const form = document.getElementById('submit-form');
     const panels = Array.from(document.querySelectorAll('[data-step-panel]'));
@@ -299,16 +301,15 @@ import SlotPicker from './SlotPicker.astro';
             showStepError(3, 'Submissions are temporarily unavailable. Please try again later.');
             return;
         }
-        const slot = form.querySelector('input[name="slotDate"]:checked');
+        // Note: the free queue date is auto-assigned server-side to the next
+        // free day — the picker above (SlotPicker, role=radiogroup) shows live
+        // queue depth and is informational only. Paid skip (see /pricing) is
+        // the only way to choose an exact day in P1.
         const topics = (topicsInput?.value ?? '')
             .split(',')
             .map((t) => t.trim())
             .filter(Boolean)
             .slice(0, 5);
-        // Note: the free queue date is auto-assigned server-side to the next
-        // free day — the picker above shows live queue depth. Paid skip
-        // (see /pricing) is the only way to choose an exact day in P1.
-        void slot;
         const payload = {
             url: urlInput?.value.trim() ?? '',
             name: nameInput?.value.trim() ?? '',
@@ -337,8 +338,18 @@ import SlotPicker from './SlotPicker.astro';
             const box = document.querySelector('[data-success-box]');
             const text = document.querySelector('[data-success-text]');
             const link = document.querySelector('[data-success-link]');
+            const editLink = document.querySelector('[data-edit-link]');
             if (text) text.textContent = `Launch day: ${data.slotDate}. Your page is live at ${data.url} from day one.`;
             if (link) link.setAttribute('href', data.url);
+            // The edit token is the maker's own key for this listing. Keep it in
+            // this browser so the maker can correct the listing before review.
+            if (data.editToken && data.slug) {
+                saveMakerSession(data.slug, data.editToken);
+                if (editLink) {
+                    editLink.setAttribute('href', `/edit?slug=${encodeURIComponent(data.slug)}`);
+                    editLink.removeAttribute('hidden');
+                }
+            }
             if (box) box.hidden = false;
         } catch (error) {
             console.error('Submit error:', error);

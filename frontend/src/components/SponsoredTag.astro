@@ -2,7 +2,9 @@
 /* SponsoredTag — single-source paid-placement label (C3).
    Renders ONLY the neutral .sponsored-tag (global CSS owns the style).
    Never a merit color, never a rank input. Optional "Why?" links to the
-   methodology anchor that proves rank has no sponsored field. No <style> blocks. */
+   methodology anchor that proves rank has no sponsored field. No <style> blocks.
+   data-no-track marks that link as non-click for BoostSlot's beacon: the
+   methodology link must never count as a sponsor's click (inert elsewhere). */
 interface Props {
     showWhy?: boolean;
 }
@@ -10,5 +12,5 @@ interface Props {
 const { showWhy = false } = Astro.props;
 ---
 <span class="sponsored-tag">Sponsored</span>{showWhy && (
-    <a class="card-tagline" href="/legal/methodology#sponsored-metrics">Why?</a>
+    <a class="card-tagline" data-no-track href="/legal/methodology#sponsored-metrics">Why?</a>
 )}

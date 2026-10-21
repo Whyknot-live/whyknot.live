@@ -1,0 +1,220 @@
+/* Submissions review queue additions (admin/src/pages/submissions.astro).
+   Everything not defined here reuses admin.css: stats-grid, dashboard-controls,
+   data-table, pagination, loading, empty-state, interest-badge, control-button.
+   New pieces: status filter pills, status badges, inline reason form, row
+   action buttons, and the aria-live notice for success/error outcomes.
+   Colors come from tokens.css so light and dark themes both apply. */
+
+/* Outcome notice (aria-live region above the stats) */
+.review-notice {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 1.5rem;
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.review-notice--success {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+  color: var(--color-success);
+}
+
+.review-notice--error {
+  background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+  color: var(--color-danger);
+}
+
+/* Status filter pills (custom control — no native select in this repo) */
+.status-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.status-filter {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.status-filter:hover {
+  color: var(--color-text);
+  border-color: var(--color-accent-400);
+}
+
+.status-filter[aria-pressed='true'] {
+  background: var(--color-accent-600);
+  border-color: var(--color-accent-700);
+  color: #ffffff;
+}
+
+/* Status badge per submission state */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.status-badge.is-queued {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-blue-400) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-blue-400) 45%, transparent);
+}
+
+.status-badge.is-approved {
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+}
+
+.status-badge.is-changes {
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+}
+
+.status-badge.is-rejected {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+}
+
+/* Row action buttons (compact, one per review decision) */
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 65%, transparent);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--color-accent-400);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-btn--approve {
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+}
+
+.action-btn--approve:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+.action-btn--changes {
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+}
+
+.action-btn--changes:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+}
+
+.action-btn--reject {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+}
+
+.action-btn--reject:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
+/* Inline reason form row (opens under the reviewed submission's row) */
+.reason-row td {
+  background: color-mix(in srgb, var(--color-accent-300) 7%, transparent);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.reason-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reason-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reason-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.reason-input:focus {
+  outline: none;
+  border-color: rgba(32, 197, 181, 0.45);
+  box-shadow: 0 0 0 3px rgba(32, 197, 181, 0.2);
+}
+
+.reason-error {
+  color: var(--color-danger);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.reason-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Small helper text inside table cells (tagline, review reason) */
+.cell-sub {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  max-width: 26ch;
+  overflow-wrap: anywhere;
+}
+
+.sub-url {
+  color: var(--color-link);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+/* Retry control inside the load-error state */
+.empty-state .control-button {
+  margin-top: 1rem;
+}

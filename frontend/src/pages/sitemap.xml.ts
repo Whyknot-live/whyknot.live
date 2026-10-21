@@ -30,6 +30,7 @@ const STATIC_PAGES: SitemapEntry[] = [
     { url: '/launches/winners', lastmod: today, changefreq: 'weekly', priority: '0.6' },
     { url: '/sponsor', lastmod: today, changefreq: 'monthly', priority: '0.6' },
     { url: '/newsletter', lastmod: today, changefreq: 'weekly', priority: '0.7' },
+    { url: '/badges', lastmod: today, changefreq: 'monthly', priority: '0.5' },
     { url: '/maker/claim', lastmod: today, changefreq: 'monthly', priority: '0.6' },
     { url: '/submit', lastmod: today, changefreq: 'monthly', priority: '0.6' },
     { url: '/verify', lastmod: today, changefreq: 'monthly', priority: '0.6' },

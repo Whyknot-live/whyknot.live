@@ -1,5 +1,6 @@
 ---
 // Waitlist component - Token-governed alpha signup with honeypot & shared API resolver
+import Icon from './Icon.astro';
 ---
 
 <section class="waitlist-section" id="waitlist" aria-labelledby="waitlist-title">
@@ -30,7 +31,7 @@
 
             <!-- Description -->
             <p class="waitlist-description">
-                Join makers and designers getting weekly curated drops, early Screener access, and launch priority. No spam, no CEO essays.
+                Join makers and designers getting weekly curated drops, verified audits, and launch priority. No spam, no CEO essays.
             </p>
 
             <!-- Waitlist Form -->
@@ -61,7 +62,7 @@
                         />
                         <button type="submit" class="btn btn-primary" id="submit-btn" data-magnet="0.1">
                             <span class="btn-content">
-                                <span class="btn-text">Get Early Access →</span>
+                                <span class="btn-text">Get Early Access <Icon name="arrow-right" size="sm" /></span>
                                 <span class="btn-loader is-hidden" aria-hidden="true">
                                     <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none">
                                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/>
@@ -84,8 +85,8 @@
                 <div class="form-interests" role="group" aria-labelledby="interests-label">
                     <h3 id="interests-label" class="interests-title">What are you curious about?</h3>
                     <div class="interests-grid">
-                        <button type="button" class="chip interest-chip" data-variant="choice" data-interest="screener" aria-pressed="false" data-selected="false">
-                            Site Screener
+                        <button type="button" class="chip interest-chip" data-variant="choice" data-interest="audits" aria-pressed="false" data-selected="false">
+                            Verified Audits
                         </button>
                         <button type="button" class="chip interest-chip" data-variant="choice" data-interest="discovery" aria-pressed="false" data-selected="false">
                             Weekly Curations

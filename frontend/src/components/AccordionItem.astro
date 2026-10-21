@@ -1,0 +1,132 @@
+---
+/* AccordionItem — custom animated disclosure in WhyKnot's knot taste.
+   Replaces native <details> FAQ blocks with a button + region pair so the
+   open animation, chevron rotation, and single-open groups stay consistent.
+   Panels animate via the grid-template-rows 0fr to 1fr trick (CSS only, no
+   JS height measuring). Extra classes passed via `class` flow to the wrapper
+   so page CSS such as `.faq-item.card` keeps applying. */
+import Icon from './Icon.astro';
+
+export interface Props {
+    title: string;
+    open?: boolean;
+    group?: string;
+    id?: string;
+    className?: string;
+}
+
+const { title, open = false, group, id: idProp, className = '' } = Astro.props;
+const legacyClass = (Astro.props as Record<string, unknown>)['class'] as string | undefined ?? '';
+const wrapperClass = ['wk-acc', legacyClass, className].filter(Boolean).join(' ');
+
+function slugify(value: string): string {
+    const slug = value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return slug || 'accordion';
+}
+
+const panelId = idProp ?? `wk-acc-${slugify(title)}`;
+const buttonId = `${panelId}-btn`;
+const isOpen = open === true;
+---
+
+<div class={wrapperClass} data-accordion-item data-group={group} data-open={isOpen ? 'true' : undefined}>
+    <div class="wk-acc-head">
+        <button
+            type="button"
+            class="wk-acc-btn"
+            id={buttonId}
+            aria-expanded={isOpen ? 'true' : 'false'}
+            aria-controls={panelId}
+            data-acc-btn
+        >
+            <span class="wk-acc-title">{title}</span>
+            <Icon name="chevron-down" size="sm" />
+        </button>
+    </div>
+    <div class="wk-acc-panel" id={panelId} role="region" aria-labelledby={buttonId} data-acc-panel hidden={!isOpen}>
+        <div class="wk-acc-panel-inner">
+            <slot />
+        </div>
+    </div>
+</div>
+
+<script>
+    function initAccordions() {
+        document.querySelectorAll('[data-accordion-item]:not([data-wired])').forEach((item) => {
+            item.setAttribute('data-wired', 'true');
+            const btn = item.querySelector('[data-acc-btn]');
+            const panel = item.querySelector('[data-acc-panel]');
+            if (!btn || !panel) return;
+
+            const isOpen = () => btn.getAttribute('aria-expanded') === 'true';
+
+            const CLOSE_MS = 220;
+            const reduceMotion = () =>
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            const scheduleHide = (targetItem) => {
+                const targetPanel = targetItem.querySelector('[data-acc-panel]');
+                const targetBtn = targetItem.querySelector('[data-acc-btn]');
+                if (!(targetPanel instanceof HTMLElement)) return;
+                const stillClosed = () =>
+                    targetBtn?.getAttribute('aria-expanded') !== 'true';
+                if (reduceMotion()) {
+                    if (stillClosed()) targetPanel.hidden = true;
+                } else {
+                    window.setTimeout(() => {
+                        if (stillClosed()) targetPanel.hidden = true;
+                    }, CLOSE_MS);
+                }
+            };
+
+            const setOpen = (willOpen) => {
+                if (willOpen) {
+                    const group = item.getAttribute('data-group');
+                    if (group) {
+                        document
+                            .querySelectorAll(`[data-accordion-item][data-group="${CSS.escape(group)}"]`)
+                            .forEach((sibling) => {
+                                if (sibling !== item && sibling instanceof HTMLElement) {
+                                    sibling.querySelector('[data-acc-btn]')?.setAttribute('aria-expanded', 'false');
+                                    sibling.removeAttribute('data-open');
+                                    scheduleHide(sibling);
+                                }
+                            });
+                    }
+                    panel.hidden = false;
+                    btn.setAttribute('aria-expanded', 'true');
+                    item.setAttribute('data-open', 'true');
+                } else {
+                    btn.setAttribute('aria-expanded', 'false');
+                    item.removeAttribute('data-open');
+                    // visibility:hidden drops tabbability instantly; hidden
+                    // removes it from AT trees after the exit plays.
+                    scheduleHide(item);
+                }
+            };
+
+            if (isOpen()) {
+                panel.hidden = false;
+                item.setAttribute('data-open', 'true');
+            }
+
+            btn.addEventListener('click', () => {
+                setOpen(!isOpen());
+            });
+
+            item.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && isOpen()) {
+                    setOpen(false);
+                    if (btn instanceof HTMLElement) btn.focus();
+                }
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAccordions);
+    } else {
+        initAccordions();
+    }
+    document.addEventListener('astro:page-load', initAccordions);
+</script>

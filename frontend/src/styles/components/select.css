@@ -1,0 +1,137 @@
+/* Select — custom listbox control (zero native <select> chrome).
+   Consumes design tokens only; dark adjustments via :root[data-theme="dark"]. */
+
+.wk-select {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.wk-select-label {
+    font-size: var(--input-font-size-sm);
+    font-weight: 500;
+    color: var(--color-on-surface);
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em;
+}
+
+.wk-select-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-width: 11rem;
+    height: var(--chip-height-lg);
+    padding: 0 0.625rem 0 0.75rem;
+    border: 1px solid var(--input-border);
+    border-radius: var(--chip-radius);
+    background: var(--input-bg);
+    color: var(--color-on-surface);
+    font-size: var(--input-font-size-sm);
+    font-family: var(--font-sans);
+    line-height: 1.4;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.wk-select-btn:hover {
+    border-color: var(--input-border-hover);
+}
+
+.wk-select-btn:focus-visible {
+    outline: none;
+    border-color: var(--input-focus-border);
+    box-shadow: var(--input-focus-ring);
+    background: var(--color-surface);
+}
+
+.wk-select-btn .wk-icon {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    transition: transform var(--transition-fast);
+}
+
+.wk-select.open .wk-select-btn .wk-icon {
+    transform: rotate(180deg);
+}
+
+.wk-select-list {
+    position: absolute;
+    top: calc(100% + var(--space-1));
+    left: 0;
+    min-width: 100%;
+    margin: 0;
+    padding: var(--space-1);
+    list-style: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: var(--z-drawer);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.wk-select.open .wk-select-list {
+    opacity: 1;
+    transform: none;
+}
+
+.wk-select-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--input-font-size-sm);
+    font-family: var(--font-sans);
+    color: var(--color-on-surface);
+    cursor: pointer;
+    outline: none;
+}
+
+.wk-select-option:hover {
+    background: color-mix(in srgb, var(--color-accent-400) 10%, transparent);
+}
+
+.wk-select-option:focus-visible {
+    outline: none;
+    background: color-mix(in srgb, var(--color-accent-400) 10%, transparent);
+    box-shadow: inset 0 0 0 1px var(--input-focus-border);
+}
+
+.wk-select-option[aria-selected="true"] {
+    font-weight: 600;
+    background: var(--chip-selected-bg);
+    color: var(--chip-selected-fg);
+}
+
+.wk-select-option-check {
+    flex-shrink: 0;
+    opacity: 0;
+}
+
+.wk-select-option[aria-selected="true"] .wk-select-option-check {
+    opacity: 1;
+}
+
+.wk-select-hint {
+    margin: 0;
+    font-size: var(--input-font-size-sm);
+    color: var(--color-text-muted);
+}
+
+:root[data-theme="dark"] .wk-select-list {
+    border-color: var(--color-outline-variant);
+    box-shadow: var(--shadow-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wk-select-list,
+    .wk-select-btn .wk-icon {
+        transition: none;
+    }
+}

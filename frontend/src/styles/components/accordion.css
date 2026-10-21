@@ -1,0 +1,131 @@
+/* Accordion — custom animated disclosure in WhyKnot's knot taste.
+   Consumes design tokens only. Covers the three migrated contexts: contact
+   `.faq-item.card` wrappers (page CSS keeps applying alongside these base
+   styles), bare sponsor money-rules items, and the pricing FAQ list.
+   Open animation uses the grid-template-rows 0fr to 1fr trick so no JS
+   height measuring or inline styles are needed. Open state is
+   `aria-expanded="true"` on the button (equivalent to the old `[open]`
+   selectors, which no longer match). */
+
+.wk-acc {
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-container);
+    overflow: hidden;
+    margin-block-end: var(--space-3);
+}
+
+.wk-acc:last-of-type {
+    margin-block-end: 0;
+}
+
+.wk-acc-head {
+    margin: 0;
+}
+
+.wk-acc-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-4) var(--space-5);
+    border: 0;
+    background: var(--color-surface-container-low);
+    color: var(--color-on-surface);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.wk-acc-btn:hover {
+    background: var(--color-surface-container);
+}
+
+.wk-acc-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.wk-acc[data-open='true'] .wk-acc-head {
+    border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.wk-acc-title {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.wk-acc-btn .wk-icon--chevron-down {
+    flex-shrink: 0;
+    transition: transform var(--transition-base);
+}
+
+.wk-acc-btn[aria-expanded='true'] .wk-icon--chevron-down {
+    transform: rotate(180deg);
+}
+
+.wk-acc-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+        grid-template-rows var(--transition-base),
+        visibility 0s var(--transition-base);
+}
+
+.wk-acc[data-open='true'] .wk-acc-panel {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+        grid-template-rows var(--transition-base),
+        visibility 0s 0s;
+}
+
+.wk-acc-panel[hidden] {
+    display: none;
+}
+
+.wk-acc-panel-inner {
+    overflow: hidden;
+    min-height: 0;
+    min-width: 0;
+    padding-inline: var(--space-5);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+.wk-acc-panel-inner > p {
+    margin: var(--space-3) 0 var(--space-5);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+.wk-acc-panel-inner > p:last-child {
+    margin-bottom: var(--space-5);
+}
+
+.wk-acc-panel-inner a {
+    font-weight: 600;
+}
+
+/* Contact page keeps passing `.faq-content` into the slot; preserve its
+   spacing and muted tone inside the animated panel. */
+.wk-acc .faq-content {
+    margin: var(--space-3) 0 var(--space-5);
+    color: var(--color-text-muted);
+}
+
+/* Preserve the old `.faq-item[open]` accent edge for contact wrappers that
+   keep the `faq-item` class: the new open marker is `data-open`. */
+.wk-acc.faq-item[data-open='true'] {
+    border-color: var(--color-accent-300);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wk-acc-panel,
+    .wk-acc-btn .wk-icon--chevron-down {
+        transition: none;
+    }
+}

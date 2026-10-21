@@ -1,0 +1,58 @@
+{
+  "pages": {
+    "1": {
+      "ok": true,
+      "data": [
+        {
+          "slug": "new-one",
+          "name": "New One",
+          "tagline": "A short but valid tagline for testing.",
+          "makerHandle": "dev-new",
+          "url": "https://new-one.example",
+          "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+          "slotDate": "2026-09-25",
+          "status": "approved"
+        },
+        {
+          "slug": "dupe-entry",
+          "name": "Dupe Entry",
+          "tagline": "A short but valid tagline for testing.",
+          "makerHandle": "dupe-maker",
+          "url": "https://dupe-entry.example",
+          "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+          "slotDate": "2026-09-25",
+          "status": "approved"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 200,
+        "total": 2,
+        "pages": 2
+      },
+      "queued": 0
+    },
+    "2": {
+      "ok": true,
+      "data": [
+        {
+          "slug": "dupe-entry",
+          "name": "Dupe Entry",
+          "tagline": "A short but valid tagline for testing.",
+          "makerHandle": "dupe-maker",
+          "url": "https://dupe-entry.example",
+          "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+          "slotDate": "2026-09-25",
+          "status": "approved"
+        }
+      ],
+      "pagination": {
+        "page": 2,
+        "limit": 200,
+        "total": 2,
+        "pages": 2
+      },
+      "queued": 0
+    }
+  }
+}

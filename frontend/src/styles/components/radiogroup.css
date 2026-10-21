@@ -1,0 +1,158 @@
+/* RadioGroup — button-based radio cards in WhyKnot knot taste.
+   Consumes design tokens only; dark adjustments via :root[data-theme="dark"].
+   Selected = accent border + soft accent wash + filled pip; unselected pip
+   hides its check Icon until selected. */
+
+.wk-radio {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.wk-radio-label {
+    margin: 0;
+    font-size: var(--input-font-size-sm);
+    font-weight: 600;
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em;
+    color: var(--color-on-surface);
+}
+
+.wk-radio-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+}
+
+.wk-radio-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-md);
+    background: var(--input-bg);
+    color: var(--color-on-surface);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        border-color var(--transition-fast),
+        background-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.wk-radio-card:hover:not(:disabled) {
+    border-color: var(--input-border-hover);
+    background: var(--color-surface);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.wk-radio-card:focus-visible {
+    outline: none;
+    border-color: var(--input-focus-border);
+    box-shadow: var(--input-focus-ring);
+    background: var(--color-surface);
+}
+
+.wk-radio-card.is-selected {
+    border-color: var(--color-accent-400);
+    background: color-mix(in srgb, var(--color-accent-400) 10%, transparent);
+    box-shadow: 0 0 0 1px var(--color-accent-400);
+}
+
+.wk-radio-pip {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: var(--space-0-5);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-on-accent);
+    transition:
+        border-color var(--transition-fast),
+        background-color var(--transition-fast);
+}
+
+.wk-radio-card:hover:not(:disabled) .wk-radio-pip {
+    border-color: var(--input-border-hover);
+}
+
+.wk-radio-pip .wk-icon {
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.wk-radio-card.is-selected .wk-radio-pip {
+    border-color: var(--color-accent-400);
+    background: var(--color-accent-400);
+}
+
+.wk-radio-card.is-selected .wk-radio-pip .wk-icon {
+    opacity: 1;
+}
+
+.wk-radio-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0-5);
+    min-width: 0;
+}
+
+.wk-radio-title {
+    font-size: var(--input-font-size);
+    font-weight: 600;
+    font-family: var(--font-sans);
+    line-height: 1.4;
+}
+
+.wk-radio-desc {
+    font-size: var(--input-font-size-sm);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    color: var(--color-text-muted);
+}
+
+.wk-radio-card:disabled,
+.wk-radio-card.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.wk-radio-card:disabled:hover,
+.wk-radio-card.is-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+:root[data-theme="dark"] .wk-radio-card.is-selected {
+    background: color-mix(in srgb, var(--color-accent-400) 16%, transparent);
+    box-shadow: 0 0 0 1px var(--color-accent-400), var(--shadow-sm);
+}
+
+@media (max-width: 480px) {
+    .wk-radio-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wk-radio-card,
+    .wk-radio-pip,
+    .wk-radio-pip .wk-icon {
+        transition: none;
+    }
+
+    .wk-radio-card:hover:not(:disabled) {
+        transform: none;
+    }
+}

@@ -8,6 +8,8 @@ import { connectMongo, getDb } from '../utils/mongo'
 import { validateEnv } from '../utils/env'
 import { getClientAddress } from '../utils/request'
 import { authLogger, apiLogger } from '../utils/logger'
+import type { NewsletterSubscriberDoc } from './newsletter'
+import { getSiteBase } from '../utils/email'
 
 const router = new Hono()
 
@@ -511,8 +513,77 @@ router.post('/admin/newsletter/preview', verifyAdminToken, async (c) => {
 })
 
 router.post('/admin/newsletter/send', verifyAdminToken, async (c) => {
-  apiLogger.warn('Newsletter send attempted before ESP scale decision')
-  return c.json({ error: 'not_enabled', message: 'Bulk send disabled until ESP scale decision. Use preview.' }, 501)
+  const body = await c.req.json().catch(() => null)
+  const parsed = z.object({
+    rising: z.array(z.object({ name: z.string(), tagline: z.string(), url: z.string(), sponsored: z.boolean().optional() })).length(5),
+    deals: z.array(z.object({ name: z.string(), tagline: z.string(), url: z.string(), sponsored: z.boolean().optional() })).length(3),
+    underdog: z.object({ name: z.string(), tagline: z.string(), url: z.string() }),
+    sponsor: z.object({ name: z.string(), tagline: z.string(), url: z.string(), sponsored: z.boolean() }).optional(),
+    meta: z.object({ number: z.number().int().optional(), slug: z.string().optional(), subject: z.string().optional(), date: z.string().optional(), intro: z.string().optional() }).optional(),
+  }).safeParse(body)
+  if (!parsed.success) return c.json({ error: 'invalid_request' }, 400)
+
+  const env = validateEnv()
+  await connectMongo(env.MONGODB_URI, env.MONGODB_DB)
+  const db = getDb()
+
+  const { buildIssueFromContent, sendIssueToSubscribers } = await import('../jobs/send-newsletter')
+  const { sendNewsletterEmail } = await import('../utils/email')
+  const issue = await buildIssueFromContent(
+    parsed.data.rising,
+    parsed.data.deals,
+    parsed.data.underdog,
+    parsed.data.sponsor,
+    parsed.data.meta ?? {},
+  )
+
+  const subs = await db
+    .collection<NewsletterSubscriberDoc>('newsletter_subscribers')
+    .find({ status: 'confirmed' })
+    .toArray()
+  const recipients = subs.map((s) => ({ email: s.email, unsubscribeToken: s.unsubscribeToken }))
+
+  const run = await sendIssueToSubscribers({
+    issue,
+    recipients,
+    send: async (to, subject, html, text) => {
+      const result = await sendNewsletterEmail({
+        to,
+        subject,
+        html,
+        text,
+        tags: [
+          { name: 'category', value: 'newsletter' },
+          { name: 'type', value: 'issue' },
+        ],
+      })
+      return result.ok
+    },
+    siteBase: getSiteBase(),
+  })
+
+  // Record every attempt so sponsor-slot CTR can be split later and a
+  // failed send is visible instead of silently dropped.
+  const rows = run.attempts.map((a) => ({
+    issueSlug: issue.slug,
+    email: a.email,
+    sentAt: new Date(),
+    status: a.ok ? 'sent' : 'failed',
+    sponsor: run.sponsor,
+    ...(a.ok ? {} : { error: a.error ?? 'send_failed' }),
+  }))
+  if (rows.length > 0) {
+    await db.collection('newsletter_sends').insertMany(rows)
+  }
+
+  apiLogger.info('Newsletter issue sent', {
+    issue: issue.slug,
+    recipients: recipients.length,
+    sent: run.sent,
+    failed: run.failed,
+    sponsor: run.sponsor,
+  })
+  return c.json({ ok: true, recipients: recipients.length, sent: run.sent, failed: run.failed, sponsor: run.sponsor })
 })
 
 export default router

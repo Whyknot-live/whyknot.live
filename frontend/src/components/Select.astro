@@ -1,0 +1,253 @@
+---
+/* Select — custom listbox replacing the native <select> (zero browser chrome).
+   Button + listbox pattern: toggle open/close, full arrow-key operability,
+   click-outside + Escape to close. On choose, the root `data-value` updates
+   and a `wk-select-change` CustomEvent bubbles with { name, value }.
+   Re-inits on astro:page-load with data-wired guards (see Dropdown.astro). */
+import Icon from './Icon.astro';
+
+export interface SelectOption {
+    value: string;
+    label: string;
+}
+
+export interface Props {
+    id: string;
+    label: string;
+    showLabel?: boolean;
+    name?: string;
+    value?: string;
+    options: SelectOption[];
+    hint?: string;
+}
+
+const { id, label, showLabel = false, name = '', value = '', options, hint, ...rest } = Astro.props;
+const fallback = options.length > 0 ? options[0].value : '';
+const initialValue = options.some((option) => option.value === value) ? value : fallback;
+const initialLabel = options.find((option) => option.value === initialValue)?.label ?? '';
+const buttonId = `${id}-btn`;
+const labelId = `${id}-label`;
+const valueId = `${id}-value`;
+const listId = `${id}-list`;
+const hintId = `${id}-hint`;
+---
+
+<div class="wk-select" id={id} data-select data-name={name} data-value={initialValue} {...rest}>
+    <label class={showLabel ? 'wk-select-label' : 'wk-select-label sr-only'} id={labelId} for={buttonId}>
+        {label}
+    </label>
+    <button
+        type="button"
+        id={buttonId}
+        class="wk-select-btn filter-select"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls={listId}
+        aria-labelledby={`${labelId} ${valueId}`}
+        aria-describedby={hint ? hintId : undefined}
+        data-select-btn
+    >
+        <span id={valueId} data-select-value>{initialLabel}</span>
+        <Icon name="chevron-down" size="sm" />
+    </button>
+    <ul class="wk-select-list" id={listId} role="listbox" aria-label={label} hidden data-select-list>
+        {options.map((option) => (
+            <li
+                role="option"
+                id={`${id}-opt-${option.value}`}
+                class="wk-select-option"
+                data-select-option
+                data-value={option.value}
+                data-label={option.label}
+                aria-selected={String(option.value === initialValue)}
+                tabindex="-1"
+            >
+                <span class="wk-select-option-label">{option.label}</span>
+                <Icon name="check" size="sm" className="wk-select-option-check" />
+            </li>
+        ))}
+    </ul>
+    {hint && <p class="wk-select-hint" id={hintId}>{hint}</p>}
+</div>
+
+<script>
+    function initSelects() {
+        const setOpen = (root, willOpen) => {
+            const button = root.querySelector('[data-select-btn]');
+            const list = root.querySelector('[data-select-list]');
+            if (!(button instanceof HTMLElement) || !(list instanceof HTMLElement)) return;
+            const pending = Number(root.dataset.wkTimer || 0);
+            if (pending) {
+                window.clearTimeout(pending);
+                root.dataset.wkTimer = '';
+            }
+            if (willOpen) {
+                document.querySelectorAll('[data-select].open').forEach((open) => {
+                    if (open !== root) setOpen(open, false);
+                });
+                list.removeAttribute('hidden');
+                // Next frame so the fade + rise transition plays on open.
+                window.requestAnimationFrame(() => {
+                    root.classList.add('open');
+                });
+                button.setAttribute('aria-expanded', 'true');
+            } else {
+                root.classList.remove('open');
+                button.setAttribute('aria-expanded', 'false');
+                const hide = () => {
+                    if (!root.classList.contains('open')) list.setAttribute('hidden', '');
+                };
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) hide();
+                else root.dataset.wkTimer = String(window.setTimeout(hide, 140));
+            }
+        };
+
+        const isDisabled = (option) => option.getAttribute('aria-disabled') === 'true';
+
+        const optionsOf = (root, includeDisabled) => {
+            const all = [...root.querySelectorAll('[data-select-option]')];
+            return includeDisabled ? all : all.filter((option) => !isDisabled(option));
+        };
+
+        const focusOption = (root, index) => {
+            const options = optionsOf(root);
+            if (options.length === 0) return;
+            const target = options[(index + options.length) % options.length];
+            if (target instanceof HTMLElement) target.focus();
+        };
+
+        const selectedIndex = (root) => {
+            const options = optionsOf(root);
+            const current = root.getAttribute('data-value');
+            const found = options.findIndex((option) => option.getAttribute('data-value') === current);
+            return found >= 0 ? found : 0;
+        };
+
+        // Type-ahead: printable-character buffer matches option label prefixes.
+        let typeBuffer = '';
+        let typeTimer = 0;
+        const typeAhead = (root, char) => {
+            typeBuffer = (typeBuffer + char.toLowerCase()).slice(-24);
+            if (typeTimer) window.clearTimeout(typeTimer);
+            typeTimer = window.setTimeout(() => {
+                typeBuffer = '';
+                typeTimer = 0;
+            }, 500);
+            const options = optionsOf(root);
+            const match = options.findIndex((option) =>
+                (option.getAttribute('data-label') ?? option.textContent ?? '').toLowerCase().startsWith(typeBuffer)
+            );
+            if (match >= 0) {
+                if (!root.classList.contains('open')) setOpen(root, true);
+                focusOption(root, match);
+            }
+        };
+
+        const choose = (root, option) => {
+            if (isDisabled(option)) return;
+            const nextValue = option.getAttribute('data-value') ?? '';
+            const nextLabel = option.getAttribute('data-label') ?? option.textContent?.trim() ?? '';
+            root.setAttribute('data-value', nextValue);
+            optionsOf(root).forEach((other) => {
+                other.setAttribute('aria-selected', String(other === option));
+            });
+            const valueSlot = root.querySelector('[data-select-value]');
+            if (valueSlot) valueSlot.textContent = nextLabel;
+            const controlName = root.getAttribute('data-name') ?? '';
+            root.dispatchEvent(new CustomEvent('wk-select-change', { bubbles: true, detail: { name: controlName, value: nextValue } }));
+            setOpen(root, false);
+            const button = root.querySelector('[data-select-btn]');
+            if (button instanceof HTMLElement) button.focus();
+        };
+
+        document.querySelectorAll('[data-select]:not([data-wired])').forEach((root) => {
+            root.setAttribute('data-wired', 'true');
+            const button = root.querySelector('[data-select-btn]');
+            if (!(button instanceof HTMLButtonElement)) return;
+
+            button.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const willOpen = !root.classList.contains('open');
+                setOpen(root, willOpen);
+                if (willOpen) focusOption(root, selectedIndex(root));
+            });
+            button.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    if (!root.classList.contains('open')) {
+                        setOpen(root, true);
+                        focusOption(root, selectedIndex(root));
+                    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        focusOption(root, selectedIndex(root) + (event.key === 'ArrowDown' ? 1 : -1));
+                    }
+                } else if (event.key === 'Escape' && root.classList.contains('open')) {
+                    event.preventDefault();
+                    setOpen(root, false);
+                } else if (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+                    typeAhead(root, event.key);
+                }
+            });
+
+            // Delegated option handling (covers dynamically added options,
+            // e.g. sponsor availability dates rebuilt after fetch).
+            root.addEventListener('click', (event) => {
+                const target = event.target instanceof Element ? event.target.closest('[data-select-option]') : null;
+                if (target instanceof HTMLElement && root.contains(target)) {
+                    event.stopPropagation();
+                    choose(root, target);
+                }
+            });
+            root.addEventListener('keydown', (event) => {
+                const target = event.target instanceof Element ? event.target.closest('[data-select-option]') : null;
+                if (!(target instanceof HTMLElement) || !root.contains(target)) return;
+                const options = optionsOf(root);
+                const index = options.indexOf(target);
+                if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    focusOption(root, (index >= 0 ? index : selectedIndex(root)) + 1);
+                } else if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    focusOption(root, (index >= 0 ? index : selectedIndex(root)) - 1);
+                } else if (event.key === 'Home') {
+                    event.preventDefault();
+                    focusOption(root, 0);
+                } else if (event.key === 'End') {
+                    event.preventDefault();
+                    focusOption(root, options.length - 1);
+                } else if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    choose(root, target);
+                } else if (event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setOpen(root, false);
+                    if (button instanceof HTMLElement) button.focus();
+                } else if (event.key === 'Tab') {
+                    setOpen(root, false);
+                } else if (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+                    typeAhead(root, event.key);
+                }
+            });
+        });
+
+        if (!document.documentElement.hasAttribute('data-wk-select-doc')) {
+            document.documentElement.setAttribute('data-wk-select-doc', 'true');
+            document.addEventListener('click', (event) => {
+                document.querySelectorAll('[data-select].open').forEach((open) => {
+                    if (event.target instanceof Node && !open.contains(event.target)) setOpen(open, false);
+                });
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key !== 'Escape') return;
+                document.querySelectorAll('[data-select].open').forEach((open) => setOpen(open, false));
+            });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSelects);
+    } else {
+        initSelects();
+    }
+    document.addEventListener('astro:page-load', initSelects);
+</script>

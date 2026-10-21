@@ -24,13 +24,31 @@ const { makerHandle, pollMs = 15000 } = Astro.props;
 
 <script>
     // Mirror of VerifyBadge META (6 states only — no new badge states per C4).
-    const CLAIM_BADGES: Record<string, { glyph: string; label: string }> = {
-        verified: { glyph: '✓', label: 'Verified' },
-        pending: { glyph: '◷', label: 'Pending' },
-        unverified: { glyph: '○', label: 'Unverified' },
-        expired: { glyph: '!', label: 'Expired' },
-        stale: { glyph: '!', label: 'Stale' },
-        failed: { glyph: '✕', label: 'Failed' },
+    const CLAIM_BADGES: Record<string, { svg: string; label: string }> = {
+        verified: {
+            svg: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+            label: 'Verified'
+        },
+        pending: {
+            svg: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
+            label: 'Pending'
+        },
+        unverified: {
+            svg: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle></svg>',
+            label: 'Unverified'
+        },
+        expired: {
+            svg: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+            label: 'Expired'
+        },
+        stale: {
+            svg: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+            label: 'Stale'
+        },
+        failed: {
+            svg: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+            label: 'Failed'
+        },
     };
 
     function claimToBadge(status: string | null): string {
@@ -91,7 +109,7 @@ const { makerHandle, pollMs = 15000 } = Astro.props;
                     const dot = document.createElement('span');
                     dot.className = 'verify-dot';
                     dot.setAttribute('aria-hidden', 'true');
-                    dot.textContent = meta.glyph;
+                    dot.innerHTML = meta.svg;
                     badge.appendChild(dot);
                     badge.appendChild(document.createTextNode(meta.label));
                     badgeSlot.appendChild(badge);

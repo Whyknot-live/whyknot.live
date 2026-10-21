@@ -271,14 +271,14 @@
 }
 
 .newsletter-title {
-  font-size: 1.5rem;
+  font-size: var(--text-title);
   font-weight: 700;
   color: var(--color-on-surface);
   margin-bottom: 1rem;
 }
 
 .newsletter-description {
-  font-size: 1rem;
+  font-size: var(--text-base);
   color: var(--color-text-muted);
   margin-bottom: 2rem;
   max-width: 500px;
@@ -295,6 +295,10 @@
   
   .newsletter-form {
     flex-direction: column;
+  }
+
+  .newsletter-form .newsletter-button {
+    width: 100%;
   }
   
   .newsletter-section {
@@ -349,6 +353,11 @@
   opacity: 0.45;
   cursor: not-allowed;
   background: transparent;
+}
+
+.slot-option-card:focus-visible {
+  outline: 2px solid var(--color-outline-focus);
+  outline-offset: 2px;
 }
 
 .slot-card-date {

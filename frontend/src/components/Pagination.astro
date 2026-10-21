@@ -1,5 +1,7 @@
 ---
 /* Pagination — SSG-friendly page links. Page 1 is the base URL (no /page/1). */
+import Icon from './Icon.astro';
+
 export interface Props {
     page: number;
     totalPages: number;
@@ -22,7 +24,7 @@ for (let p = 1; p <= totalPages; p++) {
 
 {totalPages > 1 && (
     <nav class="pagination" aria-label="Pagination">
-        {page > 1 && <a class="page-link" href={hrefFor(page - 1)} rel="prev" aria-label="Previous page">←</a>}
+        {page > 1 && <a class="page-link" href={hrefFor(page - 1)} rel="prev" aria-label="Previous page"><Icon name="arrow-left" size="sm" /></a>}
         {window_.map((p) =>
             p === '…' ? (
                 <span class="page-ellipsis" aria-hidden="true">…</span>
@@ -30,6 +32,6 @@ for (let p = 1; p <= totalPages; p++) {
                 <a class="page-link" href={hrefFor(p)} aria-current={p === page ? 'page' : undefined} aria-label={`Page ${p}`}>{p}</a>
             ),
         )}
-        {page < totalPages && <a class="page-link" href={hrefFor(page + 1)} rel="next" aria-label="Next page">→</a>}
+        {page < totalPages && <a class="page-link" href={hrefFor(page + 1)} rel="next" aria-label="Next page"><Icon name="arrow-right" size="sm" /></a>}
     </nav>
 )}

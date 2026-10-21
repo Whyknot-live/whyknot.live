@@ -14,8 +14,15 @@
 @import './hero.css';
 @import './design-system.css';
 @import './cookie-consent.css';
-@import './screener.css';
 @import './waitlist.css';
+@import './icons.css';
+@import './select.css';
+@import './accordion.css';
+@import './switch.css';
+@import './dialog.css';
+@import './radiogroup.css';
+@import './badges.css';
+@import './screener.css';
 
 /* Note: This file is imported after tokens.css in the main layout
    to ensure design system tokens are available to all components */

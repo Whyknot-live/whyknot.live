@@ -3,6 +3,7 @@
  * Cookie Consent Banner Component
  * GDPR/CCPA compliant cookie consent with granular controls
  */
+import Switch from './Switch.astro';
 ---
 
 <div id="cookie-consent-banner" class="cookie-consent" role="dialog" aria-labelledby="cookie-consent-title" aria-modal="true" aria-hidden="true" data-pagefind-ignore>
@@ -23,12 +24,7 @@
           <span class="cookie-option-label">Essential</span>
           <span class="cookie-option-desc">Required for site functionality</span>
         </div>
-        <div class="cookie-toggle cookie-toggle--disabled">
-          <input type="checkbox" id="cookie-essential" checked disabled />
-          <label for="cookie-essential" class="toggle-slider">
-            <span class="sr-only">Essential cookies (always on)</span>
-          </label>
-        </div>
+        <Switch id="cookie-essential" ariaLabel="Essential cookies (always on)" checked disabled />
       </div>
 
       <!-- Analytics Cookies -->
@@ -37,12 +33,7 @@
           <span class="cookie-option-label">Analytics</span>
           <span class="cookie-option-desc">Usage statistics</span>
         </div>
-        <div class="cookie-toggle">
-          <input type="checkbox" id="cookie-analytics" />
-          <label for="cookie-analytics" class="toggle-slider">
-            <span class="sr-only">Analytics cookies</span>
-          </label>
-        </div>
+        <Switch id="cookie-analytics" ariaLabel="Analytics cookies" />
       </div>
 
       <!-- Preference Cookies -->
@@ -51,12 +42,7 @@
           <span class="cookie-option-label">Preferences</span>
           <span class="cookie-option-desc">Theme & settings</span>
         </div>
-        <div class="cookie-toggle">
-          <input type="checkbox" id="cookie-preferences" />
-          <label for="cookie-preferences" class="toggle-slider">
-            <span class="sr-only">Preference cookies</span>
-          </label>
-        </div>
+        <Switch id="cookie-preferences" ariaLabel="Preference cookies" />
       </div>
 
       <!-- Marketing Cookies -->
@@ -65,12 +51,7 @@
           <span class="cookie-option-label">Marketing</span>
           <span class="cookie-option-desc">Personalized ads</span>
         </div>
-        <div class="cookie-toggle">
-          <input type="checkbox" id="cookie-marketing" />
-          <label for="cookie-marketing" class="toggle-slider">
-            <span class="sr-only">Marketing cookies</span>
-          </label>
-        </div>
+        <Switch id="cookie-marketing" ariaLabel="Marketing cookies" />
       </div>
     </div>
 

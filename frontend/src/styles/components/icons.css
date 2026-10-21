@@ -1,0 +1,88 @@
+/* Icon system — single-source knot-taste glyphs (see components/Icon.astro).
+   Sizes come from Icon props; this file owns alignment, spin, theme morph,
+   and open-state rotations. Brand tokens stay in tokens.css. */
+
+.wk-icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Spinning loader (Waitlist, admin, contact spinners via Icon name="spinner") */
+.wk-icon--spinner {
+    animation: wk-spin 0.8s linear infinite;
+}
+
+@keyframes wk-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Buttons / links carrying an icon keep text and glyph on one baseline */
+.btn .wk-icon,
+.page-link .wk-icon,
+.section-link .wk-icon,
+.chip .wk-icon {
+    vertical-align: -0.15em;
+}
+
+/* Caret rotation for disclosure controls (Dropdown; accordion rotation lives
+   in accordion.css and keys off aria-expanded). */
+[data-dropdown] .wk-icon--chevron-down {
+    transition: transform var(--transition-base);
+}
+
+[data-dropdown].open .wk-icon--chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Theme toggle morph — knot sun/moon cross-fade + rotate.
+   Light mode offers the moon (tap to go dark); dark mode offers the sun. */
+.wk-theme-icons {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+}
+
+.wk-theme-icon {
+    grid-area: 1 / 1;
+    display: inline-flex;
+    transition:
+        opacity var(--transition-base),
+        transform var(--transition-base);
+}
+
+:root:not([data-theme='dark']) .wk-theme-icon--sun {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.6);
+}
+
+:root:not([data-theme='dark']) .wk-theme-icon--moon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+:root[data-theme='dark'] .wk-theme-icon--sun {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+:root[data-theme='dark'] .wk-theme-icon--moon {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wk-icon--spinner {
+        animation: none;
+    }
+    .wk-theme-icon,
+    [data-dropdown] .wk-icon--chevron-down {
+        transition: none;
+    }
+}

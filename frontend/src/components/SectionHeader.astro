@@ -2,7 +2,9 @@
 /* SectionHeader — editorial section opener used across gateway + feeds.
    Numbered eyebrow (`index="01"`) plus an optional knot tick keeps sections
    feeling like chapters of one publication, not stacked landing blocks.
-   `aside` renders a handwritten margin note for a human touch. */
+    `aside` renders a handwritten margin note for a human touch. */
+import Icon from './Icon.astro';
+
 export interface Props {
     title: string;
     eyebrow?: string;
@@ -40,5 +42,5 @@ const { title, eyebrow, description, href, linkLabel, index, knot = false, aside
         {description && <p class="section-description">{description}</p>}
         {aside && <p class="hand-note section-aside">{aside}</p>}
     </div>
-    {href && linkLabel && <a class="btn btn-ghost section-link" href={href}>{linkLabel} →</a>}
+    {href && linkLabel && <a class="btn btn-ghost section-link" href={href}>{linkLabel} <Icon name="arrow-right" size="sm" /></a>}
 </div>

@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "slug": "bad-scheme",
+      "name": "Bad Scheme",
+      "tagline": "A short but valid tagline for testing.",
+      "makerHandle": "dev-one",
+      "url": "javascript:alert(document.cookie)",
+      "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+      "slotDate": "2026-09-25",
+      "status": "approved"
+    },
+    {
+      "slug": "ftp-scheme",
+      "name": "FTP Scheme",
+      "tagline": "A short but valid tagline for testing.",
+      "makerHandle": "dev-two",
+      "url": "ftp://files.example/dl",
+      "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+      "slotDate": "2026-09-25",
+      "status": "approved"
+    },
+    {
+      "slug": "whitespace-url",
+      "name": "Whitespace URL",
+      "tagline": "A short but valid tagline for testing.",
+      "makerHandle": "dev-three",
+      "url": "https://exa mple.com/path",
+      "story": "This launch began as a side project, grew through careful user feedback, and became a focused application for a small group of early adopters who needed exactly this tool.",
+      "slotDate": "2026-09-25",
+      "status": "approved"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 200,
+    "total": 3,
+    "pages": 1
+  },
+  "queued": 0
+}

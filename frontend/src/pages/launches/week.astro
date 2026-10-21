@@ -5,12 +5,13 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SectionHeader from '../../components/SectionHeader.astro';
 import LaunchCard from '../../components/LaunchCard.astro';
 import EmptyState from '../../components/EmptyState.astro';
-import { getFlatLaunches, launchDayBounds } from '../../lib/content';
+import { getFlatLaunches, launchDayBounds, liveOnly } from '../../lib/content';
 
 const title = "This week's launches | WhyKnot";
 const description = 'Every launch from the last seven days, newest first.';
 
-const launches = await getFlatLaunches();
+// Scheduled entries never appear on the day/week boards (see /launches/upcoming).
+const launches = liveOnly(await getFlatLaunches());
 const { weekAgo } = launchDayBounds(launches);
 const board = launches
     .filter((launch) => launch.publishedAt.valueOf() >= weekAgo.valueOf())

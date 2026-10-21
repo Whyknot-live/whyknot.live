@@ -39,6 +39,9 @@ import AlertPrefs from '../components/AlertPrefs.astro';
 import StatTile from '../components/StatTile.astro';
 import DistributionBar from '../components/DistributionBar.astro';
 import AlternativesGraph from '../components/AlternativesGraph.astro';
+import Icon from '../components/Icon.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import Select from '../components/Select.astro';
 import { SplitReveal } from '../components/react/SplitReveal';
 import { SpotlightCard } from '../components/react/SpotlightCard';
 import { CountUp } from '../components/react/CountUp';
@@ -53,6 +56,27 @@ const schema = {
  "description": description,
  "url": "https://www.whyknot.live/design-system"
 };
+
+// Type scale as defined in tokens.css (--text-*). Update both together.
+const typeScale = [
+ { size: 'xs', token: '--text-xs', value: '0.72rem' },
+ { size: 'sm', token: '--text-sm', value: '0.82rem' },
+ { size: 'ui', token: '--text-ui', value: '0.875rem' },
+ { size: 'md', token: '--text-md', value: '0.95rem' },
+ { size: 'base', token: '--text-base', value: '1rem' },
+ { size: 'lg', token: '--text-lg', value: '1.08rem' },
+ { size: 'lead', token: '--text-lead', value: '1.125rem' },
+ { size: 'title-sm', token: '--text-title-sm', value: '1.25rem' },
+ { size: 'xl', token: '--text-xl', value: '1.32rem' },
+ { size: 'title', token: '--text-title', value: '1.5rem' },
+ { size: '2xl', token: '--text-2xl', value: '1.7rem' },
+ { size: 'title-lg', token: '--text-title-lg', value: '2rem' },
+ { size: '3xl', token: '--text-3xl', value: '2.2rem' },
+ { size: 'display-sm', token: '--text-display-sm', value: '2.5rem' },
+ { size: '4xl', token: '--text-4xl', value: '2.9rem' },
+ { size: 'section', token: '--text-section', value: 'clamp(1.6rem, 3vw, 2.2rem)' },
+ { size: 'display', token: '--text-display', value: 'clamp(2.25rem, 6vw, 3.55rem)' },
+];
 
 // Living inventory: every product primitive rendered with real collection data
 const showcaseSites = (await getCollection('sites'))
@@ -82,8 +106,8 @@ const showcaseCollections = (await getCollection('collections'))
  </p>
  <p class="page-description">
  Explore our turquoise + blue hybrid design system built for innovation 
- and accessibility. Every component is crafted with modern glassmorphic 
- aesthetics and semantic color roles.
+ and accessibility. Every component sits on a solid surface with a hairline border
+ and semantic color roles.
  </p>
  </div>
  </div>
@@ -97,8 +121,9 @@ const showcaseCollections = (await getCollection('collections'))
  <div class="toc-grid">
  <a href="#colors" class="toc-item">Colors & Tokens</a>
  <a href="#typography" class="toc-item">Typography</a>
- <a href="#buttons" class="toc-item">Buttons</a>
- <a href="#forms" class="toc-item">Form Elements</a>
+  <a href="#buttons" class="toc-item">Buttons</a>
+  <a href="#icons" class="toc-item">Icons</a>
+  <a href="#forms" class="toc-item">Form Elements</a>
  <a href="#cards" class="toc-item">Cards</a>
  <a href="#chips" class="toc-item">Chips & Badges</a>
  <a href="#callouts" class="toc-item">Callouts</a>
@@ -330,34 +355,46 @@ const showcaseCollections = (await getCollection('collections'))
  <div class="section-container">
  <h2 class="section-title">Typography</h2>
  <p class="section-description">
- Clean, readable typography using system fonts with proper hierarchy and spacing.
+ Three faces plus the system mono stack: Bebas Neue for display, Outfit for body and interface, Caveat for handwritten notes only.
+ Sizes come from the <code>--text-*</code> tokens in tokens.css.
  </p>
 
  <div class="typography-showcase">
  <div class="type-sample">
- <h1 class="sample-text">Heading 1 - Hero Title</h1>
- <code class="type-info">font-size: clamp(2.5rem, 6vw, 4rem), font-weight: 700</code>
+ <p class="sample-text type-step" data-face="display" data-step="display">Display - Bebas Neue</p>
+ <code class="type-info">font-family: var(--font-display); font-size: var(--text-display) (clamp(2.25rem, 6vw, 3.55rem))</code>
  </div>
  <div class="type-sample">
- <h2 class="sample-text">Heading 2 - Section Title</h2>
- <code class="type-info">font-size: 2.5rem, font-weight: 700</code>
+ <p class="sample-text type-step" data-step="section">Section title - Outfit</p>
+ <code class="type-info">font-family: var(--font-sans); font-size: var(--text-section) (clamp(1.6rem, 3vw, 2.2rem))</code>
  </div>
  <div class="type-sample">
- <h3 class="sample-text">Heading 3 - Subsection Title</h3>
- <code class="type-info">font-size: 1.75rem, font-weight: 600</code>
- </div>
- <div class="type-sample">
- <p class="sample-text">Body text - Regular paragraph content with proper line height for optimal readability across devices.</p>
- <code class="type-info">font-size: 1rem, line-height: 1.6</code>
+ <p class="sample-text type-step" data-step="base">Body text - Regular paragraph content with proper line height for optimal readability across devices.</p>
+ <code class="type-info">font-size: var(--text-base) (1rem), line-height: 1.6</code>
  </div>
  <div class="type-sample">
  <p class="sample-text text-muted">Muted text - Secondary information and descriptions</p>
  <code class="type-info">color: var(--color-text-muted)</code>
  </div>
  <div class="type-sample">
+ <p class="sample-text type-step" data-face="hand" data-step="title-sm">Handwritten note - Caveat, human touches only</p>
+ <code class="type-info">font-family: var(--font-hand)</code>
+ </div>
+ <div class="type-sample">
  <code class="sample-text">Code snippet - Monospace font for technical content</code>
  <code class="type-info">font-family: var(--font-mono)</code>
  </div>
+ </div>
+
+ <h3 class="type-scale-title">Type scale</h3>
+ <div class="type-scale">
+ {typeScale.map((step) => (
+ <div class="type-scale-row">
+ <code class="type-scale-token">{step.token}</code>
+ <span class="type-scale-value">{step.value}</span>
+ <span class="type-scale-sample type-step" data-step={step.size}>Discover the web's hidden gems</span>
+ </div>
+ ))}
  </div>
  </div>
  </section>
@@ -367,7 +404,7 @@ const showcaseCollections = (await getCollection('collections'))
  <div class="section-container">
  <h2 class="section-title">Buttons</h2>
  <p class="section-description">
- Modern glassmorphic buttons with hover effects, multiple variants, and proper accessibility.
+ Buttons with hover effects, multiple variants, and proper accessibility.
  </p>
 
  <!-- Button Variants -->
@@ -416,12 +453,92 @@ const showcaseCollections = (await getCollection('collections'))
  <div class="demo-group">
  <button class="btn">Normal</button>
  <button class="btn" disabled>Disabled</button>
- <button class="btn btn-loading">Loading</button>
- </div>
- </div>
- </div>
- </div>
- </section>
+  <button class="btn btn-loading">Loading</button>
+  </div>
+  </div>
+  </div>
+  </div>
+  </section>
+
+  <!-- Icons -->
+  <section id="icons" class="component-section">
+  <div class="section-container">
+  <h2 class="section-title">Icons</h2>
+  <p class="section-description">
+  Single-source SVG set drawn on a 24-grid with 2px round-cap strokes in currentColor.
+  Every glyph ships from src/components/Icon.astro so pages never hard-code ad-hoc widths.
+  </p>
+
+  <div class="subsection">
+  <h3 class="subsection-title">Glyph set</h3>
+  <div class="component-demo">
+  <div class="demo-group">
+  <div class="cluster"><Icon name="sun" size="lg" /><span class="color-token">sun</span></div>
+  <div class="cluster"><Icon name="moon" size="lg" /><span class="color-token">moon</span></div>
+  <div class="cluster"><Icon name="chevron-down" size="lg" /><span class="color-token">chevron-down</span></div>
+  <div class="cluster"><Icon name="close" size="lg" /><span class="color-token">close</span></div>
+  <div class="cluster"><Icon name="arrow-right" size="lg" /><span class="color-token">arrow-right</span></div>
+  <div class="cluster"><Icon name="arrow-left" size="lg" /><span class="color-token">arrow-left</span></div>
+  <div class="cluster"><Icon name="check" size="lg" /><span class="color-token">check</span></div>
+  <div class="cluster"><Icon name="alert" size="lg" /><span class="color-token">alert</span></div>
+  <div class="cluster"><Icon name="shield" size="lg" /><span class="color-token">shield</span></div>
+  <div class="cluster"><Icon name="clock" size="lg" /><span class="color-token">clock</span></div>
+  <div class="cluster"><Icon name="search" size="lg" /><span class="color-token">search</span></div>
+  <div class="cluster"><Icon name="eye" size="lg" /><span class="color-token">eye</span></div>
+  <div class="cluster"><Icon name="star" size="lg" /><span class="color-token">star</span></div>
+  <div class="cluster"><Icon name="spinner" size="lg" /><span class="color-token">spinner</span></div>
+  <div class="cluster"><Icon name="knot" size="lg" /><span class="color-token">knot</span></div>
+  <div class="cluster"><Icon name="boost" size="lg" /><span class="color-token">boost</span></div>
+  <div class="cluster"><Icon name="trend-up" size="lg" /><span class="color-token">trend-up</span></div>
+  <div class="cluster"><Icon name="trend-down" size="lg" /><span class="color-token">trend-down</span></div>
+  <div class="cluster"><Icon name="mail" size="lg" /><span class="color-token">mail</span></div>
+  <div class="cluster"><Icon name="message" size="lg" /><span class="color-token">message</span></div>
+  <div class="cluster"><Icon name="file" size="lg" /><span class="color-token">file</span></div>
+  <div class="cluster"><Icon name="help" size="lg" /><span class="color-token">help</span></div>
+  <div class="cluster"><Icon name="users" size="lg" /><span class="color-token">users</span></div>
+  <div class="cluster"><Icon name="layers" size="lg" /><span class="color-token">layers</span></div>
+  <div class="cluster"><Icon name="zap" size="lg" /><span class="color-token">zap</span></div>
+  </div>
+  </div>
+  </div>
+
+  <div class="subsection">
+  <h3 class="subsection-title">Sizes</h3>
+  <div class="component-demo">
+  <div class="demo-group">
+  <div class="cluster"><Icon name="knot" size="xs" /><span class="color-token">xs</span></div>
+  <div class="cluster"><Icon name="knot" size="sm" /><span class="color-token">sm</span></div>
+  <div class="cluster"><Icon name="knot" size="md" /><span class="color-token">md</span></div>
+  <div class="cluster"><Icon name="knot" size="lg" /><span class="color-token">lg</span></div>
+  <div class="cluster"><Icon name="knot" size="xl" /><span class="color-token">xl</span></div>
+  </div>
+  </div>
+  </div>
+
+  <div class="subsection">
+  <h3 class="subsection-title">Theme morph</h3>
+  <div class="component-demo">
+  <div class="demo-group">
+  <ThemeToggle />
+  </div>
+  <p class="text-muted">Light theme offers moon, dark theme offers sun.</p>
+  </div>
+  </div>
+
+  <div class="subsection">
+  <h3 class="subsection-title">States</h3>
+  <div class="component-demo">
+  <div class="demo-group">
+  <div class="cluster"><Icon name="spinner" size="lg" /><span class="color-token">loading</span></div>
+  <div class="cluster"><Icon name="check" size="lg" /><span class="color-token">check</span></div>
+  <div class="cluster"><Icon name="alert" size="lg" /><span class="color-token">alert</span></div>
+  <div class="cluster"><Icon name="shield" size="lg" /><span class="color-token">shield</span></div>
+  <div class="cluster"><Icon name="clock" size="lg" /><span class="color-token">clock</span></div>
+  </div>
+  </div>
+  </div>
+  </div>
+  </section>
 
  	<!-- Form Controls -->
 	<section id="forms" class="component-section">
@@ -439,7 +556,7 @@ const showcaseCollections = (await getCollection('collections'))
 				
 				<div class="form-group">
 					<label for="demo-search-ctrl" class="form-label">Search with Shortcut</label>
-					<div class="scan-bar" style="max-width: 100%">
+					<div class="scan-bar ds-fluid">
 						<input type="search" id="demo-search-ctrl" placeholder="Search library..." />
 						<kbd class="scan-kbd">⌘K</kbd>
 					</div>
@@ -451,19 +568,25 @@ const showcaseCollections = (await getCollection('collections'))
 				</div>
 				
 				<div class="form-group">
-					<label for="demo-select" class="form-label">Select Control</label>
-					<select id="demo-select">
-						<option>Select category...</option>
-						<option>Autonomous Agents</option>
-						<option>Developer Tooling</option>
-						<option>Design Systems</option>
-					</select>
+					<label for="demo-select-btn" class="form-label">Select Control</label>
+					<Select
+						id="demo-select"
+						name="demo"
+						label="Select Control"
+						showLabel={false}
+						options={[
+							{ value: 'select-category', label: 'Select category...' },
+							{ value: 'autonomous-agents', label: 'Autonomous Agents' },
+							{ value: 'developer-tooling', label: 'Developer Tooling' },
+							{ value: 'design-systems', label: 'Design Systems' },
+						]}
+					/>
 				</div>
 				
 				<div class="form-group">
 					<label for="demo-invalid" class="form-label">Invalid State</label>
 					<input type="text" id="demo-invalid" value="invalid domain specification" aria-invalid="true" aria-describedby="demo-invalid-hint" />
-					<span class="field-error" id="demo-invalid-hint" style="margin-top: 0.25rem">Domain must follow standard FQDN format.</span>
+					<span class="field-error ds-mt-1" id="demo-invalid-hint">Domain must follow standard FQDN format.</span>
 				</div>
 				
 				<div class="form-group">
@@ -471,7 +594,7 @@ const showcaseCollections = (await getCollection('collections'))
 					<input type="text" id="demo-disabled" value="Read-only system record" disabled />
 				</div>
 
-				<div class="form-group" style="grid-column: 1 / -1">
+				<div class="form-group ds-col-full">
 					<label for="demo-textarea" class="form-label">Multi-line Text Area</label>
 					<textarea id="demo-textarea" placeholder="Enter technical description or evidence details..."></textarea>
 				</div>
@@ -484,13 +607,13 @@ const showcaseCollections = (await getCollection('collections'))
  <div class="section-container">
  <h2 class="section-title">Cards</h2>
  <p class="section-description">
- Glassmorphic cards with various tones and interactive hover effects.
+ Solid cards with various tones and interactive hover effects.
  </p>
 
  <div class="cards-showcase">
  <div class="card">
  <h3>Default Card</h3>
- <p>This is a default card with glassmorphic styling and subtle hover effects.</p>
+ <p>This is a default card on a solid surface with a hairline border and subtle hover effects.</p>
  <a href="#" class="btn btn-outline btn-sm">Learn More</a>
  </div>
  
@@ -547,7 +670,7 @@ const showcaseCollections = (await getCollection('collections'))
 							<span class="chip-dot"></span> Active Verification
 						</button>
 						<button class="chip" data-variant="choice" data-selected="false" aria-pressed="false">
-							<span class="chip-dot" style="background: var(--color-blue-400)"></span> Technical Audit
+							<span class="chip-dot ds-dot-blue"></span> Technical Audit
 						</button>
 						<button class="chip" data-size="sm" data-selected="false" aria-pressed="false">
 							Compact Node
@@ -620,7 +743,7 @@ const showcaseCollections = (await getCollection('collections'))
  <div class="section-container">
  <h2 class="section-title">Tooltips</h2>
  <p class="section-description">
- Contextual tooltips with different placements and glassmorphic styling.
+ Contextual tooltips with different placements on a solid surface.
  </p>
 
  <div class="tooltips-showcase">
@@ -811,25 +934,20 @@ const showcaseCollections = (await getCollection('collections'))
  <!-- Overlays / Modal -->
  <section id="overlays" class="component-section">
  <div class="section-container">
- <h2 class="section-title">Modal</h2>
- <p class="section-description">
- Lightweight, accessible modal using a checkbox toggle without JavaScript.
- </p>
- <div class="component-demo">
- <label class="btn btn-outline" for="demo-modal-toggle">Open Modal</label>
- <input type="checkbox" id="demo-modal-toggle" class="modal-toggle" aria-hidden="true" />
- <div class="modal" aria-labelledby="modal-title" aria-modal="true" role="dialog">
- <label class="modal-overlay" for="demo-modal-toggle" aria-hidden="true"></label>
- <div class="modal-content card">
- <h3 id="modal-title" class="gradient-text">This is a modal</h3>
- <p class="text-muted">Glassmorphic surface with focus trap and escape via overlay or Close.</p>
- <div class="cluster">
- <label class="btn" for="demo-modal-toggle">Close</label>
- <button class="btn btn-secondary">Action</button>
- </div>
- </div>
- </div>
- </div>
+  <h2 class="section-title">Modal</h2>
+  <p class="section-description">
+  Custom div dialog with focus trap, Escape, overlay dismiss, and scroll lock. Open declaratively with a trigger button.
+  </p>
+  <div class="component-demo">
+  <button type="button" class="btn btn-outline" data-modal-open="demo-modal">Open Modal</button>
+  <Modal id="demo-modal" title="This is a modal">
+  <p class="text-muted">Solid surface with focus trap and escape via overlay or Close.</p>
+  <div class="cluster">
+  <button type="button" class="btn" data-modal-close>Close</button>
+  <button type="button" class="btn btn-secondary">Action</button>
+  </div>
+  </Modal>
+  </div>
  </div>
  </section>
 
@@ -854,7 +972,7 @@ const showcaseCollections = (await getCollection('collections'))
  <li>Automatic light/dark mode switching</li>
  <li>CSS custom properties for easy customization</li>
  <li>Consistent color semantic roles</li>
- <li>Glassmorphic aesthetic with proper fallbacks</li>
+ <li>Solid surfaces; a subtle blur only on the navigation bar, dialogs and cookie banner</li>
  </ul>
  </div>
  
@@ -879,12 +997,12 @@ const showcaseCollections = (await getCollection('collections'))
  <ScoreRing score={34} label="SEO" />
  <ScoreRing score={null} label="Best practices" />
  </div>
- <div class="card-grid" data-cols="2" style="margin-top: var(--space-5)">
+ <div class="card-grid ds-mt-5" data-cols="2">
  <div class="card">
- <div class="score-bar" data-band="good"><div class="score-bar-row"><span class="score-bar-name">Largest Contentful Paint</span><span class="score-bar-val">1.8s</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width: 92%"></div></div></div>
+ <div class="score-bar" data-band="good"><div class="score-bar-row"><span class="score-bar-name">Largest Contentful Paint</span><span class="score-bar-val">1.8s</span></div><div class="score-bar-track"><div class="score-bar-fill ds-w-92"></div></div></div>
  </div>
  <div class="card">
- <div class="score-bar" data-band="soso"><div class="score-bar-row"><span class="score-bar-name">Interaction to Next Paint</span><span class="score-bar-val">320ms</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width: 64%"></div></div></div>
+ <div class="score-bar" data-band="soso"><div class="score-bar-row"><span class="score-bar-name">Interaction to Next Paint</span><span class="score-bar-val">320ms</span></div><div class="score-bar-track"><div class="score-bar-fill ds-w-64"></div></div></div>
  </div>
  </div>
  </div>
@@ -903,19 +1021,19 @@ const showcaseCollections = (await getCollection('collections'))
  <span class="sponsored-tag">Sponsored</span>
  <span class="soon-tag">Soon</span>
  </div>
- <div class="cluster" style="margin-top: var(--space-4)">
+ <div class="cluster ds-mt-4">
  <SourceLine source="detected" timestamp="2026-09-09" confidence="high" />
  <SourceLine source="owner" timestamp="2026-09-02" confidence="high" />
  <SourceLine source="editor" timestamp="2026-09-01" />
  <SourceLine source="community" timestamp="2026-08-28" confidence="low" />
  <SourceLine source="detected" timestamp="2026-05-30" confidence="med" stale />
  </div>
- <div class="cluster" style="margin-top: var(--space-4)">
+ <div class="cluster ds-mt-4">
  <TechBadge name="Astro" confidence={98} />
  <TechBadge name="Cloudflare" confidence={87} />
  <TechBadge name="Stripe" />
  </div>
- <p class="method-note" style="margin-top: var(--space-4)">Automated detection is heuristic and labeled as such. <a href="/legal/methodology">How ranking works</a></p>
+ <p class="method-note ds-mt-4">Automated detection is heuristic and labeled as such. <a href="/legal/methodology">How ranking works</a></p>
  </div>
  </section>
 
@@ -926,12 +1044,12 @@ const showcaseCollections = (await getCollection('collections'))
  <div class="card-grid" data-cols="3">
  {showcaseSites.slice(0, 3).map((site) => <SiteCard site={site} />)}
  </div>
- <h3 style="margin-top: var(--space-8)">Launch cards</h3>
+ <h3 class="ds-mt-8">Launch cards</h3>
  <div class="card-grid" data-cols="2">
  {showcaseLaunches.map((launch) => <LaunchCard launch={launch} />)}
  <div class="card"><BoostButton boosts={182} slug="context-canvas" /><p class="card-tagline">Standalone backing control (static in SSG, wires to the backing API with auth).</p></div>
  </div>
- <h3 style="margin-top: var(--space-8)">Maker + collections</h3>
+ <h3 class="ds-mt-8">Maker + collections</h3>
  <div class="card-grid" data-cols="3">
  <MakerCard handle="maya-chen" name="Maya Chen" bio="Design engineer exploring calm software." products={3} launches={2} verification="verified" />
  {showcaseCollections.slice(0, 2).map((collection) => <CollectionCard slug={collection.slug} name={collection.name} description={collection.description} count={collection.count} />)}
@@ -941,19 +1059,19 @@ const showcaseCollections = (await getCollection('collections'))
 
  <section class="section" id="product-states">
  <div class="container">
- <SectionHeader eyebrow="Primitives" title="States" description="Loading, empty, and error treatments shared by every surface, including Screener and verification flows." />
+ <SectionHeader eyebrow="Primitives" title="States" description="Loading, empty, and error treatments shared by every surface, including Discovery and verification flows." />
  <div class="card-grid" data-cols="3">
- <div class="skeleton-card" aria-hidden="true"><div class="skeleton" style="height: 7rem"></div><div class="skeleton" style="width: 70%"></div><div class="skeleton" style="width: 45%"></div></div>
+ <div class="skeleton-card" aria-hidden="true"><div class="skeleton ds-h-7rem"></div><div class="skeleton ds-w-70"></div><div class="skeleton ds-w-45"></div></div>
  <EmptyState title="No saved sites yet" body="Save sites you love and they will wait for you here." actionHref="/discover" actionLabel="Discover sites" note="this aside is handwritten: the humane touch." punSeed="design-system" />
-  <ErrorState title="Scan timed out" body="The site took too long to respond. Retry the scan or request a human review." code="SCREENER_TIMEOUT" retryHref="/screener" note="even the best knots slip." />
+ <ErrorState title="Verification timed out" body="The site took too long to respond. Retry the request or inspect the archive." code="AUDIT_TIMEOUT" retryHref="/discover" note="even the best knots slip." />
  </div>
- <div style="margin-top: var(--space-5)">
+ <div class="ds-mt-5">
  <Breadcrumbs trail={[{ label: 'Discover', href: '/discover' }, { label: 'Arcade Atlas' }]} />
  </div>
- <div style="margin-top: var(--space-4)">
+ <div class="ds-mt-4">
  <Pagination page={2} totalPages={5} base="/discover" />
  </div>
- <div class="table-scroll" style="margin-top: var(--space-5)">
+ <div class="table-scroll ds-mt-5">
  <table class="data-table">
  <thead><tr><th scope="col">Finding</th><th scope="col">Severity</th><th scope="col">Confidence</th><th scope="col" class="num">Impact</th></tr></thead>
  <tbody>
@@ -963,7 +1081,7 @@ const showcaseCollections = (await getCollection('collections'))
  </tbody>
  </table>
  </div>
- <div class="leaderboard" style="margin-top: var(--space-5)">
+ <div class="leaderboard ds-mt-5">
  {showcaseSites.slice(0, 3).map((site) => (
  <a class="leaderboard-row" href={`/sites/${site.slug}`}>
  <ScoreRing score={site.score} size="sm" />
@@ -985,7 +1103,7 @@ const showcaseCollections = (await getCollection('collections'))
  <StarRating value={4} label="Example rating: 4 out of 5" />
  <TimeStamp date="2026-09-09" />
  </div>
- <div class="card-grid" data-cols="2" style="margin-top: var(--space-5)">
+ <div class="card-grid ds-mt-5" data-cols="2">
  <div class="card"><SearchInput placeholder="Search the showcase…" /></div>
  <div class="card">
  <FormField label="Product URL" inputId="demo-url" hint="Any public URL. We never scan without asking." required>
@@ -997,7 +1115,7 @@ const showcaseCollections = (await getCollection('collections'))
  </div>
  </div>
 
- <h3 style="margin-top: var(--space-8)">Tabs, menus, overlays</h3>
+ <h3 class="ds-mt-8">Tabs, menus, overlays</h3>
  <Tabs
  id="demo-tabs"
  tabs={[{ id: 'overview', label: 'Overview' }, { id: 'scores', label: 'Scores' }, { id: 'history', label: 'History' }]}
@@ -1011,7 +1129,7 @@ const showcaseCollections = (await getCollection('collections'))
  <div role="tabpanel" id="demo-tabs-panel-history" aria-labelledby="demo-tabs-tab-history" hidden>
  <p>History panel: sparklines and change notes live here.</p>
  </div>
- <div class="cluster" style="margin-top: var(--space-4)">
+ <div class="cluster ds-mt-4">
  <button type="button" class="btn btn-secondary" data-modal-open="demo-modal">Open dialog</button>
  <button type="button" class="btn btn-secondary" data-drawer-open="demo-drawer">Open drawer</button>
  <Dropdown label="Sort" items={[{ label: 'WhyKnot score', href: '#product-ui' }, { label: 'Newest', href: '#product-ui' }, { label: 'Most discussed', href: '#product-ui' }]} />
@@ -1028,7 +1146,7 @@ const showcaseCollections = (await getCollection('collections'))
  </Drawer>
  <Toast />
 
- <h3 style="margin-top: var(--space-8)">Data and previews</h3>
+ <h3 class="ds-mt-8">Data and previews</h3>
  <div class="card-grid" data-cols="3">
  <ScoreCard score={91} label="Example site" detail="Blends editorial judgment with automated screening." size="sm" />
  <div class="card">
@@ -1040,38 +1158,38 @@ const showcaseCollections = (await getCollection('collections'))
  <ScoreBars rows={[{ name: 'Performance', value: 94 }, { name: 'Accessibility', value: null }, { name: 'SEO', value: 88 }]} />
  </div>
  </div>
- <div style="margin-top: var(--space-5)">
+ <div class="ds-mt-5">
  <ScreenshotViewer name="Arcade Atlas" accent="coral" />
  </div>
 
- <h3 style="margin-top: var(--space-8)">Discussion</h3>
+ <h3 class="ds-mt-8">Discussion</h3>
  <CommentThread
  comments={[
  { id: 'c1', author: 'Rowan Bell', handle: 'rowan', time: '2026-09-08', body: 'How does this handle offline-first? The demo glosses over sync.', replies: [{ id: 'c1r1', author: 'Maya Chen', handle: 'maya', time: '2026-09-08', body: 'Great question. Local-first with CRDT sync, documented in the launch notes.', maker: true }] },
  { id: 'c2', author: 'Samir Shah', handle: 'samir', time: '2026-09-07', body: 'Switched our studio site to this stack after reading the performance breakdown.' },
  ]}
  />
- <div style="margin-top: var(--space-4)">
+ <div class="ds-mt-4">
  <CommentForm />
  </div>
 
- <h3 style="margin-top: var(--space-8)">Motion utilities</h3>
+ <h3 class="ds-mt-8">Motion utilities</h3>
  <div class="cluster">
  <span class="eyebrow-mono" data-scramble>hover-to-scramble</span>
  <button type="button" class="btn btn-secondary" data-magnet="0.2">Magnetic button</button>
  </div>
-  <p class="card-tagline" data-blur style="margin-top: var(--space-4)">This line blurs in on scroll: decorative only, content stays readable without motion.</p>
+  <p class="card-tagline ds-mt-4" data-blur>This line blurs in on scroll: decorative only, content stays readable without motion.</p>
   </div>
   </section>
   <section class="section" id="product-knot">
   <div class="container">
-  <SectionHeader index="✳" knot eyebrow="Signature" title="The knot is the hero" description="One component, every surface: hero WebGL, static posters in states, ticks in eyebrows. Type 'knot' anywhere to observe latent architectural nodes." aside="Architectural tension governs every surface." />
+  <SectionHeader index="06" knot eyebrow="Signature" title="The knot is the hero" description="One component, every surface: hero WebGL, static posters in states, ticks in eyebrows. Type 'knot' anywhere to observe latent architectural nodes." aside="Architectural tension governs every surface." />
   <div class="card-grid" data-cols="3">
   <div class="card"><HeroKnot size="sm" static tone="default" caption="sm · default" punSeed="ds-sm" /></div>
   <div class="card"><HeroKnot size="sm" static tone="ghost" caption="sm · ghost" punSeed="ds-ghost" /></div>
   <div class="card"><HeroKnot size="sm" static tone="ink" caption="sm · ink" punSeed="ds-ink" note="handwritten, always." /></div>
   </div>
-  <p class="hand-note" style="margin-top: var(--space-5)">Caveat does the talking in the margins: never body copy, both themes, reduced-motion safe.</p>
+  <p class="hand-note ds-mt-5">Caveat does the talking in the margins: never body copy, both themes, reduced-motion safe.</p>
   </div>
   </section>
 
@@ -1087,10 +1205,10 @@ const showcaseCollections = (await getCollection('collections'))
               aside="Every metric backed by ground truth."
           />
 
-          <div class="stack" style="gap: var(--space-8); margin-top: var(--space-6);">
+          <div class="stack ds-stack-lg">
               <!-- ReviewStars & ReviewCard -->
               <div>
-                  <h3 style="margin-bottom: var(--space-3)">01 · Reviews & Feedback</h3>
+                  <h3 class="ds-mb-3">01 · Reviews & Feedback</h3>
                   <div class="card-grid" data-cols="2">
                       <ReviewCard
                           author="Dr. Elena Vance"
@@ -1099,11 +1217,11 @@ const showcaseCollections = (await getCollection('collections'))
                           verified={true}
                           rating={4.8}
                           date="2026-09-08"
-                          content="The Screener audit detected missing Content Security Policy directives and stale SSL cipher suites that our automated CI pipeline missed. Uncompromising precision."
+                          content="The verification audit detected missing Content Security Policy directives and stale SSL cipher suites that our automated CI pipeline missed. Uncompromising precision."
                       />
-                      <div class="card" style="display: flex; flex-direction: column; gap: var(--space-4); justify-content: center;">
+                      <div class="card ds-col-center-gap">
                           <span class="field-hint">Inline Fractional Ratings</span>
-                          <div class="cluster" style="gap: var(--space-4)">
+                          <div class="cluster ds-gap-4">
                               <ReviewStars rating={5.0} count={342} size="lg" />
                               <ReviewStars rating={4.5} count={89} size="md" />
                               <ReviewStars rating={3.5} count={12} size="sm" />
@@ -1114,11 +1232,11 @@ const showcaseCollections = (await getCollection('collections'))
 
               <!-- WatchButton & AlertPrefs -->
               <div>
-                  <h3 style="margin-bottom: var(--space-3)">02 · Watchers & Notification Alerts</h3>
+                  <h3 class="ds-mb-3">02 · Watchers & Notification Alerts</h3>
                   <div class="card-grid" data-cols="2">
-                      <div class="card" style="display: flex; flex-direction: column; gap: var(--space-4); justify-content: center;">
+                      <div class="card ds-col-center-gap">
                           <span class="field-hint">Optimistic Watcher Toggles</span>
-                          <div class="cluster" style="gap: var(--space-3)">
+                          <div class="cluster ds-gap-3">
                               <WatchButton targetId="demo_site_1" initialCount={128} label="Watch Product" />
                               <WatchButton targetId="demo_site_2" initialCount={42} initialWatching={true} label="Watching" />
                           </div>
@@ -1129,8 +1247,8 @@ const showcaseCollections = (await getCollection('collections'))
 
               <!-- StatTiles & DistributionBar -->
               <div>
-                  <h3 style="margin-bottom: var(--space-3)">03 · Telemetry & Proportional Distributions</h3>
-                  <div class="card-grid" data-cols="3" style="margin-bottom: var(--space-4);">
+                  <h3 class="ds-mb-3">03 · Telemetry & Proportional Distributions</h3>
+                  <div class="card-grid ds-mb-4" data-cols="3">
                       <StatTile
                           label="Global P95 TTFB"
                           value="142ms"
@@ -1167,7 +1285,7 @@ const showcaseCollections = (await getCollection('collections'))
 
               <!-- AlternativesGraph -->
               <div>
-                  <h3 style="margin-bottom: var(--space-3)">04 · Architectural Alternatives Matrix</h3>
+                  <h3 class="ds-mb-3">04 · Architectural Alternatives Matrix</h3>
                   <AlternativesGraph
                       subjectName="Linear"
                       alternatives={[
@@ -1196,23 +1314,23 @@ const showcaseCollections = (await getCollection('collections'))
 
               <!-- React Islands -->
               <div>
-                  <h3 style="margin-bottom: var(--space-3)">05 · React Interactive Islands (React-Bits)</h3>
+                  <h3 class="ds-mb-3">05 · React Interactive Islands (React-Bits)</h3>
                   <div class="card-grid" data-cols="3">
                       <SpotlightCard client:visible className="card" spotlightColor="rgba(32, 197, 181, 0.18)">
                           <span class="field-hint">SpotlightCard</span>
-                          <h4 style="margin: var(--space-2) 0 var(--space-1);">Dynamic Cursor Lattice</h4>
+                          <h4 class="ds-h4-tight">Dynamic Cursor Lattice</h4>
                           <p class="card-tagline">Tracks cursor coordinates to cast an ambient radial turquoise glow on hover.</p>
                       </SpotlightCard>
-                      <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+                      <div class="card ds-col-center">
                           <span class="field-hint">CountUp Animation</span>
-                          <div style="font-family: var(--font-mono); font-size: var(--text-3xl); font-weight: 700; color: var(--color-accent); margin-top: var(--space-2);">
+                          <div class="ds-stat-mono">
                               <CountUp client:visible to={99.98} decimals={2} suffix="%" />
                           </div>
                           <span class="stat-tile-sub">Audit Engine Uptime SLA</span>
                       </div>
-                      <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+                      <div class="card ds-col-center">
                           <span class="field-hint">SplitReveal</span>
-                          <div style="margin-top: var(--space-2);">
+                          <div class="ds-mt-2">
                               <SplitReveal client:visible text="Architecture reveals what marketing conceals." as="p" className="eyebrow-mono" />
                           </div>
                       </div>

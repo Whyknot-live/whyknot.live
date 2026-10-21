@@ -81,10 +81,48 @@ export async function connectMongo(uri: string, dbName: string) {
             { status: 1, slotDate: 1 },
             { background: true }
         )
-        await db.collection('slot_orders').createIndex(
-            { slot: 1, date: 1 },
-            { unique: true, background: true }
-        )
+        // Sponsored slot inventory: one PAID order per slot+date.
+        //
+        // The legacy index made {slot, date} unique across EVERY status, so an
+        // abandoned checkout ('created') blocked that date forever while
+        // /sponsor/availability still reported it free. Uniqueness now applies
+        // to paid orders only.
+        //
+        // Order matters: the partial index is created FIRST and the legacy one
+        // is dropped only after it exists. If the partial index cannot be
+        // created (duplicate paid rows), the old stricter index stays in place
+        // rather than leaving the collection with no uniqueness at all.
+        const slotOrders = db.collection('slot_orders')
+        let paidOnlyIndexReady = false
+        try {
+            await slotOrders.createIndex(
+                { slot: 1, date: 1, status: 1 },
+                {
+                    unique: true,
+                    background: true,
+                    partialFilterExpression: { status: 'paid' },
+                    name: 'slot_orders_slot_date_paid'
+                }
+            )
+            paidOnlyIndexReady = true
+        } catch (error) {
+            dbLogger.warn('slot_orders paid-only index not created, legacy index kept', {
+                error: error instanceof Error ? error.message : 'Unknown error'
+            })
+        }
+        if (paidOnlyIndexReady) {
+            try {
+                const existing = await slotOrders.indexes()
+                if (existing.some((index) => index.name === 'slot_orders_slot_1_date_1')) {
+                    await slotOrders.dropIndex('slot_orders_slot_1_date_1')
+                    dbLogger.info('slot_orders legacy all-status index dropped')
+                }
+            } catch (error) {
+                dbLogger.warn('slot_orders legacy index drop failed', {
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                })
+            }
+        }
         await db.collection('slot_orders').createIndex(
             { orderId: 1 },
             { unique: true, background: true }

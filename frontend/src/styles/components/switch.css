@@ -1,0 +1,83 @@
+/* Switch — custom role="switch" control in WhyKnot knot taste.
+   Loaded via Switch.astro; consumes design tokens only (no redefinitions). */
+
+/* Button reset: Switch renders ONLY the control */
+.wk-switch {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  line-height: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wk-switch-track {
+  display: block;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--color-surface-container-highest);
+  border: 1px solid var(--color-border);
+  position: relative;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.wk-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-on-accent, #ffffff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+/* On state: accent track with glow */
+.wk-switch[aria-checked="true"] .wk-switch-track {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 12px -2px var(--color-accent);
+}
+
+.wk-switch[aria-checked="true"] .wk-switch-thumb {
+  transform: translateX(18px);
+}
+
+/* Keyboard focus */
+.wk-switch:focus-visible {
+  outline: 2px solid var(--color-outline-focus);
+  outline-offset: 2px;
+}
+
+/* Disabled (e.g. essential cookies): always on, non-interactive */
+.wk-switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Dark-mode tweaks */
+:root[data-theme='dark'] .wk-switch-track {
+  background: var(--color-surface-container-high);
+  border-color: var(--color-border);
+}
+
+:root[data-theme='dark'] .wk-switch[aria-checked="true"] .wk-switch-track {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 16px -2px var(--color-accent);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .wk-switch-track,
+  .wk-switch-thumb {
+    transition: none;
+  }
+}

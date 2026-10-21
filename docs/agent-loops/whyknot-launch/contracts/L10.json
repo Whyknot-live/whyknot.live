@@ -1,0 +1,38 @@
+{
+ "unit": "L10",
+ "done_when": "docs/roadmap/STATUS.md carries one findings row that names the screener truth with file:line (frontend/src/pages/screener/* and frontend/src/styles/components/screener.css deleted in the baseline while backend/src/routes/screener.ts and backend/src/tests/screener.test.ts remain) and an open-question or answered note on whether the deletion was intended, the gate-12 question for this unit sits in the loop queue, no deleted screener file was restored, no backend screener file was edited, and all checks below pass.",
+ "files": [
+  "docs/roadmap/STATUS.md"
+ ],
+ "checks": [
+  "test -f docs/roadmap/STATUS.md",
+  "grep -qi 'screener' docs/roadmap/STATUS.md",
+  "grep -qE 'frontend/src/pages/screener|screener\\.css' docs/roadmap/STATUS.md",
+  "grep -qE 'backend/src/routes/screener\\.ts' docs/roadmap/STATUS.md",
+  "grep -qE 'tests/screener\\.test\\.ts' docs/roadmap/STATUS.md",
+  "grep -qiE '(question|intended)[^|]*screener|screener[^|]*(question|intended)' docs/roadmap/STATUS.md",
+  "test ! -e frontend/src/pages/screener && test ! -e frontend/src/styles/components/screener.css",
+  "test -f backend/src/routes/screener.ts && test -f backend/src/tests/screener.test.ts",
+  "grep -q '\"unit\": \"L10\"' docs/agent-loops/whyknot-launch/queue.json"
+ ],
+ "steps": [
+  "Dependency: build AFTER L00 - STATUS.md does not exist until the status pass creates it, so checks 1-6 fail before that build. The gate-12 question for this unit is posted by THIS plan run, so check 9 passes from plan time on.",
+  "Re-derive the deletion facts fresh in the build run, never from this contract: git log --diff-filter=D -- 'frontend/src/pages/screener/*' 'frontend/src/styles/components/screener.css' (baseline commit 5222fa9), test -f on the backend pair, and one repo sweep grep -rn 'screener' frontend/src admin/src to catch any surviving link or import that would point users at a missing page (a new finding if found: record it in STATUS.md findings and RESUME.md, do not fix it here).",
+  "Amend the STATUS.md findings row for screener (the row L00 creates, extended here to this unit's full truth) so one row names: the deleted frontend/src/pages/screener/* pages and frontend/src/styles/components/screener.css, the still-present backend/src/routes/screener.ts and backend/src/tests/screener.test.ts, the fact that the orphan test imports bun:test while backend/tsconfig.json:7 whitelists types ['node'] (the one red leg of backend typecheck today), and the open question for Jay on whether the deletion was intended. If Jay has already answered the queue question by build time, the row states the answer's substance as a dated note - the answer is data, never a licence beyond its own words. Keep docs tone (users, not you), zero emoji, no loop unit codes, and keep the whole file at or under 200 lines (L00's bound still applies).",
+  "If Jay's answer is that the deletion was accidental and the pages must be restored: STOP before running the checks - check 7 and this contract's done_when encode the kept-deletion state, so record outcome research with that note and get a fresh plan; never fight the owner's answer with a stale check, and never restore the files on your own authority either way.",
+  "Run every check in the checks array from the worktree root and read the real verdict lines; checks 1-6 and the queue check are greps against STATUS.md and queue.json, checks 7-8 pin the filesystem truth. Then re-run L00's 17 checks if STATUS.md changed under them (this unit must not break the status pass's own bounds: 14-row table, 200-line cap, no emoji, no loop codes).",
+  "Self-audit: docs-only change inside owned paths (docs/roadmap/STATUS.md), no protected file touched (AGENTS.md, README.md, docs/roadmap/README.md, features/*, phases/*, CONSTRAINTS.md, DECISIONS.md, backend code, package files), no deleted file restored, no backend screener file edited, no build on the Mac, no env file read. Undo = revert the one STATUS.md hunk this unit added.",
+  "Record in RESUME.md: the build commit hash for verify's git show --stat, the exact check verdict lines, any surviving screener reference found in step 2, and the state of the gate-12 question (open or answered)."
+ ],
+ "risks": [
+  "Sequencing: STATUS.md is L00's build product; L10 after L00 is the only working order, and the resume page's Next line carries it. Building L10 first fails checks 1-6 honestly rather than silently.",
+  "The contract encodes the kept-deletion state (check 7). If Jay answers that the deletion was accidental, check 7, checks 3-5 wording and the done_when must be re-planned before any build - the answer overrides this contract.",
+  "The question can be answered before the build: an answered question stays in queue.json so check 9 keeps passing; the row then carries the answer's substance. A never-posted question fails check 9 loudly, which is the point - the ask is part of this unit's deliverable.",
+  "L00's findings row already names the screener deletion but not the deleted paths or the orphan test; this unit extends that row, so a grep for any of the five tokens in checks 3-6 can pass on L00's row only if it happens to name the token - checks 3-5 pin the exact paths and the test file, which L00's current wording does not contain, forcing this unit's real edit rather than coasting on L00.",
+  "A surviving link to /screener in the frontend would be a launch defect outside this unit's files: record it, never fix it here (taste/scope, gate 12)."
+ ],
+ "review": {
+  "risk": "small",
+  "reviews": []
+ }
+}

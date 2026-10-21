@@ -1,19 +1,21 @@
 ---
-/* / — product gateway: split hero with a living knot, sticky Screener story,
-   snap rails, bento collections. Every link resolves today. */
+/* / — product gateway: split hero with a living knot,
+   community launches, snap rails, bento collections. */
 import Layout from "../layouts/Layout.astro";
 import Waitlist from "../components/Waitlist.astro";
 import SectionHeader from "../components/SectionHeader.astro";
 import SiteCard from "../components/SiteCard.astro";
+import LaunchCard from "../components/LaunchCard.astro";
 import CollectionCard from "../components/CollectionCard.astro";
 import ScoreRing from "../components/ScoreRing.astro";
 import VerifyBadge from "../components/VerifyBadge.astro";
 import SourceLine from "../components/SourceLine.astro";
 import HeroConstellation from "../components/HeroConstellation.astro";
+import Icon from "../components/Icon.astro";
 import SectionEggs from "../components/SectionEggs.astro";
 import { SpotlightCard } from "../components/react/SpotlightCard";
 import { CountUp } from "../components/react/CountUp";
-import { getFlatSites, getFlatCollections, getFlatTopics, facetTerms, stackTerms } from "../lib/content";
+import { getFlatSites, getFlatCollections, getFlatTopics, getFlatLaunches, facetTerms, stackTerms, liveOnly, rankedRecent } from "../lib/content";
 
 const title = "WhyKnot | Discover websites worth a click";
 const description =
@@ -35,6 +37,12 @@ const schema = {
 const sites = await getFlatSites();
 const collections = await getFlatCollections();
 const topics = await getFlatTopics();
+// Top-3 rail: best-ranked of the last 7 days; a quiet week falls back to plain
+// rank so the rail never empties (owner decision 2026-10-08). Scheduled
+// entries live on /launches/upcoming.
+const launches = liveOnly(await getFlatLaunches());
+const recent = rankedRecent(launches, 7);
+const weekLaunches = recent.length > 0 ? recent.slice(0, 3) : launches.slice(0, 3);
 const picks = sites.filter((site) => site.score >= 90);
 const [feature, ...pickRest] = picks;
 const rail = sites.slice(0, 6);
@@ -60,72 +68,52 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                 verified by actual humans, and untangled from the noise.
             </p>
             <form class="scan-bar" action="/search" method="get" role="search" data-reveal style="--reveal-delay: 220ms">
+                <svg class="scan-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
                 <label class="sr-only" for="gateway-search">Search the library</label>
                 <input id="gateway-search" type="search" name="q" placeholder="Try “portfolio”, “minimal”, “Astro”…" autocomplete="off" required />
                 <kbd class="scan-kbd" aria-hidden="true">/</kbd>
                 <button type="submit" class="btn" data-magnet="0.12">Search</button>
             </form>
-            <div class="hero-stamp-row" data-reveal style="--reveal-delay: 300ms">
-                <span class="stamp">screened · not scraped</span>
-                <svg class="doodle-arrow" viewBox="0 0 54 40" aria-hidden="true" focusable="false">
-                    <path d="M4 6 C 18 8, 34 12, 44 30 M36 24 L44 30 L46 20" />
-                </svg>
-                <a class="prism-secondary" href="/discover">See the bar <span class="arrow" aria-hidden="true">→</span></a>
-            </div>
-            <div class="hero-cover-meta" data-reveal style="--reveal-delay: 360ms">
-                <span class="hero-meta-item">
-                    <span class="live-dot" aria-hidden="true"></span>
-                    <strong>{sites.length}</strong> verified entries
-                </span>
-                <span class="hero-meta-sep" aria-hidden="true">/</span>
-                <span class="hero-meta-item">
-                    <strong>{avg.toFixed(1)}</strong> quality baseline
-                </span>
-                <span class="hero-meta-sep" aria-hidden="true">/</span>
-                <span class="hero-meta-item">
-                    <strong>{collections.length}</strong> curated collections
-                </span>
+            <div class="hero-quick-chips" data-reveal style="--reveal-delay: 280ms">
+                <span class="quick-chips-label">Quick explore:</span>
+                <div class="quick-chips-list">
+                    {topics.slice(0, 5).map((topic) => (
+                        <a class="chip" href={`/topics/${topic.slug}`}>{topic.name}</a>
+                    ))}
+                    <a class="chip chip-all" href="/discover">All topics <Icon name="arrow-right" size="sm" /></a>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Proof strip: confident metrics, hairline grid -->
-    <div class="container prism-proof" aria-label="Library coverage">
-        <div class="prism-proof-inner" data-reveal>
-            <div class="proof-cell">
-                <span class="proof-num">{sites.length}</span>
-                <span class="proof-label">sites curated</span>
+    <div class="container prism-proof-container">
+        <div class="prism-proof" aria-label="Library coverage">
+            <div class="prism-proof-inner" data-reveal>
+                <div class="proof-cell">
+                    <span class="proof-tag">01 // ARCHIVE</span>
+                    <span class="proof-num">{sites.length}</span>
+                    <span class="proof-label">sites curated</span>
+                </div>
+                <div class="proof-cell">
+                    <span class="proof-tag">02 // BASELINE</span>
+                    <span class="proof-num">{avg.toFixed(1)}</span>
+                    <span class="proof-label">avg WhyKnot score</span>
+                </div>
+                <div class="proof-cell">
+                    <span class="proof-tag">03 // TAXONOMY</span>
+                    <span class="proof-num">{categoryCount}</span>
+                    <span class="proof-label">categories</span>
+                </div>
+                <div class="proof-cell">
+                    <span class="proof-tag">04 // THREADS</span>
+                    <span class="proof-num">{collections.length}</span>
+                    <span class="proof-label">curated collections</span>
+                </div>
             </div>
-            <div class="proof-cell">
-                <span class="proof-num">{avg.toFixed(1)}</span>
-                <span class="proof-label">avg WhyKnot score</span>
-            </div>
-            <div class="proof-cell">
-                <span class="proof-num">{categoryCount}</span>
-                <span class="proof-label">categories</span>
-            </div>
-            <div class="proof-cell">
-                <span class="proof-num">{collections.length}</span>
-                <span class="proof-label">collections</span>
-            </div>
-        </div>
-    </div>
-
-    <section aria-label="Browse topics" class="topics-strip">
-        <div class="container">
-            <div class="cluster">
-                {topics.map((topic) => (
-                    <a class="chip" href={`/topics/${topic.slug}`}>{topic.name}</a>
-                ))}
-            </div>
-        </div>
-    </section>
-
-    <!-- Stack ticker -->
-    <div class="marquee" aria-label="Technologies detected across the library">
-        <div class="marquee-track">
-            {ticker.map((term) => <span class="tech-badge">{term.value}</span>)}
-            {ticker.map((term) => <span class="tech-badge" aria-hidden="true">{term.value}</span>)}
         </div>
     </div>
 
@@ -170,7 +158,7 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                             </a>
                         ))}
                         <a class="leaderboard-row" href="/editors-picks">
-                            <span class="leaderboard-main"><strong>All editor's picks →</strong><span>Every 90+ site in one place</span></span>
+                            <span class="leaderboard-main"><strong>All editor's picks <Icon name="arrow-right" size="sm" /></strong><span>Every 90+ site in one place</span></span>
                         </a>
                     </div>
                 </div>
@@ -194,47 +182,41 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
             </div>
             <div class="rail" data-reveal style="--reveal-delay: 100ms">
                 {rail.map((site) => <SiteCard site={site} />)}
-                <a class="rail-end" href="/trending">Full ranking →</a>
+                <a class="rail-end" href="/trending">Full ranking <Icon name="arrow-right" size="sm" /></a>
             </div>
         </div>
     </section>
 
-    <!-- Screener: sticky story with ambient gravitational easter egg -->
-    <section aria-labelledby="gateway-screener" id="screener" style="position: relative; overflow: hidden;">
-        <SectionEggs opacity={0.3} particleCount={48} />
-        <div class="container section" style="position: relative; z-index: 1;">
+    <!-- Stack ticker: live technical fingerprint telemetry -->
+    <div class="marquee" aria-label="Technologies detected across the library">
+        <div class="marquee-track">
+            {ticker.map((term) => <span class="tech-badge">{term.value}</span>)}
+            {ticker.map((term) => <span class="tech-badge" aria-hidden="true">{term.value}</span>)}
+        </div>
+    </div>
+
+    <!-- Launches of the week: Community-voted launches from independent makers -->
+    <section aria-labelledby="gateway-launches" id="launches">
+        <div class="container section">
             <div data-reveal data-view-rise>
                 <SectionHeader
                     index="03"
                     knot
-                    eyebrow="Screener"
-                    title="Inspect before you admire"
-                    aside="Because a 40MB hero video is a cry for help."
+                    eyebrow="Launches"
+                    title="Craft over hype"
+                    aside="Community-backed launches from independent makers. No paywalled upvote cartels."
+                    href="/launches"
+                    linkLabel="All launches"
                 />
             </div>
-            <div class="sticky-split">
-                <div class="sticky-rail" data-reveal>
-                    <div class="terminal" role="img" aria-label="Animated preview of a Screener run: fetch, screenshot, Lighthouse audit, technology detection, and security checks completing in sequence.">
-                        <div class="terminal-bar" aria-hidden="true">
-                            <span class="terminal-dot" data-c="a"></span>
-                            <span class="terminal-dot" data-c="b"></span>
-                            <span class="terminal-dot" data-c="c"></span>
-                            <span style="margin-left: 0.5rem">whyknot screener (preview)</span>
-                        </div>
-                        <div class="terminal-scanbar" aria-hidden="true"></div>
-                        <div class="terminal-body" data-scan-lines aria-hidden="true"></div>
-                    </div>
-                    <div class="cluster" style="margin-top: var(--space-4)">
-                        <a class="btn btn-primary" href="/screener" data-magnet="0.12">Launch Screener →</a>
-                        <a class="btn btn-secondary" href="/screener/report/sample" data-magnet="0.12">View Sample Audit</a>
-                    </div>
-                </div>
-                <div class="scan-steps">
-                    <div class="scan-step" data-reveal><span class="step-index">Step 01</span><h3>Drop a URL</h3><p>Any public website. We fetch it like a real visitor: no cookies, no tracking.</p></div>
-                    <div class="scan-step" data-reveal><span class="step-index">Step 02</span><h3>Get the receipts</h3><p>Core Web Vitals, security headers, and stack detection. Real telemetry, zero guesswork.</p></div>
-                    <div class="scan-step" data-reveal><span class="step-index">Step 03</span><h3>No mystery grades</h3><p>Every score explains exactly what broke and how to fix it. No vague letter grades.</p></div>
-                    <div class="scan-step" data-reveal><span class="step-index">Step 04</span><h3>Shareable proof</h3><p>Permanent audit links so you can share (or file bug tickets) with receipts.</p></div>
-                </div>
+            <div class="card-grid" data-cols="3" data-reveal style="--reveal-delay: 100ms">
+                {weekLaunches.map((launch) => (
+                    <LaunchCard launch={launch} />
+                ))}
+            </div>
+            <div class="cluster" style="justify-content: center; margin-top: var(--space-6)">
+                <a class="btn btn-primary" href="/launches" data-magnet="0.12">Explore All Launches <Icon name="arrow-right" size="sm" /></a>
+                <a class="btn btn-secondary" href="/submit" data-magnet="0.12">Submit Your Launch</a>
             </div>
         </div>
     </section>
@@ -318,7 +300,7 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
                     aside="Tired of paywalled upvote cartels? Launch clean."
                 />
                 <div class="cluster">
-                    <a class="btn btn-primary" href="/submit" data-magnet="0.12">Submit a Launch →</a>
+                    <a class="btn btn-primary" href="/submit" data-magnet="0.12">Submit a Launch <Icon name="arrow-right" size="sm" /></a>
                     <a class="btn btn-ghost" href="/discover">See the bar</a>
                 </div>
             </div>
@@ -345,59 +327,10 @@ const featureMono = feature ? feature.name.trim().charAt(0).toUpperCase() : "W";
         });
     }
 
-    function initScanPreview() {
-        const host = document.querySelector('[data-scan-lines]');
-        if (!(host instanceof HTMLElement) || host.hasAttribute('data-done')) return;
-        host.setAttribute('data-done', 'true');
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const stages = [
-            ['dim', '$ whyknot scan https://example.com'],
-            ['run', 'fetch ............ running'],
-            ['run', 'screenshot ..... running'],
-            ['run', 'lighthouse ..... running'],
-            ['run', 'technology ..... running'],
-            ['run', 'security ....... running'],
-            ['ok', 'fetch ............ done'],
-            ['ok', 'screenshot ..... done'],
-            ['ok', 'report ready: scores with evidence attached'],
-            ['dim', 'Sample output: live scanning opens soon.'],
-        ];
-        host.innerHTML = '';
-        if (reduce) {
-            stages.forEach(([tone, text]) => appendLine(host, tone, text));
-            return;
-        }
-        let i = 0;
-        const step = () => {
-            if (i > 0) {
-                const prev = host.children[host.children.length - 1];
-                if (prev && stages[i - 1][0] === 'run') {
-                    prev.innerHTML = `<span class="t-ok">${stages[i - 1][1].replace('running', 'done&nbsp;&nbsp;&nbsp;')}</span>`;
-                }
-            }
-            if (i >= stages.length) return;
-            appendLine(host, stages[i][0], stages[i][1]);
-            i += 1;
-            window.setTimeout(step, i === 1 ? 500 : 620);
-        };
-        step();
-
-        function appendLine(root, tone, text) {
-            const line = document.createElement('div');
-            line.className = 'terminal-line';
-            const span = document.createElement('span');
-            span.className = tone === 'ok' ? 't-ok' : tone === 'run' ? 't-run' : 't-dim';
-            span.textContent = text;
-            line.appendChild(span);
-            root.appendChild(line);
-        }
-    }
-
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => { initSearchShortcut(); initScanPreview(); });
+        document.addEventListener('DOMContentLoaded', initSearchShortcut);
     } else {
         initSearchShortcut();
-        initScanPreview();
     }
-    document.addEventListener('astro:page-load', () => { initSearchShortcut(); initScanPreview(); });
+    document.addEventListener('astro:page-load', initSearchShortcut);
 </script>

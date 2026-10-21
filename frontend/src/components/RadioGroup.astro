@@ -1,0 +1,150 @@
+---
+/* RadioGroup — button-based radiogroup with zero native inputs.
+   Roving tabindex + arrow-key support mirrors Tabs.astro: ArrowRight/Down =
+   next, ArrowLeft/Up = prev, Home/End jump, Space/Enter select via native
+   button activation. On select the root `data-value` updates and a
+   `wk-radio-change` CustomEvent bubbles with { name, value } (same shape as
+   Select's `wk-select-change`). Disabled options carry `disabled` +
+   aria-disabled and are skipped in keyboard nav.
+   Re-inits on astro:page-load with data-wired guards (see Select.astro).
+   Styles: src/styles/components/radiogroup.css (token-only). */
+import Icon from './Icon.astro';
+
+interface RadioOption {
+    value: string;
+    title: string;
+    description?: string;
+    disabled?: boolean;
+}
+
+interface Props {
+    name: string;
+    label: string;
+    showLabel?: boolean;
+    options: RadioOption[];
+    value?: string;
+    id?: string;
+}
+
+const { name, label, showLabel = true, options, value = '', id } = Astro.props;
+const groupId = id ?? `wk-radio-${name}`;
+const initialValue = options.some((option) => option.value === value && option.disabled !== true)
+    ? value
+    : (options.find((option) => option.disabled !== true)?.value ?? '');
+---
+
+<div
+    class="wk-radio"
+    role="radiogroup"
+    aria-label={label}
+    id={groupId}
+    data-radiogroup
+    data-name={name}
+    data-value={initialValue}
+>
+    <p class={showLabel ? 'wk-radio-label' : 'wk-radio-label sr-only'} data-radio-label>{label}</p>
+    <div class="wk-radio-options" data-radio-options>
+        {options.map((option) => {
+            const selected = option.value === initialValue;
+            const disabled = option.disabled === true;
+            return (
+                <button
+                    type="button"
+                    role="radio"
+                    aria-checked={selected ? 'true' : 'false'}
+                    aria-disabled={disabled ? 'true' : undefined}
+                    disabled={disabled}
+                    tabindex={selected ? '0' : '-1'}
+                    class={['wk-radio-card', selected ? 'is-selected' : '', disabled ? 'is-disabled' : ''].filter(Boolean).join(' ')}
+                    data-radio-option
+                    data-radio-value={option.value}
+                    id={`${groupId}-opt-${option.value}`}
+                >
+                    <span class="wk-radio-pip" aria-hidden="true">
+                        <Icon name="check" size="sm" />
+                    </span>
+                    <span class="wk-radio-text">
+                        <span class="wk-radio-title">{option.title}</span>
+                        {option.description && <span class="wk-radio-desc">{option.description}</span>}
+                    </span>
+                </button>
+            );
+        })}
+    </div>
+</div>
+
+<script>
+    function initRadioGroups() {
+        document.querySelectorAll('[data-radiogroup]:not([data-wired])').forEach((root) => {
+            root.setAttribute('data-wired', 'true');
+
+            const optionsOf = () => [...root.querySelectorAll('[data-radio-option]')];
+            const isDisabled = (option) =>
+                option.hasAttribute('disabled') || option.getAttribute('aria-disabled') === 'true';
+
+            const select = (next, moveFocus) => {
+                if (!next || isDisabled(next)) return;
+                // Re-clicking the selected card is a no-op (no duplicate event).
+                if (next.getAttribute('aria-checked') === 'true') {
+                    if (moveFocus && document.activeElement !== next) next.focus();
+                    return;
+                }
+                optionsOf().forEach((option) => {
+                    const on = option === next;
+                    option.setAttribute('aria-checked', String(on));
+                    option.tabIndex = on ? 0 : -1;
+                    option.classList.toggle('is-selected', on);
+                });
+                const nextValue = next.getAttribute('data-radio-value') ?? '';
+                root.setAttribute('data-value', nextValue);
+                const controlName = root.getAttribute('data-name') ?? '';
+                root.dispatchEvent(
+                    new CustomEvent('wk-radio-change', { bubbles: true, detail: { name: controlName, value: nextValue } })
+                );
+                if (moveFocus && document.activeElement !== next) next.focus();
+            };
+
+            const move = (current, delta) => {
+                const enabled = optionsOf().filter((option) => !isDisabled(option));
+                if (enabled.length === 0) return;
+                const at = enabled.indexOf(current);
+                const base = at === -1 ? (delta > 0 ? -1 : 0) : at;
+                select(enabled[(base + delta + enabled.length) % enabled.length], true);
+            };
+
+            const jump = (which) => {
+                const enabled = optionsOf().filter((option) => !isDisabled(option));
+                if (enabled.length === 0) return;
+                select(which === 'first' ? enabled[0] : enabled[enabled.length - 1], true);
+            };
+
+            optionsOf().forEach((option) => {
+                option.addEventListener('click', () => {
+                    select(option, false);
+                });
+                option.addEventListener('keydown', (event) => {
+                    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        move(option, 1);
+                    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        move(option, -1);
+                    } else if (event.key === 'Home') {
+                        event.preventDefault();
+                        jump('first');
+                    } else if (event.key === 'End') {
+                        event.preventDefault();
+                        jump('last');
+                    }
+                });
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRadioGroups);
+    } else {
+        initRadioGroups();
+    }
+    document.addEventListener('astro:page-load', initRadioGroups);
+</script>

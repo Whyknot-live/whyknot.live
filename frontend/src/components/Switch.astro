@@ -1,0 +1,56 @@
+---
+/* Switch — custom role="switch" toggle control in WhyKnot knot taste.
+   Renders ONLY the control; consumers render their own label text.
+   State is exposed via aria-checked and the wk-switch-change event.
+   Styles: src/styles/components/switch.css (wired via components/index.css). */
+
+interface Props {
+  id: string;
+  ariaLabel: string;
+  checked?: boolean;
+  disabled?: boolean;
+  dataPrefId?: string;
+}
+
+const { id, ariaLabel, checked = false, disabled = false, dataPrefId } = Astro.props;
+---
+
+<button
+  type="button"
+  id={id}
+  class="wk-switch"
+  role="switch"
+  aria-checked={checked ? 'true' : 'false'}
+  aria-label={ariaLabel}
+  data-switch
+  data-pref-id={dataPrefId}
+  disabled={disabled}
+>
+  <span class="wk-switch-track" aria-hidden="true">
+    <span class="wk-switch-thumb"></span>
+  </span>
+</button>
+
+<script>
+  function initSwitches() {
+    document.querySelectorAll('[data-switch]:not([data-switch-wired])').forEach((el) => {
+      const btn = el as HTMLButtonElement;
+      btn.setAttribute('data-switch-wired', 'true');
+      btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        const next = btn.getAttribute('aria-checked') !== 'true';
+        btn.setAttribute('aria-checked', String(next));
+        btn.dispatchEvent(
+          new CustomEvent('wk-switch-change', { bubbles: true, detail: { id: btn.id, checked: next } })
+        );
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSwitches);
+  } else {
+    initSwitches();
+  }
+  document.addEventListener('astro:page-load', initSwitches);
+</script>

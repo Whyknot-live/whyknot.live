@@ -51,11 +51,51 @@ export function isUpcoming(launch: UpcomingInput, now: DateLike): boolean {
     return toTime(scheduled) > toTime(now);
 }
 
+/** True when a launch has not opened yet (status 'scheduled'). Scheduled
+ *  entries carry a future publishedAt and must never anchor or appear on the
+ *  Today/Week/Month boards or the homepage rail. */
+export function isScheduled(launch: { status?: string | null }): boolean {
+    return launch.status === 'scheduled';
+}
+
+/** Live-only view of a launch list: scheduled entries dropped, order kept. */
+export function liveOnly<T extends { status?: string | null }>(launches: T[]): T[] {
+    return launches.filter((launch) => !isScheduled(launch));
+}
+
+/** Newest LIVE publish date anchors "today" and the week window for the day
+ *  boards. Scheduled entries are excluded from the anchor: one future slotDate
+ *  must never move the board's "today" and hide every real launch. */
+export function launchDayBounds<T extends { publishedAt: DateLike; status?: string | null }>(
+    launches: T[],
+): { today: string; weekAgo: Date } {
+    const latest = liveOnly(launches).reduce(
+        (max, launch) => Math.max(max, toTime(launch.publishedAt)),
+        0,
+    );
+    const today = new Date(latest).toISOString().slice(0, 10);
+    return { today, weekAgo: new Date(latest - 7 * 24 * 60 * 60 * 1000) };
+}
+
 /** True when publishedAt is within the trailing 30-day rolling window
  *  (inclusive, past only — future/scheduled launches are excluded). */
 export function isIn30dWindow(publishedAt: DateLike, now: DateLike): boolean {
     const diff = toTime(now) - toTime(publishedAt);
     return diff >= 0 && diff <= WINDOW_30D_MS;
+}
+
+/**
+ * Best-ranked launches of the last `days` days, already-sorted input.
+ * Empty when nothing is recent — callers fall back to the full list so a
+ * quiet week never empties the rail (owner decision 2026-10-08).
+ */
+export function rankedRecent<T extends { publishedAt: DateLike }>(
+    launches: readonly T[],
+    days = 7,
+    now: DateLike = new Date(),
+): T[] {
+    const cutoff = toTime(now) - days * 24 * 60 * 60 * 1000;
+    return launches.filter((launch) => toTime(launch.publishedAt) >= cutoff);
 }
 
 /** Split the time remaining until scheduledAt into day/hour/min/sec parts.

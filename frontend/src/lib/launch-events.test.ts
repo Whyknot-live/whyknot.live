@@ -3,7 +3,11 @@ import assert from 'node:assert';
 import {
     countdownParts,
     isIn30dWindow,
+    isScheduled,
     isUpcoming,
+    launchDayBounds,
+    liveOnly,
+    rankedRecent,
     unansweredCount,
     weekKey,
     weeklyWinners,
@@ -55,6 +59,46 @@ describe('weeklyWinners', () => {
         const winners = weeklyWinners([a, b]);
         assert.strictEqual(winners.size, 1);
         assert.strictEqual(winners.get('2021-W01')?.slug, 'beta');
+    });
+});
+
+describe('rankedRecent', () => {
+    const now = '2026-10-08T12:00:00Z';
+    const mk = (slug: string, publishedAt: string) => ({ slug, publishedAt });
+
+    it('keeps only launches inside the window, order preserved', () => {
+        const input = [mk('old', '2026-09-01T00:00:00Z'), mk('new', '2026-10-07T00:00:00Z')];
+        assert.deepStrictEqual(rankedRecent(input, 7, now).map((l) => l.slug), ['new']);
+    });
+
+    it('returns empty when nothing is recent — the caller falls back', () => {
+        const input = [mk('old', '2026-09-01T00:00:00Z')];
+        assert.deepStrictEqual(rankedRecent(input, 7, now), []);
+    });
+});
+
+describe('launchDayBounds / liveOnly', () => {
+    const liveOld = { slug: 'live-old', publishedAt: '2026-09-09T00:00:00Z', status: 'live' as const };
+    const scheduledFuture = { slug: 'scheduled-future', publishedAt: '2027-01-05T00:00:00Z', status: 'scheduled' as const };
+
+    it('anchors on the newest live launch, never on a scheduled one', () => {
+        // Regression: a future slotDate used to become the board's "today",
+        // hiding every real launch from Today/Week/Month.
+        const { today, weekAgo } = launchDayBounds([liveOld, scheduledFuture]);
+        assert.strictEqual(today, '2026-09-09');
+        assert.strictEqual(weekAgo.toISOString(), '2026-09-02T00:00:00.000Z');
+    });
+
+    it('ignores scheduled entries even when they are the only future dates', () => {
+        const { today } = launchDayBounds([scheduledFuture]);
+        assert.strictEqual(today, '1970-01-01');
+    });
+
+    it('liveOnly drops scheduled entries and keeps order', () => {
+        const kept = liveOnly([scheduledFuture, liveOld]);
+        assert.deepStrictEqual(kept.map((l) => l.slug), ['live-old']);
+        assert.strictEqual(isScheduled(scheduledFuture), true);
+        assert.strictEqual(isScheduled(liveOld), false);
     });
 });
 

@@ -1,14 +1,16 @@
 /**
- * Sunday-roundup send job (stub for P1).
+ * Sunday-roundup send job.
  *
- * ESP decision: stay on Resend for P1 (see watchlists-alerts.md ESP note —
- * Indian ESP evaluation deferred until scale). Real Resend batch send is
- * marked TODO below and must not run until the ESP scale decision lands.
+ * ESP decision: stay on Resend (see watchlists-alerts.md ESP note —
+ * Indian ESP evaluation deferred until scale). The admin send endpoint
+ * (routes/admin.ts -> sendIssueToSubscribers) is the weekly trigger; this
+ * module holds the pure assembler + the send orchestration so both are
+ * testable without a live provider.
  *
- * No cron wiring in this slice (see integrator patch note for admin.ts
- * preview/send endpoints + scheduler).
+ * No cron wiring in this slice — the admin endpoint is the scheduler.
  */
 import type { NewsletterEntry, NewsletterIssue, NewsletterSponsorSlot } from '../templates/newsletter-531'
+import { buildNewsletterHtml, buildNewsletterText } from '../templates/newsletter-531'
 import { validateEnv } from '../utils/env'
 import { connectMongo, getDb } from '../utils/mongo'
 import { logger } from '../utils/logger'
@@ -61,6 +63,67 @@ export async function buildIssueFromContent(
 }
 
 /**
+ * Send one assembled issue to confirmed subscribers.
+ *
+ * Pure orchestration: rendering + per-recipient send, no DB. The sender is
+ * injected so tests prove rendering and failure handling without Resend.
+ * Sends are sequential on purpose — the Resend free tier is 100/day and a
+ * weekly roundup must never race a burst limit.
+ */
+export interface NewsletterSendRecipient {
+    email: string
+    unsubscribeToken: string
+}
+
+export interface NewsletterSendAttempt {
+    email: string
+    ok: boolean
+    error?: string
+}
+
+export interface NewsletterSendRun {
+    attempts: NewsletterSendAttempt[]
+    sent: number
+    failed: number
+    /** True when the rendered issue carried a paid sponsor slot. */
+    sponsor: boolean
+}
+
+export async function sendIssueToSubscribers(args: {
+    issue: NewsletterIssue
+    recipients: NewsletterSendRecipient[]
+    send: (email: string, subject: string, html: string, text: string) => Promise<boolean>
+    siteBase?: string
+}): Promise<NewsletterSendRun> {
+    const base = args.siteBase ?? 'https://www.whyknot.live'
+    const sponsor = Boolean(args.issue.sponsor?.sponsored)
+    const attempts: NewsletterSendAttempt[] = []
+
+    for (const recipient of args.recipients) {
+        const unsubscribeUrl = `${base}/newsletter/unsubscribe?token=${encodeURIComponent(recipient.unsubscribeToken)}`
+        const html = buildNewsletterHtml(args.issue, { unsubscribeUrl })
+        const text = buildNewsletterText(args.issue, { unsubscribeUrl })
+        try {
+            const ok = await args.send(recipient.email, args.issue.subject, html, text)
+            attempts.push({ email: recipient.email, ok })
+        } catch (err) {
+            attempts.push({
+                email: recipient.email,
+                ok: false,
+                error: err instanceof Error ? err.message : 'Unknown error',
+            })
+        }
+    }
+
+    return {
+        attempts,
+        sent: attempts.filter((a) => a.ok).length,
+        failed: attempts.filter((a) => !a.ok).length,
+        sponsor,
+    }
+}
+
+/**
  * Dry-run entrypoint. Counts confirmed subs and logs — never sends in P1.
  */
 export async function main(): Promise<{ dryRun: true; subs: number }> {
@@ -70,12 +133,6 @@ export async function main(): Promise<{ dryRun: true; subs: number }> {
         const db = getDb()
         const subs = await db.collection('newsletter_subscribers').countDocuments({ status: 'confirmed' })
         logger.info(`dry-run: ${subs} subs`, { job: 'send-newsletter' })
-
-        // TODO(after ESP scale decision): real Resend batch send here.
-        // - Fetch latest assembled issue from `newsletter_issues`
-        // - Render via buildNewsletterHtml/buildNewsletterText
-        // - Batch via Resend with per-recipient unsubscribe token + UTM params
-        // - Record rows in `newsletter_sends` for open/CTR + sponsor-slot CTR split
 
         return { dryRun: true, subs }
     } catch (err) {

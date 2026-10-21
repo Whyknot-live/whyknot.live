@@ -3,6 +3,7 @@
    Paid tiers checkout via backend-created orders; frontend never sees secrets.
    The trust rule is stated twice because it matters twice. */
 import Layout from '../../layouts/Layout.astro';
+import AccordionItem from '../../components/AccordionItem.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import SectionHeader from '../../components/SectionHeader.astro';
 import CheckoutButton from '../../components/CheckoutButton.astro';
@@ -16,7 +17,7 @@ const TIERS = [
         price: 'Free',
         period: 'forever',
         blurb: 'The full library, the full evidence.',
-        features: ['Unlimited discovery & search', 'Full site profiles & reports', 'Screener public reports', 'Collections & topics'],
+        features: ['Unlimited discovery & search', 'Full site profiles & reports', 'Curated collections & topics'],
         cta: 'Start discovering',
         href: '/discover',
         featured: false,
@@ -26,7 +27,7 @@ const TIERS = [
         price: '₹999',
         period: 'one-time',
         blurb: 'Prove ownership, own your profile.',
-        features: ['Domain verification badge', 'Claimed profile + corrections', 'Launch eligibility', 'Screener history'],
+        features: ['Domain verification badge', 'Claimed profile + corrections', 'Launch eligibility', 'Audit receipts history'],
         cta: 'Get Verified',
         plan: 'verified',
         featured: true,
@@ -36,7 +37,7 @@ const TIERS = [
         price: '₹1,499',
         period: 'per month',
         blurb: 'Measure everything you launch.',
-        features: ['Everything in Verified', 'Maker analytics dashboard', 'Scheduled rescans + alerts', 'Screener credits included'],
+        features: ['Everything in Verified', 'Maker analytics dashboard', 'Performance tracking + alerts', 'Priority review queue'],
         cta: 'Start Pro',
         plan: 'pro',
         featured: false,
@@ -58,13 +59,13 @@ const ENTITLEMENTS = [
     ['Claimed profile', 'No', 'Yes', 'Yes', 'Yes'],
     ['Launch eligibility', 'No', 'Yes', 'Yes', 'Yes'],
     ['Maker analytics', 'No', 'Basics', 'Full', 'Full + team'],
-    ['Screener credits / month', '3 public', '25', '200', 'Unlimited*'],
+    ['Audit reports / month', 'Included', 'Included', 'Included', 'Unlimited'],
     ['API + webhooks', 'No', 'No', 'Add-on', 'Yes'],
     ['Seats', '1', '1', '1', '5'],
 ];
 
 const FAQS = [
-    ['Does paying improve my score?', 'No. Scores come from editorial judgment and automated screening. Paid placement is labeled Sponsored and cannot touch scores, ranks, or badges. The ranking inputs have no field for it.'],
+    ['Does paying improve my score?', 'No. Scores come from independent editorial curation. Paid placement is labeled Sponsored and cannot touch scores, ranks, or badges. The ranking inputs have no field for it.'],
     ['What does Verified actually prove?', 'Domain ownership at a point in time, rechecked continuously. Not revenue, not quality, not endorsement.'],
     ['Can I cancel?', 'Monthly plans cancel anytime; one-time verification never expires while the token resolves.'],
     ['Can I relaunch?', 'Yes: paid, major-version only (1.x → 2.0), once per major version. The original stays archived and the badge shows the relaunch count.'],
@@ -125,11 +126,10 @@ const FAQS = [
         <p class="card-tagline">* Unlimited within fair-use screening quotas. API metering is per-call with monthly statements.</p>
 
         <h2 style="margin-top: var(--space-8)">Questions</h2>
-        {FAQS.map((faq) => (
-            <details>
-                <summary><strong>{faq[0]}</strong></summary>
+        {FAQS.map((faq, index) => (
+            <AccordionItem title={faq[0]} id={`pricing-faq-${index + 1}`}>
                 <p>{faq[1]}</p>
-            </details>
+            </AccordionItem>
         ))}
 
         <p class="method-note" style="margin-top: var(--space-8)">

@@ -66,13 +66,6 @@ export function launchesForMaker(launches: FlatLaunch[], handle: string): FlatLa
     return launches.filter((launch) => launch.makerHandle === handle);
 }
 
-/** Newest publish date in the set anchors "today" for the seed feed. */
-export function launchDayBounds(launches: FlatLaunch[]): { today: string; weekAgo: Date } {
-    const latest = launches.reduce((max, launch) => (launch.publishedAt.valueOf() > max ? launch.publishedAt.valueOf() : max), 0);
-    const today = new Date(latest).toISOString().slice(0, 10);
-    return { today, weekAgo: new Date(latest - 7 * 24 * 60 * 60 * 1000) };
-}
-
 /** Backing velocity: votes plus triple-weighted discussion, per day live. */
 export function launchVelocity(launch: FlatLaunch, now: number): number {
     const days = Math.max(1, (now - launch.publishedAt.valueOf()) / (24 * 60 * 60 * 1000));
@@ -152,7 +145,9 @@ export function formatDate(value: Date | string): string {
 }
 
 // P1 launch-events thin wrappers (pure logic lives in ./launch-events, Astro-free).
-export { isIn30dWindow, isUpcoming, weeklyWinners, countdownParts, weekKey } from './launch-events';
+// launchDayBounds lives there too so it is testable: it anchors on the newest
+// NON-scheduled publishedAt (see launch-events.ts) and never on a future slot.
+export { isIn30dWindow, isUpcoming, isScheduled, liveOnly, launchDayBounds, weeklyWinners, countdownParts, weekKey, rankedRecent } from './launch-events';
 export function launchScheduledAt(l: FlatLaunch): Date {
     return (l as unknown as { scheduledAt?: Date }).scheduledAt ?? l.publishedAt;
 }

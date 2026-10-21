@@ -1,0 +1,58 @@
+{
+ "unit": "L01",
+ "done_when": "Backend typecheck, lint and test, frontend typecheck, lint and build, and admin typecheck and lint (eight gates) have each either run on compute-mini with its real verdict line recorded in docs/roadmap/status/gates.md, or been written there as NOT RUN with the exact reason; a gate that ran and failed is recorded FAIL with its real reason line, never PASS and never quietly dropped; the file has at least eight gate rows in the pinned format; no gate is reported green without its verdict line in the log.",
+ "files": [
+  "docs/roadmap/status/gates.md"
+ ],
+ "checks": [
+  "./scripts/mini-sync.sh --apply",
+  "ssh compute-mini 'bash -lc \"cd ~/dev/whyknot/backend && bun install --frozen-lockfile && bun run typecheck && bun run lint && bun run test\"'",
+  "ssh compute-mini 'bash -lc \"cd ~/dev/whyknot/frontend && bun install --frozen-lockfile && bun run typecheck && bun run lint\"'",
+  "ssh compute-mini 'bash -lc \"cd ~/dev/whyknot/frontend && bun run build\"'",
+  "ssh compute-mini 'bash -lc \"cd ~/dev/whyknot/admin && bun install --frozen-lockfile && bun run typecheck && bun run lint\"'",
+  "test -f docs/roadmap/status/gates.md && test \"$(grep -cE '^\\|[^|]+\\|[^|]*\\| (PASS|FAIL|NOT RUN) \\|$' docs/roadmap/status/gates.md)\" -ge 8"
+ ],
+ "steps": [
+  "Blocked path first: the last sync printed a YES-PROBLEM on its env-file exclusion line and the env guard blocks even listing env-file names, so nothing may build on the box until Jay answers the gate-9 question posted this run (review identified the likely leftovers as tracked dot-env-star template files on the box that the sync excludes from both transfer and deletion, so the check cannot self-clear). If still true at the start of the run: run NO ssh check, still mkdir -p docs/roadmap/status and write docs/roadmap/status/gates.md with all eight gates as rows '| <gate> | <reason> | NOT RUN |' where the reason is 'sync env-file exclusion YES-PROBLEM, investigation blocked by the env guard, awaiting Jay's gate-9 answer', then run the gates.md check and stop the unit there (record built only if the file half of done_when is met and every gate row exists).",
+  "python3 ~/.hermes/scripts/mini-slot.py take whyknot-launch  (BUSY: record what was prepared and end, never wait)",
+  "./scripts/mini-sync.sh --apply from this worktree; if it exits non-zero OR prints a YES-PROBLEM on any of the three verification lines, stop before any build - mkdir -p docs/roadmap/status, write gates.md with all eight gates NOT RUN (reason: 'sync failed or printed YES-PROBLEM: <the line>'), run the gates.md check, release the slot, and end the unit.",
+  "Run the four ssh commands in checks 2-5 through a login shell (they are the eight gates: backend typecheck, lint, test; frontend typecheck, lint, build; admin typecheck, lint), capturing full logs; any gate an aborted && chain never reached (for example backend test after a typecheck failure) is NOT RUN with that reason, not skipped.",
+  "If backend bun test fails because env or Mongo never reaches the box, record that gate as NOT RUN with the reason - never weaken, skip or stub a check to make it green.",
+  "Known baseline reds to record honestly when they still stand (both observed during this plan run on the box, both owned by asks posted this run - re-verify, never copy blind): backend typecheck fails at backend/src/tests/screener.test.ts:1 (imports bun:test, tsconfig whitelists node types only) with TS2307 - record FAIL with that reason line; 'bun run test' executes zero tests because backend/package.json:14's glob is not expanded - a run that executed zero tests is FAIL (or NOT RUN if the leg is skipped), never PASS; the working form 'bun test src/tests' was observed at 77 pass 0 fail and may be recorded as supplementary evidence beside the gate's real verdict.",
+  "Grade every gate by its real verdict line in its log (typecheck clean finish or its first error line, oxlint summary with zero errors, test pass counts or the zero-test notice, astro build completion), never by a wrapper exit code printed after an echo.",
+  "python3 ~/.hermes/scripts/mini-slot.py release whyknot-launch in all cases, including on failure or abort.",
+  "mkdir -p docs/roadmap/status and write docs/roadmap/status/gates.md: a header naming the date and commit, then one row per gate in exactly the form | <gate> | <quoted verdict line or reason> | PASS|FAIL|NOT RUN | (the reason cell is non-empty and contains no pipe; the third cell is exactly one of the three words), plus a note on the frontend rows that deps resolve unfrozen because no frontend lockfile is tracked, and a footer with any FAIL or NOT RUN reasons; then run the gates.md check, and point docs/roadmap/STATUS.md's gate section at it when L00 runs after this."
+ ],
+ "risks": [
+  "Currently blocked: sync verification YES-PROBLEM plus an env guard that forbids inspecting env files; gates stay NOT RUN until Jay answers, and the blocked path still writes the eight NOT RUN rows so the record exists either way.",
+  "Two baseline gate failures are already known (screener.test.ts typecheck TS2307; package.json test script running zero tests) and both live in files this loop must not touch without Jay - the run records them as FAIL with reasons; clearing them is Jay-gated (asks posted).",
+  "The box is shared with other loops: slot lock first, release always, never wait on BUSY.",
+  "Backend tests may need env or Mongo that never reaches the box: that leg is NOT RUN with the reason, not a pass.",
+  "frontend has no tracked lockfile, so its install resolves unfrozen and a gate could flip on an upstream release - recorded in the frontend rows rather than fixed here (package files are protected).",
+  "astro check / bun run check are forbidden (repo path has a space): typecheck plus lint only.",
+  "Judge by real verdict lines; a green echo above a real error is a known failure mode in this project."
+ ],
+ "review": {
+  "risk": "small",
+  "reviews": [
+   {
+    "kind": "independent",
+    "by": "helper",
+    "verdict": "fail",
+    "findings": "Round 1: 4 findings - gate check gameable by one line of prose (row-shaped threshold); blocked path never wrote gates.md (blocked-write step added); five-vs-four command miscount reworded; frontend has no tracked lockfile (recorded as a note, package files protected). All fixed in revision 2."
+   },
+   {
+    "kind": "independent",
+    "by": "helper",
+    "verdict": "pass",
+    "findings": "Round 2: all 4 confirmed fixed with a probe matrix (8-row compliant, one-row, prose and adversarial files accepted correctly on BSD grep); 5 cosmetic notes (mkdir before writes, run the check on the unblocked path, bare checks[0], tightened row regex, sync-failure branch) - all folded into revision 3. Verdict pass."
+   },
+   {
+    "kind": "independent",
+    "by": "helper",
+    "verdict": "pass",
+    "findings": "Round 3 (revision 4): all 5 notes verified folded with line quotes; baseline-red material confirmed accurate against screener.test.ts:1, tsconfig types and package.json:14; 4-probe matrix accepted only the compliant file; both blocked and unblocked run paths traced with no path leaving gates.md absent or short of 8 rows; verdict pass with 3 recorded cosmetic notes (reason-template substitute wording, an apostrophe in a file-write reason, regex reason cell laxer than the step) - notes recorded, no logic change."
+   }
+  ]
+ }
+}

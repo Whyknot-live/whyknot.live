@@ -63,3 +63,12 @@ export async function recordPaymentEvent(input: {
         throw err
     }
 }
+
+// Removes a dedupe key so a webhook whose side effect failed can be
+// redelivered and reprocessed (see processWebhook — the key is written before
+// the effects, so a failure must unpublish it or Razorpay's retry would dedupe
+// past the failure). Idempotent: deleting a missing key is a no-op.
+export async function deletePaymentEvent(key: string): Promise<void> {
+    const db = getDb()
+    await db.collection('payment_events').deleteOne({ key })
+}
