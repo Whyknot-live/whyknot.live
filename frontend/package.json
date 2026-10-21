@@ -14,7 +14,6 @@
         "build": "astro build",
         "build:production": "NODE_ENV=production astro build",
         "preview": "astro preview",
-        "check": "astro check",
         "typecheck": "tsc --noEmit",
         "lint": "oxlint && bun scripts/check-tokens.mjs",
         "lint:fix": "oxlint --fix",
@@ -22,7 +21,6 @@
         "analyze": "astro build --verbose"
     },
     "dependencies": {
-        "@astrojs/check": "0.9.6",
         "@astrojs/react": "4.4.2",
         "astro": "5.16.4",
         "astro-pagefind": "^2.0.1",

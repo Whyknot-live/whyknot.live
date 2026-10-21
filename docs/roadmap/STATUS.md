@@ -65,6 +65,32 @@ Update this block every working session; the roadmap README stays the scoreboard
   minutes `/screener` is still 404 on www and every new API route is still 404 on
   api.whyknot.live. Their auto-deploy is off or their builds are failing; a Render API key is
   needed to see which and to trigger them.
+- DEPLOY ROOT CAUSE (found with the Render key, 2026-10-21): the three WhyKnot services are
+  `admin.whyknot.live` (static), `whyknot.live` (static) and `whyknot.live-backend` (web
+  service, custom domain api.whyknot.live). The admin auto-deploys on `commit`; the other two
+  use `autoDeployTrigger=checksPass` — and NO check ever reports, because GitHub Actions stopped
+  running for this repo after it moved to the Whyknot-live org, and CircleCI reports nothing
+  either. So the public site and the API waited forever for a check that never came. Fixing CI
+  (or setting those two services to trigger on `commit`, like the admin) is the lasting fix.
+- THE FIRST PUBLIC DEPLOY FAILED, AND IT WAS NOT THE DEPLOY: `frontend/astro.config.mjs` imports
+  `astro-pagefind`, but 0f167ba put that dependency in the ROOT package.json while the frontend
+  installs on its own (Render rootDir ./frontend, CI `cd frontend && bun install`). The import
+  could never resolve, so `astro build` died. Fixed: the dependency now lives in
+  frontend/package.json, and the root package.json + bun.lock are deleted (they held only that
+  one dependency and no service used them). Proven on the box with Render's exact path: no root
+  node_modules, frontend-only install, `bun run build` -> 82 pages, pagefind indexed.
+- The public site had been serving a build from 2025-12-22 and the API one from 2026-08-23: the
+  whole platform expansion had never reached production. As of 2026-10-21 the API is live on the
+  new build (PATCH without a maker session -> 401, /api/sponsor/metrics -> 401, /api/payments/
+  config -> {"configured":false}).
+- A Render API key now sits in backend/.env (gitignored). It was pasted in chat, so it should be
+  rotated once the deploys are done. With it: the deploy endpoints work, but the env-var and logs
+  endpoints return 404 for this key, so the service env cannot be read or written from the CLI.
+- STILL MISSING ON THE LIVE SERVICE (owner action, Render dashboard -> the backend service ->
+  Environment): RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET (the webhook
+  fails closed without it outside development), RESEND_API_KEY, ENABLE_EMAIL, EMAIL_FROM,
+  EMAIL_REPLY_TO, and REDIS_URL + USE_REDIS_RATE_LIMIT=1 (the live API currently rate limits in
+  memory only). The values for all of them are in the local backend/.env.
 - Live facts worth keeping: the public build resolves the API base to `https://api.whyknot.live`
   (baked in at build time, NOT from a repo file — `frontend/.env` is gitignored and irrelevant to
   production). The admin resolves the same host. The live API currently runs with Redis DISABLED
