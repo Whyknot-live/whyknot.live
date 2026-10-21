@@ -86,11 +86,28 @@ Update this block every working session; the roadmap README stays the scoreboard
 - A Render API key now sits in backend/.env (gitignored). It was pasted in chat, so it should be
   rotated once the deploys are done. With it: the deploy endpoints work, but the env-var and logs
   endpoints return 404 for this key, so the service env cannot be read or written from the CLI.
-- STILL MISSING ON THE LIVE SERVICE (owner action, Render dashboard -> the backend service ->
+- DEPLOYED (2026-10-21, verified on the live site, not assumed): the API is live on the new build
+  and the public site is live on the new build. `https://www.whyknot.live/` -> 200 with
+  "Join the loop" and no "Get early access"; /screener, /screener/scan, /edit, /badges,
+  /legal/methodology all 200; the API's PATCH without a maker session -> 401; /api/sponsor/metrics
+  -> 401; /api/payments/config -> {"configured":false} (the money keys are not on the service yet).
+  The first two public deploys FAILED and the log said why: Render installs the frontend with
+  **npm**, and npm refused @astrojs/check's TypeScript 5 peer against the project's TypeScript 7.
+  @astrojs/check is gone (astro check cannot run on TS 7 anyway) and the `check` script with it.
+  Both public deploy failures are fixed and the third deploy went live.
+- STILL MISSING ON THE LIVE SERVICE (owner action, Render dashboard -> whyknot.live-backend ->
   Environment): RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET (the webhook
   fails closed without it outside development), RESEND_API_KEY, ENABLE_EMAIL, EMAIL_FROM,
   EMAIL_REPLY_TO, and REDIS_URL + USE_REDIS_RATE_LIMIT=1 (the live API currently rate limits in
   memory only). The values for all of them are in the local backend/.env.
+- The two services that wait for `checksPass` will keep waiting until CI reports something:
+  GitHub Actions is not running for the org repo and CircleCI reports nothing. Until that is
+  sorted, every public deploy has to be triggered by hand (Render API, or the dashboard).
+- TASTE FINDING for the owner: the phrase "Alpha Community" is no longer anywhere in the product.
+  It was the gradient text of the old coming-soon hero (frontend/src/components/Waitlist.astro) and
+  it is in the AGENTS taste notes as the hero's main gradient phrase. The new hero says
+  "Discover websites worth a click." with the gradient on "click." — the gradient itself is intact
+  in light and dark, but the phrase the owner praised is gone. His call.
 - Live facts worth keeping: the public build resolves the API base to `https://api.whyknot.live`
   (baked in at build time, NOT from a repo file — `frontend/.env` is gitignored and irrelevant to
   production). The admin resolves the same host. The live API currently runs with Redis DISABLED
