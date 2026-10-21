@@ -103,6 +103,14 @@ Update this block every working session; the roadmap README stays the scoreboard
 - The two services that wait for `checksPass` will keep waiting until CI reports something:
   GitHub Actions is not running for the org repo and CircleCI reports nothing. Until that is
   sorted, every public deploy has to be triggered by hand (Render API, or the dashboard).
+- DOC PASS (2026-10-21): `docs/DEPLOYMENT.md` rewritten against the live Render services (it
+  described Vercel, Railway, Heroku and Fly — none of which are used, and it contained broken
+  code samples). `docs/API.md` rewritten from the source: it documented only the waitlist
+  endpoint, from before the expansion. README: the broken `docs/RENDER_DEPLOYMENT.md` link, two
+  more dead links, the removed `npm run check` script, the "create a blueprint" instruction (the
+  services already exist), the env var list, and the launch line now say what is true.
+  `backend/.env.example` documents `MAKER_SESSION_SECRET` and `RENDER_API_KEY`. The local
+  `frontend/.env` pointed at the dead development backend; it now points at the local backend.
 - TASTE FINDING for the owner: the phrase "Alpha Community" is no longer anywhere in the product.
   It was the gradient text of the old coming-soon hero (frontend/src/components/Waitlist.astro) and
   it is in the AGENTS taste notes as the hero's main gradient phrase. The new hero says

@@ -1,490 +1,249 @@
 # API Documentation
 
-Complete API reference for WhyKnot.live backend services.
+Reference for the WhyKnot.live backend: `https://api.whyknot.live`.
+
+Rewritten on 2026-10-21 from the source. The previous version documented only the waitlist
+endpoint, from before the platform expansion.
 
 ## Base URLs
 
- Environment URL 
--------------------------------------------
- Production `https://api.whyknot.live` 
- Staging `https://staging-api.whyknot.live` 
- Local `http://localhost:3001` 
+| Environment | URL |
+|---|---|
+| Production | `https://api.whyknot.live` |
+| Local | `http://localhost:9000` (the `PORT` in `backend/.env`) |
+
+The public site and the admin dashboard call the production URL. The admin build bakes in
+`PUBLIC_API_URL=https://api.whyknot.live/api`; the public build bakes in
+`PUBLIC_API_BASE_URL=https://api.whyknot.live`. Both are build-time values on Render, not files
+in the repository.
 
 ## Authentication
 
-Currently, the API does not require authentication for waitlist submissions. Authentication will be added in future versions for user-specific features.
+Three models, in the order they matter:
 
-## Rate Limiting
+| Area | Model |
+|---|---|
+| `/api/admin/*` | HttpOnly cookie `adminToken`, a JWT signed with `ADMIN_JWT_SECRET`, subject `admin`. `POST /api/admin/login` sets it. |
+| `PATCH /api/submissions/:slug` | `Authorization: Bearer <maker session>`. The session is minted at submit time, is scoped to one listing (slug + maker handle), and carries its own audience claim, so an admin token can never be replayed as a maker token. |
+| `POST /api/payments/webhook` | Razorpay signature in `x-razorpay-signature`, verified against `RAZORPAY_WEBHOOK_SECRET`. Outside development the webhook **fails closed** when the secret is unset. |
 
-All API endpoints are rate-limited to prevent abuse:
+Everything else is public by design: the library, the screener, availability, claim status.
 
-- **Window**: 60 seconds
-- **Max Requests**: 10 per IP address
-- **Reset**: Automatic after window expires
+## Rate limiting
 
-**Rate Limit Headers:**
+- **Global**: 100 requests per minute per IP on `/api/*`, in-memory unless `REDIS_URL` and
+  `USE_REDIS_RATE_LIMIT=1` are set (then it is shared across instances).
+- **Per route**: tighter windows on the routes that cost money or send mail — submit, claim,
+  newsletter subscribe, sponsor event (30/min), admin login (5 per 15 minutes).
+- Redis failures never block a request: the limiter logs and falls back to memory.
+
+Headers on every limited response:
+
 ```http
-X-RateLimit-Limit: 10
-X-RateLimit-Remaining: 9
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 99
 X-RateLimit-Reset: 1698765432
 ```
 
-When rate limit is exceeded:
-```json
-{
- "error": "rate_limited"
-}
-```
-**Status Code**: `429 Too Many Requests`
+Over the limit: `429` with `{"error":"rate_limited"}`.
 
-## Common Response Formats
+## Response formats
 
-### Success Response
+Success returns the resource itself. Errors return a machine-readable code and nothing else:
+
 ```json
-{
- "ok": true,
- "data": {... }
-}
+{ "error": "error_code" }
 ```
 
-### Error Response
-```json
-{
- "error": "error_code"
-}
-```
+Internal failures are logged in full server-side and returned as `{"error":"server_error"}`.
 
-## Error Codes
+### Error codes
 
- Code Status Description 
----------------------------
- `invalid_email` 400 Email format is invalid 
- `already_exists` 409 Email already in waitlist 
- `rate_limited` 429 Too many requests 
- `server_error` 500 Internal server error 
-
----
+| Code | Status | Meaning |
+|---|---|---|
+| `invalid_request` | 400 | Body failed validation (`details` carries the Zod issues) |
+| `invalid_json` | 400 | Body was not JSON |
+| `invalid_email` | 400 | Email format |
+| `invalid_url` | 400 | URL could not be normalised, or points at a private host |
+| `invalid_domain` | 400 | Domain malformed |
+| `blocked_domain`, `blocked_host` | 400 | Host is not eligible |
+| `invalid_handle` | 400 | Maker handle format |
+| `invalid_date` | 400 | Date outside the allowed window |
+| `invalid_claim_id` | 400 | Claim id malformed |
+| `invalid_credentials` | 401 | Admin login failed |
+| `unauthorized` | 401 | Missing or invalid credentials |
+| `missing_token`, `invalid_token`, `token_expired` | 401 | Token problem |
+| `forbidden` | 403 | Authenticated, but not the owner of this resource |
+| `not_found`, `claim_not_found` | 404 | No such resource |
+| `invalid_signature` | 400 | Razorpay signature mismatch |
+| `webhook_not_configured` | 503 | `RAZORPAY_WEBHOOK_SECRET` missing outside development |
+| `already_exists`, `already_submitted` | 409 | Duplicate |
+| `slot_taken` | 409 | That sponsored date is sold |
+| `slot_pending` | 409 | A checkout for that date is in flight (15 minute hold) |
+| `locked` | 409 | The submission has left the queue; edits are closed |
+| `amount_mismatch` | 400 | Paid amount does not match the order |
+| `payments_not_configured` | 503 | Razorpay keys are not on the service |
+| `subscription_plan_not_configured` | 503 | Subscription plans are not on the service |
+| `no_slots` | 503 | No free launch day in the window |
+| `scan_failed` | 502 | The screener could not read the site |
+| `timeout`, `unreachable`, `dns_unreachable`, `http_error`, `not_html` | 502/504 | The site could not be fetched |
+| `rate_limited` | 429 | Too many requests |
+| `server_error` | 500 | Something broke. The detail is in the log, never in the response |
 
 ## Endpoints
 
-### 1. Health Check
+### Health
 
-Check if the API is running and healthy.
+| Method | Path | Notes |
+|---|---|---|
+| `GET` | `/health` | Mongo and Redis status. Public, not rate limited. |
+| `GET` | `/` | Service name and version. |
 
-```http
-GET /
-```
+### The loop (waitlist)
 
-#### Response
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/waitlist` | Email signup, with interests. The form carries a honeypot field; the per-IP rate limit is what actually protects the endpoint. |
 
-**Status**: `200 OK`
+### Submit
 
-```json
-{
- "ok": true,
- "service": "whyknot-backend"
-}
-```
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| `POST` | `/api/submit` | - | Queues a listing, auto-assigns the next free launch day. Returns `{slug, slotDate, url, editToken}`. `editToken` is the maker's session for editing that listing. |
+| `GET` | `/api/submissions/:slug` | - | The public view of a listing. With a valid maker session it also returns `story` (only to the owner). |
+| `PATCH` | `/api/submissions/:slug` | maker session | Edits name, tagline, topics, story. `401` without a session, `403` for someone else's listing, `409` once the listing has left the queue. |
 
-#### Example
+### Maker claim (DNS proof of ownership)
 
-```bash
-curl https://api.whyknot.live/
-```
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/claim/start` | Opens a claim, mints a verification token, returns the DNS/file value to publish. |
+| `POST` | `/api/claim/check` | Runs the live check (DNS TXT, file, meta tag). |
+| `GET` | `/api/claim/status?makerHandle=` | Latest claim state for a profile. Never returns the token or the owner email. |
 
-```javascript
-const response = await fetch('https://api.whyknot.live/');
-const data = await response.json();
-console.log(data);
-```
+### Payments (Razorpay, INR only)
 
----
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| `GET` | `/api/payments/config` | - | Key id and plan state. Never the secret. |
+| `POST` | `/api/payments/create-order` | - | One-time order. |
+| `POST` | `/api/payments/create-subscription` | - | Pro or Team subscription. |
+| `POST` | `/api/payments/verify` | - | Verifies the payment signature and grants the entitlement. |
+| `GET` | `/api/payments/status` | - | Entitlement status for a payment. |
+| `POST` | `/api/payments/webhook` | Razorpay signature | Grants entitlements and flips sponsored slot orders to paid. Idempotent: the event id is the dedupe key, and a failed effect clears it so Razorpay can retry. |
 
-### 2. Join Waitlist
+### Sponsored slots
 
-Submit an email to join the WhyKnot waitlist.
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| `GET` | `/api/sponsor/availability` | - | 30 days. A date is unavailable if it is sold or held by a checkout in flight. |
+| `GET` | `/api/sponsor/boost` | - | The active boost campaign for a date. Public, tiny, no PII. |
+| `POST` | `/api/sponsor/order` | - | Starts a booking. `409 slot_taken` / `409 slot_pending` when the date is gone or in flight. |
+| `POST` | `/api/sponsor/event` | - | Impression/click beacon for CTR. Slot id and event kind only, server timestamp. |
+| `GET` | `/api/sponsor/metrics` | admin | Lifetime revenue, occupancy, CTR, conflicts. **Admin only** — it returns revenue, so it 401s before any env or database read. |
 
-```http
-POST /api/waitlist
-Content-Type: application/json
-```
+### Screener
 
-#### Request Body
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/screener/scan` | Runs a site audit, returns a scan id. |
+| `GET` | `/api/screener/report/:id` | The audit for a scan. |
+| `GET` | `/api/screener/domain/:domain` | The latest audit for a domain. |
 
- Field Type Required Description 
-------------------------------------
- `email` string Yes Valid email address 
+### Newsletter
 
-```json
-{
- "email": "user@example.com"
-}
-```
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/newsletter/subscribe` | Double opt-in: sends a confirmation link. |
+| `GET` | `/api/newsletter/confirm` | Confirms the subscription. |
+| `GET` | `/api/newsletter/unsubscribe` | Per-recipient HMAC link, no login. |
+| `GET` | `/api/newsletter/issues` | The published issues. |
 
-#### Validation Rules
+### Admin
 
-- Email must be valid format
-- Email must be unique (not already in waitlist)
-- Request must pass rate limiting
+Every route below needs the `adminToken` cookie, except `login` and `check`.
 
-#### Response
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/admin/login` | Password + pepper, sets the HttpOnly cookie. 5 attempts per 15 minutes. |
+| `GET` | `/api/admin/check` | Auth state, for the login page. |
+| `POST` | `/api/admin/logout` | Clears the cookie. |
+| `GET` | `/api/admin/verify` | Token still valid. |
+| `GET` | `/api/admin/waitlist` | The loop list. |
+| `GET` | `/api/admin/stats` | Counts and totals. |
+| `GET` | `/api/admin/claims` | Maker-claim review queue. |
+| `POST` | `/api/admin/claims/:id` | Approve or reject a claim. |
+| `GET` | `/api/admin/submissions` | Submission review queue. |
+| `POST` | `/api/admin/submissions/:slug` | Approve, request changes, or reject. |
+| `POST` | `/api/admin/newsletter/preview` | Renders an issue without sending it. |
+| `POST` | `/api/admin/newsletter/send` | Sends an issue. |
 
-**Success - Status**: `200 OK`
+### Misc
 
-```json
-{
- "ok": true,
- "id": "507f1f77bcf86cd799439011"
-}
-```
+| Method | Path | Notes |
+|---|---|---|
+| `POST` | `/api/scrape-preview` | Title, description and stack hints for a URL, for the submit form. |
+| `GET` | `/api/slots/availability` | Launch-day capacity for the submit picker. |
 
-**Error - Status**: `400 Bad Request`
-
-```json
-{
- "error": "invalid_email"
-}
-```
-
-**Error - Status**: `409 Conflict`
-
-```json
-{
- "error": "already_exists"
-}
-```
-
-**Error - Status**: `429 Too Many Requests`
-
-```json
-{
- "error": "rate_limited"
-}
-```
-
-**Error - Status**: `500 Internal Server Error`
-
-```json
-{
- "error": "server_error"
-}
-```
-
-#### Examples
-
-**cURL:**
-```bash
-curl -X POST https://api.whyknot.live/api/waitlist \
- -H "Content-Type: application/json" \
- -d '{"email":"test@example.com"}'
-```
-
-**JavaScript (Fetch API):**
-```javascript
-const joinWaitlist = async (email) => {
- const response = await fetch('https://api.whyknot.live/api/waitlist', {
- method: 'POST',
- headers: {
- 'Content-Type': 'application/json',
- },
- body: JSON.stringify({ email }),
- });
-
- const data = await response.json();
-
- if (!response.ok) {
- throw new Error(data.error);
- }
-
- return data;
-};
-
-// Usage
-try {
- const result = await joinWaitlist('user@example.com');
- console.log('Successfully joined!', result.id);
-} catch (error) {
- console.error('Failed to join:', error.message);
-}
-```
-
-**JavaScript (Axios):**
-```javascript
-import axios from 'axios';
-
-const joinWaitlist = async (email) => {
- try {
- const response = await axios.post('https://api.whyknot.live/api/waitlist', {
- email,
- });
- return response.data;
- } catch (error) {
- if (error.response) {
- throw new Error(error.response.data.error);
- }
- throw error;
- }
-};
-```
-
-**Python (requests):**
-```python
-import requests
-
-def join_waitlist(email):
- url = 'https://api.whyknot.live/api/waitlist'
- payload = {'email': email}
- 
- response = requests.post(url, json=payload)
- 
- if response.status_code == 200:
- return response.json()
- else:
- raise Exception(response.json().get('error'))
-
-# Usage
-try:
- result = join_waitlist('user@example.com')
- print(f"Successfully joined! ID: {result['id']}")
-except Exception as e:
- print(f"Failed to join: {e}")
-```
-
-**TypeScript (with type safety):**
-```typescript
-interface WaitlistResponse {
- ok: true;
- id: string;
-}
-
-interface ErrorResponse {
- error: string;
-}
-
-async function joinWaitlist(email: string): Promise<WaitlistResponse> {
- const response = await fetch('https://api.whyknot.live/api/waitlist', {
- method: 'POST',
- headers: {
- 'Content-Type': 'application/json',
- },
- body: JSON.stringify({ email }),
- });
-
- const data = await response.json();
-
- if (!response.ok) {
- const error = data as ErrorResponse;
- throw new Error(error.error);
- }
-
- return data as WaitlistResponse;
-}
-```
-
----
-
-## Data Models
-
-### Waitlist Entry
+## Data models
 
 ```typescript
-interface WaitlistEntry {
- _id: ObjectId; // MongoDB ObjectId
- email: string; // Unique email address
- createdAt: Date; // Timestamp of signup
+interface Submission {
+    slug: string;          // permanent, never changes after submit
+    url: string;
+    urlNormalized: string; // unique: one submission per site
+    name: string;
+    tagline: string;
+    topics: string[];
+    makerHandle: string;
+    story: string;
+    status: 'queued' | 'approved' | 'rejected' | ...;
+    slotDate: string;      // YYYY-MM-DD, the assigned launch day
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface SlotOrder {
+    orderId: string;       // Razorpay order id
+    email: string;
+    slot: 'launch-boost' | 'newsletter';
+    date: string;          // YYYY-MM-DD
+    url: string;
+    amount: number;        // paise
+    currency: string;
+    status: 'created' | 'paid' | 'conflict';
+    createdAt: Date;
+    paidAt?: Date;
+    conflictAt?: Date;     // paid, but the date was taken first
 }
 ```
 
-**Database Indexes:**
-- `email`: Unique index for duplicate prevention
-- `createdAt`: Index for sorting by signup date
-
----
+**Indexes** (created on boot, `backend/src/utils/mongo.ts`): `submissions.urlNormalized` and
+`submissions.slug` are unique. `slot_orders` is unique on `{slot, date}` **for paid orders only**
+— a partial index — so an abandoned checkout never blocks a date.
 
 ## Security
 
-### HTTPS Only
-
-All API requests must use HTTPS in production. HTTP requests will be redirected to HTTPS.
-
-### CORS
-
-Cross-Origin Resource Sharing (CORS) is configured to allow requests from:
-
-- Production: `https://whyknot.live`
-- Development: `http://localhost:4321`
-
-**CORS Headers:**
-```
-Access-Control-Allow-Origin: https://whyknot.live
-Access-Control-Allow-Methods: GET, POST, OPTIONS
-Access-Control-Allow-Headers: Content-Type
-```
-
-### Security Headers
-
-All responses include security headers:
-
-```
-Strict-Transport-Security: max-age=31536000; includeSubDomains
-X-Frame-Options: DENY
-X-Content-Type-Options: nosniff
-X-XSS-Protection: 1; mode=block
-Referrer-Policy: strict-origin-when-cross-origin
-```
-
-### Input Validation
-
-All inputs are validated using Zod schemas before processing:
-
-```typescript
-const waitlistSchema = z.object({
- email: z.string().email(),
-});
-```
-
-### Rate Limiting
-
-See [Rate Limiting](#rate-limiting) section above.
-
----
-
-## Best Practices
-
-### Error Handling
-
-Always handle errors gracefully:
-
-```javascript
-try {
- const result = await joinWaitlist(email);
- // Handle success
-} catch (error) {
- if (error.message === 'already_exists') {
- // Show "already signed up" message
- } else if (error.message === 'rate_limited') {
- // Show "please try again later" message
- } else if (error.message === 'invalid_email') {
- // Show "invalid email" message
- } else {
- // Show generic error message
- }
-}
-```
-
-### User Feedback
-
-Provide clear feedback for each error state:
-
- Error User Message 
----------------------
- `invalid_email` "Please enter a valid email address" 
- `already_exists` "This email is already on our waitlist!" 
- `rate_limited` "Too many attempts. Please try again in a minute." 
- `server_error` "Something went wrong. Please try again later." 
-
-### Retry Logic
-
-Implement exponential backoff for retries:
-
-```javascript
-async function joinWaitlistWithRetry(email, maxRetries = 3) {
- for (let i = 0; i < maxRetries; i++) {
- try {
- return await joinWaitlist(email);
- } catch (error) {
- if (error.message === 'server_error' && i < maxRetries - 1) {
- await new Promise(resolve => 
- setTimeout(resolve, Math.pow(2, i) * 1000)
- );
- continue;
- }
- throw error;
- }
- }
-}
-```
-
-### Loading States
-
-Show loading indicators during API calls:
-
-```javascript
-const [loading, setLoading] = useState(false);
-
-const handleSubmit = async (e) => {
- e.preventDefault();
- setLoading(true);
- 
- try {
- await joinWaitlist(email);
- // Show success message
- } catch (error) {
- // Show error message
- } finally {
- setLoading(false);
- }
-};
-```
-
----
-
-## Webhooks (Coming Soon)
-
-Future versions will support webhooks for:
-
-- New waitlist signups
-- User account events
-- Content updates
-
----
+- **SSRF guard** — every fetch of a user-supplied URL refuses loopback, link-local and private
+  addresses, and refuses non-HTML responses.
+- **CORS** — the origins in `CORS_ORIGIN` only, credentials allowed, `PATCH` included. The
+  allowlist must carry `https://admin.whyknot.live`: the admin dashboard is on another host.
+- **Security headers** — set on every response (`backend/src/middleware/security.ts`).
+- **Input validation** — Zod on every body, query and parameter. Unknown fields are stripped.
+- **Generic errors** — the client never learns why the server failed; the log does.
+- **Honeypot** — the waitlist form carries a hidden field that a bot fills and a human never
+  sees. The trap is client-side; the rate limit is what actually protects the endpoint.
 
 ## Versioning
 
-The API uses URL versioning:
-
-- Current: `/api/` (v1, no version prefix)
-- Future: `/api/v2/` (when breaking changes are introduced)
-
-**Version Support Policy:**
-- Current version: Full support
-- Previous version: 6 months deprecation notice
-- Older versions: No support
-
----
-
-## SDK (Coming Soon)
-
-Official SDKs will be available for:
-
-- JavaScript/TypeScript
-- Python
-- Go
-- PHP
-
----
-
-## Status & Monitoring
-
-Monitor API status at: [status.whyknot.live](https://status.whyknot.live) (coming soon)
-
----
+No version prefix yet: the API lives under `/api/`. If a breaking change ever needs one, it goes
+to `/api/v2/` and the old prefix keeps running for six months.
 
 ## Support
 
-Need help with the API?
-
-- [Documentation](https://github.com/jayptl-me/whyknot.live/tree/main/docs)
-- [GitHub Discussions](https://github.com/jayptl-me/whyknot.live/discussions)
-- [Report Issues](https://github.com/jayptl-me/whyknot.live/issues)
-- [Contact Form](https://whyknot.live/contact)
+- [GitHub Discussions](https://github.com/Whyknot-live/whyknot.live/discussions)
+- [Contact form](https://www.whyknot.live/contact)
 
 ---
 
-## Changelog
-
-See [CHANGELOG.md](../CHANGELOG.md) for API version history and changes.
-
----
-
-Last Updated: October 23, 2025
+Last Updated: October 21, 2026

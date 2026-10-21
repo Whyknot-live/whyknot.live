@@ -9,7 +9,7 @@
  </p>
 
  <p>
- <strong> Alpha Launch:</strong> September 19, 2026 <strong> Full Launch:</strong> October 9, 2026
+ <strong> Alpha Launch:</strong> September 19, 2026 <strong> Full Launch:</strong> live since October 21, 2026
  </p>
 </div>
 
@@ -389,7 +389,12 @@ npm run preview
 
 **Type Checking:**
 ```bash
-npm run check
+npm run typecheck
+```
+
+**Linting:**
+```bash
+npm run lint
 ```
 
 #### Styling Guidelines
@@ -463,17 +468,17 @@ npm run check-deploy
 ```
 
 2. **Follow the deployment guide**:
-See [docs/RENDER_DEPLOYMENT.md](./docs/RENDER_DEPLOYMENT.md) for step-by-step instructions.
+See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for the three Render services, the environment
+variables each one needs, and the two build traps that have already broken a deploy.
 
-3. **Deploy with Blueprint**:
+3. **Deploy**:
 ```bash
 # Push to GitHub
 git push origin main
-
-# In Render Dashboard:
-# New → Blueprint → Connect repository
-# Render will automatically deploy both services
 ```
+The three services already exist in Render, so there is no blueprint to create. The public site
+and the API deploy once their checks pass; if no CI check reports, trigger them from the Render
+dashboard (Manual deploy) or through the Render API. The admin deploys on every push.
 
 ### Required Services
 
@@ -490,42 +495,31 @@ MONGODB_URI=mongodb+srv://...
 MONGODB_DB=whyknot
 REDIS_URL=redis://...
 USE_REDIS_RATE_LIMIT=1
-CORS_ORIGIN=https://whyknot.live,https://www.whyknot.live
+CORS_ORIGIN=https://whyknot.live,https://www.whyknot.live,https://admin.whyknot.live
+ADMIN_PASSWORD_HASH=$2b$12$...
+ADMIN_JWT_SECRET=... # at least 32 characters
 ```
 
-**Frontend (Set in Render Dashboard):**
+**Frontend (Set in Render Dashboard, baked into the bundle at build time):**
 ```bash
-NODE_ENV=production
-PORT=10000
-HOST=0.0.0.0
+PUBLIC_API_BASE_URL=https://api.whyknot.live
 ```
 
-### Alternative Deployment Platforms
-
-#### Vercel/Netlify (Frontend)
+**Admin (Set in Render Dashboard):**
 ```bash
-vercel deploy --prod
-# or
-netlify deploy --prod
-```
-
-#### Railway/Heroku (Backend)
-```bash
-railway up
-# or
-git push heroku main
+PUBLIC_API_URL=https://api.whyknot.live/api
 ```
 
 ### Health Checks
 
 - Backend: `https://api.whyknot.live/health`
-- Frontend: `https://whyknot.live/`
+- Frontend: `https://www.whyknot.live/`
 
 ### Documentation
 
-- 📘 [Complete Deployment Guide](./docs/RENDER_DEPLOYMENT.md)
-- 📗 [Production Best Practices](./docs/PRODUCTION_BEST_PRACTICES.md)
-- 📙 [Deployment Summary](./DEPLOYMENT_SUMMARY.md)
+- 📘 [Deployment Guide](./docs/DEPLOYMENT.md) — the three Render services, env vars, deploy flow
+- 📗 [API Reference](./docs/API.md)
+- 📙 [Architecture](./docs/ARCHITECTURE.md) · [Development](./docs/DEVELOPMENT.md) · [CI](./docs/CIRCLECI.md) · [FAQ](./docs/FAQ.md)
 
 ---
 
